@@ -1,0 +1,39 @@
+@font-face {
+	font-family: FOT-RodinNTLGPro-B_0;
+	src: url(../Fonts/FOT-RodinNTLGPro-B_0.woff2) format('woff');
+}
+
+@font-face {
+	font-family: FOT-RodinNTLGPro-DB;
+	src: url(../Fonts/FOT-RodinNTLGPro-DB.woff2) format('woff');
+}
+
+@font-face {
+	font-family: FOT-RodinNTLGPro-M;
+	src: url(../Fonts/FOT-RodinNTLGPro-M.woff2) format('woff');
+}
+
+@font-face {
+	font-family: Orbitron Black;
+	src: url(../Fonts/Orbitron Black.woff2) format('woff');
+}
+
+@font-face {
+	font-family: Orbitron Bold;
+	src: url(../Fonts/Orbitron Bold.woff2) format('woff');
+}
+
+@font-face {
+	font-family: Orbitron Light;
+	src: url(../Fonts/Orbitron Light.woff2) format('woff');
+}
+
+@font-face {
+	font-family: Orbitron Medium;
+	src: url(../Fonts/Orbitron Medium.woff2) format('woff');
+}
+
+@font-face {
+	font-family: SourceCodePro-Regular;
+	src: url(../Fonts/SourceCodePro-Regular.woff2) format('woff');
+}
