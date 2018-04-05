@@ -4,32 +4,33 @@
 }
 
 @font-face {
-	font-family: FOT-RodinNTLGPro-DB;
-	src: url(../Fonts/FOT-RodinNTLGPro-DB.woff2) format('woff');
-}
-
-@font-face {
-	font-family: FOT-RodinNTLGPro-M;
+	font-family: FOT-RodinNTLGPro;
 	src: url(../Fonts/FOT-RodinNTLGPro-M.woff2) format('woff');
 }
 
 @font-face {
-	font-family: Orbitron Black;
+	font-family: FOT-RodinNTLGPro;
+	src: url(../Fonts/FOT-RodinNTLGPro-DB.woff2) format('woff');
+	font-weight: bold;
+}
+
+@font-face {
+	font-family: Orbitron-Black;
 	src: url(../Fonts/Orbitron Black.woff2) format('woff');
 }
 
 @font-face {
-	font-family: Orbitron Bold;
+	font-family: Orbitron-Bold;
 	src: url(../Fonts/Orbitron Bold.woff2) format('woff');
 }
 
 @font-face {
-	font-family: Orbitron Light;
+	font-family: Orbitron-Light;
 	src: url(../Fonts/Orbitron Light.woff2) format('woff');
 }
 
 @font-face {
-	font-family: Orbitron Medium;
+	font-family: Orbitron-Medium;
 	src: url(../Fonts/Orbitron Medium.woff2) format('woff');
 }
 
@@ -37,3 +38,29 @@
 	font-family: SourceCodePro-Regular;
 	src: url(../Fonts/SourceCodePro-Regular.woff2) format('woff');
 }
+
+.centered { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+
+#app-container { position: relative; width: 1334; height: 750; }
+
+#parent-container { display: flex; flex-direction: column; align-items: center; }
+
+#text-container { position: absolute; height: 100%; width: 100%; font-family: 'FOT-RodinNTLGPro'; }
+
+#text-container #title { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 20px; }
+
+#text-container #diva { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 34px; }
+
+#text-container #dialog-box { box-sizing: border-box; position: absolute; bottom: 0; text-align: left; width: 100%; height: 200px; }
+
+#text-container #main-ui-img { width: 100%; }
+
+#dialog-box { color: white; font-weight: bold; text-shadow: 1px 1px 6px black; }
+
+#dialog-box #character { position: absolute; top: -5px; left: 70px; font-size: 30px;  }
+
+#dialog-box #dialog { position: absolute; padding: 60px 30px 0px 70px; box-sizing: border-box; height: 100%; width: 100%; font-size: 30px; }
+
+#dialog-box #ui-buttons { right: 20px; top: -50px; position: absolute; }
+
+#dialog-box .ui-button { position: relative; height: 85px; }

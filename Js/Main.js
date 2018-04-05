@@ -1,28 +1,56 @@
 'use strict';
 
 const pixiApp = { 
-	app: new PIXI.Application({width: 1334, height: 750}),
+	app: new PIXI.Application(baseDimensions),
 	loader: PIXI.loader
 };
 const utage = new UtageInfo();
-const player = new Player(pixiApp, utage);
+const textFunc = new TextFunctions();
+const player = new Player(pixiApp, utage, textFunc);
 const context = new (window.AudioContext || window.webkitAudioContext)();
-const onBodyLoaded = () => {
+let bodyLoaded = false;
+let utageLoaded = false;
+function onBodyLoaded() {
+	bodyLoaded = true;
+}
+
+(function startLoad() {
 	var promises = [
 		utage.loadUtageSettings()
 	];
 
 	Promise.all(promises)
 	.then((success) => {
-		onParsed(success);
+		utageLoaded = true;
 	}, (failure) => {
 		console.log(failure);
 	});
-};
+})();
 
-function onParsed (success) {
+(function checkIsLoaded() {
+	if(bodyLoaded) {
+		document.getElementById('loading-font').style.cssText = "display: none;";
+	}
+	if(utageLoaded) {
+		document.getElementById('loading-utage').style.cssText = "display: none;";
+	}
+	if(bodyLoaded && utageLoaded) {
+		document.getElementById('loading-container').style.cssText = "opacity: 0;";
+		onAllLoaded();
+	} else {
+		setTimeout(checkIsLoaded, 300);
+	}
+})();
+
+function onAllLoaded(success) {
+	textFunc.findTextElements();
 	buildMissionSelectList();
-	document.getElementById('app-container').appendChild(pixiApp.app.view);
+	let appContainer = document.getElementById('app-container');
+	appContainer.appendChild(pixiApp.app.view);
+	//appContainer.style.cssText = `width: ${baseDimensions.width}; height: ${baseDimensions.height};`;
+	setTimeout(() => {
+		document.getElementById('parent-container').style.cssText = "opacity: 1;";
+	});
 }
 
 function buildMissionSelectList() {
@@ -46,10 +74,16 @@ function missionChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}') { return; }
 	
 	let newMission = utage.availableMissions[event.currentTarget.value.split('|')[0]];
-	utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '')}`)
+	var promises = [
+		utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '')}`),
+		player.resetAll()
+	];
+	
+	Promise.all(promises)
 	.then((success) => {
-		player.playFile()
+		var res = player.playFile()
 		.then((success) => {
+			player.resetAll();
 			debugger;
 		}, (failure) => {
 			debugger;
@@ -58,4 +92,10 @@ function missionChanged(event) {
 	}, (failure) => {
 		console.log(failure);
 	});
+}
+
+function onTextClicked(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	
 }

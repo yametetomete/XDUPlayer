@@ -7,8 +7,8 @@ class UtageInfo {
 		this.rootDirectory = `${rootUrl}XDUPlayer/`;
 		this.availableMissions = {};
 		this.missionsList = [];
-		this.characterData = {};
-		this.layerData = {};
+		this.characterInfo = {};
+		this.layerInfo = {};
 		this.localizeInfo = {};
 		this.paramInfo = {};
 		this.soundInfo = {};
@@ -100,10 +100,10 @@ class UtageInfo {
 					if(read.FileName && !read.FileName.startsWith('file://')) {
 						read.FileName = `${this.rootDirectory}XDUData/Character/${read.FileName}`;
 					}
-					if(!this.characterData[lastCharName]) {
-						this.characterData[lastCharName] = {};
+					if(!this.characterInfo[lastCharName]) {
+						this.characterInfo[lastCharName] = {};
 					}
-					this.characterData[lastCharName][read.Pattern || "none"] = read;
+					this.characterInfo[lastCharName][read.Pattern || "none"] = read;
 				}
 			}
 		}
@@ -120,7 +120,7 @@ class UtageInfo {
 			} else {
 				var read = commonFunctions.readLine(line, headers);
 				if(read && read.LayerName) {
-					this.layerData[read.LayerName] = read;
+					this.layerInfo[read.LayerName] = read;
 				}
 			}
 		}

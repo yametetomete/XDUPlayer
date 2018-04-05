@@ -50,4 +50,15 @@ class commonFunctions {
 	static lerp(start, end, t) {
 		return (1 - t) * start + t * end;
 	}
+	
+	static getColorFromName(name) {
+		if(!name) { return 0xFFFFFF }
+		
+		switch(name.toLowerCase()) {
+			case 'black':
+				return 0x000000;
+			case 'white':
+				return 0xFFFFFF;
+		}
+	}
 }
