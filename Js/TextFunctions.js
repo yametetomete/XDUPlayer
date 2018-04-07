@@ -41,7 +41,7 @@ class TextFunctions {
 		this.character.style = show ? "opacity: 1;" : "opacity: 0;";
 	}
 	
-	dialog(show, text) {
+	dialogText(show, text) {
 		if(text != undefined) {
 			this.dialog.innerHTML = text;
 		}

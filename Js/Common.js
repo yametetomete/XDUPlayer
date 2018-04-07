@@ -1,6 +1,6 @@
 'use strict';
 
-var rootUrl = `${window.location.protocol}//${window.location.host}/`
+var rootUrl = `${window.location.protocol}//${window.location.host}/`;
 
 class commonFunctions {	
 	static getFileText(file) {
@@ -37,10 +37,10 @@ class commonFunctions {
 		} else if(!line) {
 			return undefined;
 		} else {
-			var split = line.split('\t');
-			var newEntry = {};
+			let split = line.split('\t');
+			let newEntry = {};
 			for(let i = 0; i < split.length; ++i) {
-				var x = split[i];
+				let x = split[i];
 				newEntry[headers[i]] = x;
 			}
 			return newEntry;
@@ -60,5 +60,26 @@ class commonFunctions {
 			case 'white':
 				return 0xFFFFFF;
 		}
+	}
+	
+	static convertUtageTextTags(text) {
+		text = text.replace(/<speed.*?>|<\/speed>/g, "");
+		text = text.replace("\\n", "<br/>")
+		return text;
+	}
+	
+	static getAnchorFromCharPivot(pivot) {
+		let x = 0.5;
+		let y = 0.5;
+		let sp = pivot.split(" ");
+		for(let p of sp) {
+			if(p.startsWith("x=")) {
+				x = Number(p.substring(2));
+			} else if(p.startsWith("y=")) {
+				y = Number(p.substring(2));
+				y = 1 - y;
+			}
+		}
+		return {x, y};
 	}
 }
