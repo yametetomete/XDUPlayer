@@ -4,18 +4,26 @@ const pixiApp = {
 	app: new PIXI.Application(baseDimensions),
 	loader: PIXI.loader
 };
+
 const utage = new UtageInfo();
 const textFunc = new TextFunctions();
-const player = new Player(pixiApp, utage, textFunc);
+const audio = new audioController();
+const player = new Player(pixiApp, utage, textFunc, audio);
 const context = new (window.AudioContext || window.webkitAudioContext)();
+const languages = ["eng", "jpn"];
 let bodyLoaded = false;
 let utageLoaded = false;
+let selectedLang = "eng";
+let screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+let screenSizeTimeout = undefined;
+
 function onBodyLoaded() {
 	bodyLoaded = true;
 }
 
 (function startLoad() {
-	var promises = [
+	let promises = [
 		utage.loadUtageSettings()
 	];
 
@@ -47,10 +55,11 @@ function onAllLoaded(success) {
 	buildMissionSelectList();
 	let appContainer = document.getElementById('app-container');
 	appContainer.appendChild(pixiApp.app.view);
-	//appContainer.style.cssText = `width: ${baseDimensions.width}; height: ${baseDimensions.height};`;
 	setTimeout(() => {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
-	});
+		onWindowResize();
+		window.addEventListener("resize", onWindowResize);
+	}, 0);
 }
 
 function buildMissionSelectList() {
@@ -63,8 +72,11 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
+			//if(m.includes('MA1-') || m.includes('MA2-')|| m.includes('MA3-')) {
+			//	continue;
+			//}
 			opt.setAttribute('value', m);
-			opt.innerText = m;
+			opt.innerText = m.replace('|', ' - ');
 		}
 		selectBox.appendChild(opt);
 	}
@@ -74,14 +86,15 @@ function missionChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}') { return; }
 	
 	let newMission = utage.availableMissions[event.currentTarget.value.split('|')[0]];
-	var promises = [
-		utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '')}`),
+	let promises = [
+		utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
+		utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`),
 		player.resetAll()
 	];
 	
 	Promise.all(promises)
 	.then((success) => {
-		var res = player.playFile()
+		let res = player.playFile()
 		.then((success) => {
 			player.resetAll();
 			debugger;
@@ -94,8 +107,25 @@ function missionChanged(event) {
 	});
 }
 
-function onTextClicked(event) {
-	event.preventDefault();
-	event.stopPropagation();
-	
+function onMainClick(event) {
+	player.onMainClick(event);
+}
+
+function hideUiClicked(event) {
+	player.hideUiClicked(event);
+}
+
+function onWindowResize(event) {
+	if(screenSizeTimeout) {
+		clearTimeout(screenSizeTimeout);
+		screenSizeTimeout = undefined;
+	}
+	screenSizeTimeout = setTimeout(() => {
+		screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+		let topContainerHeight = document.getElementById('other-controls-container').offsetHeight + 6;
+		let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, topContainerHeight);
+		player.updateResolution(res);
+		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
+	}, 400);
 }

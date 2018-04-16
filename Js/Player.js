@@ -2,13 +2,20 @@
 
 const baseDimensions = {width: 1334, height: 750};
 class Player {
-	constructor(pixi, utage, text) {
+	constructor(pixi, utage, text, audio) {
 		this.pixi = pixi;
 		this.loader = pixi.loader;
 		this.utage = utage;
 		this.text = text;
+		this.audio = audio;
+		//consts
 		this.resolutionScale = 1;
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
+		this.bgLayerName = "背景";
+		this.defaultCharPattern = 'すまし';
+		this.backCharTint = 0x808080;
+		this.titleWaitTime = 1;
+		
 		this.blackBackSp = undefined;
 		this.currentCharacters = {};
 		this.lastCharOffLayer = undefined;
@@ -19,12 +26,12 @@ class Player {
 		this.secondTicker = 1000;
 		this.waitTime = 0;
 		this.lerpTargets = [];
-		this.bgLayerName = "背景";
-		this.defaultCharPattern = 'すまし';
-		this.titleWaitTime = 1;
 		this.manualNext = false;
 		this.hasMoreText = false;
+		this.uiHidden = false;
 		this.center = {x: ((baseDimensions.width / 2) * this.resolutionScale), y: ((baseDimensions.height / 2) * this.resolutionScale) };
+		this.assetLoadPercent = 0;
+		this.audioLoadPercent = 0;
 	}
 	
 	playFile() {
@@ -43,6 +50,8 @@ class Player {
 	
 	preCheckFilesToGet() {
 		return new Promise((resolve, reject) => {
+			let toLoadBgm = {};
+			let toLoadSe = {};
 			for(let i = 0; i < utage.currentPlayingFile.length; ++i) {
 				try {
 					let c = utage.currentPlayingFile[i];
@@ -58,7 +67,7 @@ class Player {
 							} else if(!this.utage.textureInfo[c.Arg1]) {
 								console.log(`Failed to get BG: ${c.Arg1}`);
 							}
-						break;
+							break;
 						//Text
 						case "":
 							//Character Text
@@ -74,18 +83,58 @@ class Player {
 							(!this.utage.characterInfo[c.Arg1] || !this.utage.characterInfo[c.Arg1][Arg2])) {
 								console.log(`Failed to get Character: ${c.Arg1}|${Arg2}`);
 							}
-						break;
+							//These voices arent in the Sound.tsv because fuck you
+							if(c.Voice) {
+								let filename = c.Voice;
+								if(filename.includes(',')) {
+									let s = filename.split(',');
+									filename = `${s[0].split('_').join('/')}/${s[1]}`;
+								}
+								filename = `${this.utage.rootDirectory}XDUData/Voice/${filename}.opus`;
+								if(!toLoadSe[c.Voice]) {
+									toLoadSe[c.Voice] = { Label: c.Voice, FileName: filename };
+								}
+							}
+							break;
+						case "bgm":
+							if(this.utage.soundInfo[c.Arg1]) {
+								if(!toLoadBgm[c.Arg1]) {
+									toLoadBgm[c.Arg1] = this.utage.soundInfo[c.Arg1];
+								}
+							} else {
+								console.log(`Failed to get BGM: ${c.Arg1}`);
+							}
+							break;
+						case "se":
+							if(this.utage.soundInfo[c.Arg1]) {
+								if(!toLoadSe[c.Arg1]) {
+									toLoadSe[c.Arg1] = this.utage.soundInfo[c.Arg1];
+								}
+							} else {
+								console.log(`Failed to get SE: ${c.Arg1}`);
+							}
+							break;
 					}
 				} catch (error) {
 					console.log(error);
 					continue;
 				}
 			}
+			let audioArray = [];
+			for(let s of Object.keys(toLoadBgm)) {
+				audioArray.push(toLoadBgm[s]);
+			}
+			for(let s of Object.keys(toLoadSe)) {
+				audioArray.push(toLoadSe[s]);
+			}
+			this.audio.loadSounds(audioArray, (percent) => {
+				this.onAudioProgress(percent);
+			});
 			//Manually load white bg for fading. Can be tinted to change color.
 			this.loader.add('bg|whiteFade', `${this.utage.rootDirectory}Images/white.png`);
 			this.loader
 			.on("progress", (loader, resource) => {
-				this.onPixiProgress(loader, resource)
+				this.onPixiProgress(loader, resource);
 			})
 			.load(() => {
 				this.onPixiLoad(resolve, reject);
@@ -133,17 +182,34 @@ class Player {
 	}
 	
 	onPixiProgress(loader, resource) {
-		if(loader.progress < 100) {
-			this.text.titleText(true, `Loading Assets... ${loader.progress.toFixed(0)}%`);
-		} else {
-			this.text.titleText(false, '');
-		}
+		this.assetLoadPercent = loader.progress;
+		this.text.titleText(true, `Loading Assets... ${loader.progress.toFixed(0)}%`);
+		this.onLoadProgressUpdate();
+	}
+	
+	onAudioProgress(percent) {
+		this.audioLoadPercent = percent;
+		this.onLoadProgressUpdate();
+	}
+	
+	onLoadProgressUpdate() {
+		let totalProgress = (this.audioLoadPercent / 2) + (this.assetLoadPercent / 2);
+		this.text.titleText(true, `Loading Assets... ${totalProgress.toFixed(0)}%`);
 	}
 	
 	onPixiLoad(resolve, reject) {
-		this.runEvent = true;
-		this.buildLayerContainers();
-		resolve();
+		if(this.audioLoadPercent === 100) {
+			this.text.titleText(false, '');
+			setTimeout(() => {
+				this.runEvent = true;
+				this.buildLayerContainers();
+				resolve();
+			}, 1000);
+		} else {
+			setTimeout(() => {
+				this.onPixiLoad(resolve, reject);
+			}, 100);
+		}
 	}
 	
 	onPixiTick(delta) {
@@ -185,17 +251,18 @@ class Player {
 			for(let i = 0; i < this.lerpTargets.length; ++i) {
 				let l = this.lerpTargets[i];
 				l.curTime += deltaTime;
+				if(l.curTime < 0) { continue; }
+				let inter = l.inter || "linear";
 				let pos = l.curTime / l.time;
-				if(pos >= 1) { 
-					pos = 1; 
+				if(pos >= 1) {
+					pos = 1;
 					toRemove.push(i);
 					if(l.post === "destroy") {
-						debugger;
 						l.object.destroy();
 						continue;
 					}
 				}
-				let newValue = commonFunctions.lerp(l.initV, l.finalV, pos);
+				let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
 				let split = l.type.split(".");
 				switch(split.length) {
 					case 1:
@@ -219,24 +286,28 @@ class Player {
 	processCommand(delta) {
 		try {
 			let cur = this.currentCommand;
-			if(this.checkIfAllOff()) {
-				this.text.dialogText(false, "");
-				this.text.characterName(false, "");
-			} else {
-				this.text.dialogText(true, "");
-				this.text.characterName(true, "");
-			}
+			//if(this.checkIfAllOff()) {
+			//	this.text.dialogText(false, "");
+			//	this.text.characterName(false, "");
+			//} else {
+			//	this.text.dialogText(true, "");
+			//	this.text.characterName(true, "");
+			//}
 			switch((cur.Command || "").toLowerCase()) {
 				case "scenetitle01":
 					this.waitTime = this.titleWaitTime * 1000;
-					this.text.titleText(true, cur.Text);
+					var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+					this.text.titleText(true, text);
 					break;
 				case "divaeffect":
 					this.waitTime = 1000//Number(cur.Arg5) * 1000;
-					this.text.divaText(true, cur.Text);
+					var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+					this.text.divaText(true, text);
 					break;
 				//FadeTo
 				case "fadeout":
+					this.text.dialogText(false, "");
+					this.text.characterName(false, "");
 					this.waitTime = Number(cur.Arg6) * 1000;
 					this.layers["bg|whiteFade"].sprite.tint = commonFunctions.getColorFromName(cur.Arg1);
 					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 1, initV: 0});
@@ -291,7 +362,8 @@ class Player {
 					let scale = 1 + (1 - Number(cur.Arg3));
 					let cont = this.layers["bg|mainparent"].container;
 					let x = this.center.x + -(Number(cur.Arg1));
-					let y = this.center.y + -(Number(cur.Arg2));
+					//y in xdu is flipped
+					let y = this.center.y - -(Number(cur.Arg2));
 					if(time) {
 						this.waitTime = time * 1000;
 						if(cont.scale.x !== scale) {
@@ -307,11 +379,11 @@ class Player {
 							this.lerpTargets.push({type: 'position.x', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: x, initV: cont.position.x });
 						}
-						
 						if(cont.position.y !== y) {
 							this.lerpTargets.push({type: 'position.y', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: y, initV: cont.position.y });
 						}
+						
 						if(cur.Arg6 && cur.Arg6.toLowerCase() === "nowait") {
 							this.waitTime = 0;
 						}
@@ -322,6 +394,8 @@ class Player {
 					break;
 				}
 				case "characteroff": {
+					this.text.dialogText(false, "");
+					this.text.characterName(false, "");
 					for(let c of Object.keys(this.currentCharacters)) {
 						if(!this.currentCharacters[c]) { continue; }
 						let curChar = this.currentCharacters[c];
@@ -335,6 +409,7 @@ class Player {
 					}
 				}
 				case "tween":
+					this.processTween(delta, cur);
 					break;
 				case "bgm":
 					break;
@@ -343,6 +418,9 @@ class Player {
 				case "se":
 					break;
 				case "shake":
+					break;
+				case "henshin01_bgmoff":
+					this.checkPutCharacterScreen(cur, true);
 					break;
 				default:
 					this.processCommandOther(delta);
@@ -357,64 +435,174 @@ class Player {
 	processCommandOther(delta) {
 		let cur = this.currentCommand;
 		//Character on screen
-		checkPutCharacterScreen.apply(this);
+		this.checkPutCharacterScreen(cur);
 		//Display text
-		checkPutText.apply(this);
-		
-		function checkPutCharacterScreen() {
-			if(!cur.Command && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
-				if(!cur.Arg2) {
-					cur.Arg2 = this.defaultCharPattern;
-				}
-				let chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
-				let lay = undefined;
-				let chlay = undefined;
-				if(cur.Arg3) {
-					lay = this.layers[cur.Arg3];
-					chlay = this.currentCharacters[cur.Arg3];
-					if(!lay) { return; }
-				} else {
-					lay = this.lastCharOffLayer;
-					if(!lay) { return; }
-					cur.Arg3 = lay.info.LayerName;
-				}
-				if(this.currentCharacters[cur.Arg3] && this.currentCharacters[cur.Arg3].charName === cur.Arg1) {
-					return;
-				}
-				//If the layer already has a character on it remove it.
-				if(chlay && (chlay.character.NameText !== chr.NameText || chlay.character.Pattern !== chr.Pattern)) {
-					this.lerpTargets.push({type: 'alpha', object: chlay.sprite, curTime: 0, time: 100, finalV: 0, initV: 1, post: "destroy" });
-					this.currentCharacters[cur.Arg3] = undefined;
-				}
-				let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
-				sprite.scale.set(Number(chr.Scale), Number(chr.Scale));
-				let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
-				sprite.anchor.set(anchor.x, anchor.y);
-				sprite.alpha = 0;
-				this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: cur.Arg1, sprite: sprite };
-				this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 100, finalV: 1, initV: 0 });
-				lay.container.addChild(sprite);
-				lay.container.visible = true;
-			}
-		}
-		
-		function checkPutText() {
-			if(!cur.Command && cur.Arg1 && cur.Text) {
-				if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
-					this.text.characterName(true, cur.Arg1);
-					this.text.dialogText(true, commonFunctions.convertUtageTextTags(cur.Text));
-				} else {
-					let charName = "";
-					for(let c of Object.keys(this.currentCharacters)) {
-						if(!this.currentCharacters[c]) { continue; }
-						if(this.currentCharacters[c].charName === cur.Arg1) {
-							this.text.characterName(true, this.currentCharacters[c].character.NameText);
-							this.text.dialogText(true, commonFunctions.convertUtageTextTags(cur.Text));
-							break;
-						}
+		this.checkPutText(cur);
+	}
+
+	checkPutCharacterScreen(cur, special = false) {
+		if((!cur.Command || special) && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
+			let lay = undefined;
+			let curChar = undefined;
+			//First check if the character is already on screen
+			for(let c of Object.keys(this.currentCharacters)) {
+				if(!this.currentCharacters[c]) { continue; }
+				if(this.currentCharacters[c].charName === cur.Arg1) {
+					curChar = this.currentCharacters[c];
+					lay = this.currentCharacters[c].layer;
+					if(!cur.Arg3) { 
+						cur.Arg3 = c;
 					}
 				}
-				this.waitTime = 1000;
+			}
+			//Sometimes they don't give a pattern so just assume the default.
+			if(!cur.Arg2 && !curChar) {
+				cur.Arg2 = this.defaultCharPattern;
+			//If the character was already on screen use that pattern
+			} else if (!cur.Arg2 && curChar) {
+				cur.Arg2 = curChar.character.Pattern;
+			}
+			let chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
+			//If the script gives us a layer get that layer and if there is a character on it already.
+			if(cur.Arg3 && !curChar) {
+				lay = this.layers[cur.Arg3];
+				curChar = this.currentCharacters[cur.Arg3];
+				if(!lay) { return; }
+			//If they didn't give us a layer try to use the last layer a character was removed from.
+			} else if(!curChar) {
+				lay = this.lastCharOffLayer;
+				if(!lay) { return; }
+				cur.Arg3 = lay.info.LayerName;
+			}
+			//If this chracter is already here and not changing patterns don't change anything.
+			if(curChar && curChar.charName === cur.Arg1 && curChar.character.Pattern === cur.Arg2) {
+				return;
+			}
+			//If the layer already has a different character on it remove it.
+			if(curChar && (curChar.character.NameText !== chr.NameText || curChar.character.Pattern !== chr.Pattern)) {
+				this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 100, finalV: 0, initV: 1, post: "destroy" });
+				this.currentCharacters[cur.Arg3] = undefined;
+			}
+			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
+			sprite.scale.set(Number(chr.Scale), Number(chr.Scale));
+			let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
+			sprite.anchor.set(anchor.x, anchor.y);
+			sprite.alpha = 0;
+			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: cur.Arg1, sprite: sprite };
+			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 100, finalV: 1, initV: 0 });
+			lay.container.addChild(sprite);
+			lay.container.visible = true;
+		}
+	}
+		
+	checkPutText(cur) {
+		if(!cur.Command && cur.Arg1 && cur.Text) {
+			//If its chracter off screen text
+			var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+			text = commonFunctions.convertUtageTextTags(text);
+			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
+				this.text.characterName(true, cur.Arg1);
+				this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
+			} else {
+				let charName = "";
+				let found = true;
+				//Look for the character that is saying the text to get their name
+				//future note: This might be better to just look for the character in character info if this start failing.
+				for(let c of Object.keys(this.currentCharacters)) {
+					if(!this.currentCharacters[c]) { continue; }
+					if(this.currentCharacters[c].charName === cur.Arg1) {
+						this.text.characterName(true, this.currentCharacters[c].character.NameText);
+						this.text.dialogText(true, text);
+						this.currentCharacters[c].sprite.tint = 0xFFFFFF;
+						found = true;
+						continue;
+					}
+					//while were here set other characters tint to background shade
+					if(this.currentCharacters[c].sprite) {
+						this.currentCharacters[c].sprite.tint = this.backCharTint;
+					}
+				}
+				//If we didnt find the character just dump the text anyways with Arg1 as the name
+				if(!found) {
+					this.text.characterName(true, cur.Arg1);
+					this.text.dialogText(true, text);
+				}
+			}
+			this.manualNext = true;
+		} else if(!cur.Command && cur.Arg2.toLowerCase() === "<off>" && cur.Text) {
+			var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+			this.text.characterName(true, "");
+			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
+			this.manualNext = true;
+		}
+	}
+	
+	processTween(delta, cur) {
+		this.text.dialogText(false, "");
+		this.text.characterName(false, "");
+		let curChar = undefined;
+		for(let c of Object.keys(this.currentCharacters)) {
+			if(!this.currentCharacters[c]) { continue; }
+			if(this.currentCharacters[c].charName === cur.Arg1) {
+				curChar = this.currentCharacters[c];
+				this.currentCharacters[c].sprite.tint = 0xFFFFFF;
+				continue;
+			}
+			//while were here set other characters tint to background shade
+			if(this.currentCharacters[c].sprite) {
+				this.currentCharacters[c].sprite.tint = this.backCharTint;
+			}
+		}
+		if(!curChar) { return; }
+		switch(cur.Arg2.toLowerCase()) {
+			case "moveto": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				//moveto has a islocal value that im just assuming is true until I run into a case it actually isint.
+				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+					this.waitTime = props.time + (props.delay || 0);
+				}
+				if(props.x) {
+					if(props.time) {
+						this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'exp' });
+					} else {
+						curChar.sprite.position.x = curChar.sprite.position.x + props.x;
+					}
+				}
+				if(props.y) {
+					if(props.time) {
+						this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'exp' });
+					} else {
+						curChar.sprite.position.y = curChar.sprite.position.y + props.y;
+					}
+				}
+				break;
+			}
+			case "punchposition": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				if(!props.time) { props.time = 0.5; }
+				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+					this.waitTime = props.time + (props.delay || 0);
+				}
+				if(props.x) {					
+					this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'fullwait' });
+				}
+				if(props.y) {
+					this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'fullwait' });
+				}
+				break;
+			}
+			case "colorto": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				if(props.alpha) {
+					if(props.time) {
+					} else {
+						curChar.sprite.alpha = 0;
+					}
+				}
 			}
 		}
 	}
@@ -439,14 +627,33 @@ class Player {
 		return true;
 	}
 	
-	onMainClick() {
-		if(this.runEvent && this.manualNext) {
-			if (!this.hasMoreText) {
-				this.getNextCommand();
-			} else {
-				
-			}
+	onMainClick(event) {
+		if(!this.runEvent) {
+			return
 		}
+		event.preventDefault();
+		event.stopPropagation();
+		if(this.manualNext && !this.uiHidden) {
+			if (!this.text.scrollingText) {
+				this.manualNext = false;
+				this.waitTime = 0;
+			} else if(this.text.scrollingText) {
+				this.text.showDialogFullText();
+			}
+		} else if(this.uiHidden) {
+			this.text.hideUi(true);
+			this.uiHidden = false;
+		}
+	}
+	
+	hideUiClicked(event) {
+		if(!this.runEvent) {
+			return;
+		}
+		event.preventDefault();
+		event.stopPropagation();
+		this.uiHidden = true;
+		this.text.hideUi(false);
 	}
 
 	onEndFile() {
@@ -466,6 +673,16 @@ class Player {
 		this.currentCommand = command;
 	}
 	
+	updateResolution(res) {
+		//this.resolutionScale = res.height / baseDimensions.height;
+		//this.center = {x: ((baseDimensions.width / 2) * this.resolutionScale), y: ((baseDimensions.height / 2) * this.resolutionScale) };
+		//this.pixi.app.renderer.resolution = res.height / baseDimensions.height;
+		let newScale = res.height / baseDimensions.height;
+		this.pixi.app.stage.scale.set(newScale, newScale);
+		this.pixi.app.renderer.resize(res.width, res.height);
+		document.getElementById('text-container').style.cssText = `transform: scale(${newScale})`;
+	}
+	
 	resetAll() {
 		return new Promise((resolve, reject) => {
 			try {
@@ -478,9 +695,19 @@ class Player {
 				}
 				this.loader.reset();
 				this.currentCharacters = {};
+				this.lastCharOffLayer = undefined;
+				this.layers = {};
+				this.sprites = {};
+				this.blackBackSp = undefined;
 				this.currentCommand = undefined;
 				this.runEvent = false;
 				this.secondTicker = 1000;
+				this.waitTime = 0;
+				this.lerpTargets = [];
+				this.manualNext = false;
+				this.hasMoreText = false;
+				this.audioLoadPercent = 0;
+				this.assetLoadPercent = 0;
 				this.text.resetAll();
 				resolve();
 			} catch (error) {

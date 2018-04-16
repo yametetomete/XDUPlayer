@@ -4,36 +4,39 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 		<link rel="stylesheet" type="text/css" href="../Css/generic.min.css">
 		<link rel="stylesheet" type="text/css" href="Css/main.css">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script>
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script> -->
+		<script src="Js/Pixi.min.js"></script>
 		<script src="Js/Common.js"></script>
 		<script src="Js/TextFunctions.js"></script>
 		<script src="Js/UtageParse.js"></script>
+		<script src="Js/Audio.js"></script>
 		<script src="Js/Player.js"></script>
-		<script src="Js/Main.js"></script>
 	</head>
 	<body onload="onBodyLoaded()">
+		<script src="Js/Main.js"></script>
 		<div id="loading-container" class="centered">
 			<h2 id="loading-utage">Loading Utage Data...</h2>
 			<h2 id="loading-font">Loading Fonts...</h2>
 		</div>
 		<div id="parent-container" class="fade-in centered">
-			<div id="select-mission-container">
-				<select id="select-mission" onchange="missionChanged(event)"></select>
+			<div id="other-controls-container">
+				<div id="volume-control">🔊</div>
+				<select id="select-mission" onchange="missionChanged(event);"></select>
 			</div>
-			<!-- Im doing weird shit so that app container is always the base resolution of XDU (1334, 750). 
+			<!-- Im doing weird shit so that text container is always the base resolution of XDU (1334, 750). 
 			The canvas then resizes as the canvas does and the text-container uses transform scale based off this resolution -->
-			<div id="app-container">
-				<div id="text-container" on-click="onTextClick(event)">
+			<div id="app-container" onclick="onMainClick(event);">
+				<div id="text-container">
 					<img id="main-ui-img" src="Images/newui_main.png" style="opacity: 0;"/>
 					<div id="title" style="opacity: 0;">Title Text</div>
 					<div id="diva" style="opacity: 0;">Diva Text</div>
 					<div id="dialog-box" style="opacity: 0;">
-						<div id="ui-buttons">
+						<div id="ui-buttons" onclick="hideUiClicked(event)">
 							<img class="ui-button" src="Images/hide_button.png"/>
 						</div>
-						<div id="character">女教師</div>
+						<div id="character"></div>
 						<div id="dialog">
-						「はい今日は前回の続きからはじめます。<br/>　抑揚をつけることで、歌の表現は深まりますが――」
+							<div id ="dialog-inner"></div>
 						</div>
 					</div>
 				</div>
