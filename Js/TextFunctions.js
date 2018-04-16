@@ -8,7 +8,7 @@ class TextFunctions {
 		this.dialogBox = undefined;
 		this.character = undefined;
 		this.dialog = undefined;
-		this.dialogToDisplay = {timeout: undefined, fullText: "", text: "", subsection: "", subindex: -1};
+		this.dialogToDisplay = {timeout: undefined, fullText: "", text: "", curPos: 0};
 		this.textScrollSpeedMs = 40;
 		this.scrollingText = false;
 		this.lineHeight = -1;
@@ -61,8 +61,10 @@ class TextFunctions {
 			} else {
 				this.dialogToDisplay.text = text;
 				this.dialogToDisplay.fullText = text;
-				this.dialogInner.innerHTML = this.dialogToDisplay.text[0];
-				this.dialogToDisplay.text = this.dialogToDisplay.text.slice(1);
+				this.dialogToDisplay.curPos = 0;
+				this.dialogInner.innerHTML = "";
+				//this.dialogInner.innerHTML = this.dialogToDisplay.text[0];
+				//this.dialogToDisplay.text = this.dialogToDisplay.text.slice(1);
 				this.scrollingText = true;
 				this.dialogToDisplay.timeout = setTimeout(putText.bind(this), this.textScrollSpeedMs);
 			}
@@ -70,14 +72,24 @@ class TextFunctions {
 		this.mainUi.style = show ? "opacity: 1;" : "opacity: 0;";
 		this.dialogBox.style = show ? "opacity: 1;" : "opacity: 0;";
 		
+		//This is based off https://github.com/mattboldt/typed.js/
 		function putText() {
-			let t = this.getNextTextToPut();
-			if(!t) { return; }
-			this.dialogInner.innerHTML += t;
-			let lHeight = this.lineHeight * 2
-			if(this.dialogInner.offsetHeight > lHeight) {
-				this.dialog.scrollTop = this.dialogInner.offsetHeight - lHeight;
+			// skip over any HTML chars
+			this.dialogToDisplay.curPos = this.typeHtmlChars(this.dialogToDisplay.text, this.dialogToDisplay.curPos);
+			let substr = this.dialogToDisplay.text.substr(this.dialogToDisplay.curPos);
+			if (this.dialogToDisplay.curPos === this.dialogToDisplay.text.length) {
+				this.scrollingText = false;
+				return;
+			} else {
+				this.dialogToDisplay.curPos += 1;
+				const nextString = this.dialogToDisplay.text.substr(0, this.dialogToDisplay.curPos);
+				this.dialogInner.innerHTML = nextString;
+				let lHeight = this.lineHeight * 2
+				if(this.dialogInner.offsetHeight > lHeight) {
+					this.dialog.scrollTop = this.dialogInner.offsetHeight - lHeight;
+				}
 			}
+			
 			this.dialogToDisplay.timeout = setTimeout(putText.bind(this), this.textScrollSpeedMs);
 		}
 	}
@@ -94,36 +106,29 @@ class TextFunctions {
 		}
 		this.scrollingText = false;
 	}
+		
+	typeHtmlChars(curString, curStrPos) {
+		const curChar = curString.substr(curStrPos).charAt(0);
+		if (curChar === '<' || curChar === '&') {
+			let endTag = '';
+			if (curChar === '<') {
+				endTag = '>';
+			} else {
+				endTag = ';';
+			}
+			while (curString.substr(curStrPos + 1).charAt(0) !== endTag) {
+				curStrPos++;
+				if (curStrPos + 1 > curString.length) { break; }
+			}
+			curStrPos++;
+		}
+		return curStrPos;
+	}
 	
 	hideUi(show) {
 		this.mainUi.style = show ? "opacity: 1;" : "opacity: 0;";
 		this.dialogBox.style = show ? "opacity: 1;" : "opacity: 0;";
 		this.character.style = show ? "opacity: 1;" : "opacity: 0;";
-	}
-	
-	getNextTextToPut() {
-		if(!this.dialogToDisplay.text || this.dialogToDisplay.text.length === 0) { 
-			this.scrollingText = false;
-			return ""; 
-		}
-		let toSlice = 1;
-		let text = this.dialogToDisplay.text[0];
-		if(text === '<') {
-			let match = this.dialogToDisplay.text.match(/<.+>/);
-			if(match && match[0]); {
-				debugger;
-				text = match[0];
-				toSlice = match[0].length;
-				if(!text.includes("/")) {
-					let s = text.split('');
-					s.splice(1, 0, '/');
-					text += s.join('');
-				}
-			}
-		}
-		this.dialogToDisplay.text = this.dialogToDisplay.text.slice(toSlice);
-		
-		return text;
 	}
 	
 	resetAll() {

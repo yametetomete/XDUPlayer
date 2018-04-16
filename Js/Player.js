@@ -249,30 +249,36 @@ class Player {
 			//Loop through the lerp targets, modify the needed objects. If a object is at its 1 time state remove it from the list.
 			let toRemove = [];
 			for(let i = 0; i < this.lerpTargets.length; ++i) {
-				let l = this.lerpTargets[i];
-				l.curTime += deltaTime;
-				if(l.curTime < 0) { continue; }
-				let inter = l.inter || "linear";
-				let pos = l.curTime / l.time;
-				if(pos >= 1) {
-					pos = 1;
-					toRemove.push(i);
-					if(l.post === "destroy") {
-						l.object.destroy();
-						continue;
+				try
+				{
+					let l = this.lerpTargets[i];
+					l.curTime += deltaTime;
+					if(l.curTime < 0) { continue; }
+					let inter = l.inter || "linear";
+					let pos = l.curTime / l.time;
+					if(pos >= 1) {
+						pos = 1;
+						toRemove.push(i);
+						if(l.post === "destroy") {
+							l.object.destroy();
+							continue;
+						}
 					}
-				}
-				let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
-				let split = l.type.split(".");
-				switch(split.length) {
-					case 1:
-						l.object[split[0]] = newValue;
-						break;
-					case 2:
-						l.object[split[0]][split[1]] = newValue;
-						break;
-					default:
-						continue;
+					let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
+					let split = l.type.split(".");
+					switch(split.length) {
+						case 1:
+							l.object[split[0]] = newValue;
+							break;
+						case 2:
+							l.object[split[0]][split[1]] = newValue;
+							break;
+						default:
+							continue;
+					}
+				} catch(error) {
+					//If we got an exception during this it probably means the object doesnt exist anymore so just remove it.
+					toRemove.push(i);
 				}
 			}
 			for(let i = toRemove.length - 1; i > -1; --i) {
@@ -505,7 +511,7 @@ class Player {
 				this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			} else {
 				let charName = "";
-				let found = true;
+				let found = false;
 				//Look for the character that is saying the text to get their name
 				//future note: This might be better to just look for the character in character info if this start failing.
 				for(let c of Object.keys(this.currentCharacters)) {
