@@ -7,7 +7,7 @@ const pixiApp = {
 
 const utage = new UtageInfo();
 const textFunc = new TextFunctions();
-const audio = new audioController();
+const audio = new audioController(utage);
 const player = new Player(pixiApp, utage, textFunc, audio);
 const context = new (window.AudioContext || window.webkitAudioContext)();
 const languages = ["eng", "jpn"];
@@ -17,6 +17,8 @@ let selectedLang = "eng";
 let screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 let screenSizeTimeout = undefined;
+let isMuted = false;
+let volume = 0.5;
 
 function onBodyLoaded() {
 	bodyLoaded = true;
@@ -38,6 +40,19 @@ function onBodyLoaded() {
 (function checkIsLoaded() {
 	if(bodyLoaded) {
 		document.getElementById('loading-font').style.cssText = "display: none;";
+		volume = localStorage.getItem('volume') || 0.5;
+		volume = Number(volume);
+		audio.changeVolume(volume);
+		document.getElementById('volume-range').value = volume * 100;
+		isMuted = localStorage.getItem('ismuted') || false;
+		if(isMuted === "false") { isMuted = false; }
+		else if(isMuted === "true") { isMuted = true; }
+		audio.mute(isMuted);
+		if(isMuted) {
+			document.getElementById('mute-button').innerText = "🔇";
+		} else {
+			document.getElementById('mute-button').innerText = "🔊";
+		}
 	}
 	if(utageLoaded) {
 		document.getElementById('loading-utage').style.cssText = "display: none;";
@@ -113,6 +128,35 @@ function onMainClick(event) {
 
 function hideUiClicked(event) {
 	player.hideUiClicked(event);
+}
+
+function dialogScrollUp(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	textFunc.scrollTextUp();
+}
+
+function dialogScrollDown(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	textFunc.scrollTextDown();
+}
+
+function toggleMute(event) {
+	isMuted = !isMuted;
+	audio.mute(isMuted);
+	localStorage.setItem('ismuted', isMuted);
+	if(isMuted) {
+		document.getElementById('mute-button').innerText = "🔇";
+	} else {
+		document.getElementById('mute-button').innerText = "🔊";
+	}
+}
+
+function onVolumeChange(event) {
+	let vol = event.currentTarget.value / 100;
+	audio.changeVolume(vol);
+	localStorage.setItem('volume', vol);
 }
 
 function onWindowResize(event) {

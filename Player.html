@@ -7,6 +7,7 @@
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script> -->
 		<script src="Js/Pixi.min.js"></script>
 		<script src="Js/Common.js"></script>
+		<!--<script src="Js/Typed.min.js"></script>-->
 		<script src="Js/TextFunctions.js"></script>
 		<script src="Js/UtageParse.js"></script>
 		<script src="Js/Audio.js"></script>
@@ -20,23 +21,35 @@
 		</div>
 		<div id="parent-container" class="fade-in centered">
 			<div id="other-controls-container">
-				<div id="volume-control">🔊</div>
+				<div id="volume-control">
+					<span onclick="toggleMute(event)" id="mute-button">🔊</span>
+					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
+				</div>
 				<select id="select-mission" onchange="missionChanged(event);"></select>
 			</div>
 			<!-- Im doing weird shit so that text container is always the base resolution of XDU (1334, 750). 
 			The canvas then resizes as the canvas does and the text-container uses transform scale based off this resolution -->
 			<div id="app-container" onclick="onMainClick(event);">
 				<div id="text-container">
-					<img id="main-ui-img" src="Images/newui_main.png" style="opacity: 0;"/>
-					<div id="title" style="opacity: 0;">Title Text</div>
-					<div id="diva" style="opacity: 0;">Diva Text</div>
-					<div id="dialog-box" style="opacity: 0;">
+					<img id="main-ui-img" class="hidden" src="Images/newui_main.png"/>
+					<div id="title" class="hidden">Title Text</div>
+					<div id="diva" class="hidden">Diva Text</div>
+					<div id="dialog-box" class="hidden">
 						<div id="ui-buttons" onclick="hideUiClicked(event)">
 							<img class="ui-button" src="Images/hide_button.png"/>
 						</div>
 						<div id="character"></div>
 						<div id="dialog">
-							<div id ="dialog-inner"></div>
+							<div id="dialog-controls">
+								<div id="dialog-scroll" class="hidden">
+									<img id="dialog-scroll-up" src="Images/next_icon.png" onclick="dialogScrollUp(event)"></img>
+									<img src="Images/next_icon.png" onclick="dialogScrollDown(event)"></img>
+								</div>
+								<div id="dialog-next" class="hidden">
+									<img src="Images/next_icon.png"></img>
+								</div>
+							</div>
+							<div id="dialog-inner"></div>
 						</div>
 					</div>
 				</div>

@@ -85,6 +85,13 @@ class commonFunctions {
 			case "sqrt":
 				t = Math.sqrt(t);
 				break;
+			//Some of the stuff here is just kinda arbitrary
+			case "dampsin":
+				t = (1 * (Math.pow(0.3, t)) * Math.sin((2*Math.PI*t/0.5) + 0)) / 1.25;
+				if(t < -0.45) { 
+					t = -0.45;
+				}
+				break;
 		}
 		return (1 - t) * start + t * end;
 		//-(2*x-1)^4 +1
@@ -165,7 +172,7 @@ class commonFunctions {
 		return {x, y};
 	}
 	
-	static getPropertiesFromTweenCommand(props) {
+	static getPropertiesFromTweenCommand(props, reverseY = true) {
 		var retval = {};
 		let indexX = props.indexOf("x=");
 		if(indexX !== -1) {
@@ -183,7 +190,7 @@ class commonFunctions {
 				if(props[i] == " ") { break; }
 				retval.y += props[i];
 			}
-			retval.y = -Number(retval.y);
+			retval.y = reverseY ? -Number(retval.y) : Number(retval.y);
 		}
 		let indexT = props.indexOf("time=");
 		if(indexT !== -1) {
@@ -211,6 +218,15 @@ class commonFunctions {
 				retval.alpha += props[i];
 			}
 			retval.alpha = Number(retval.alpha);
+		}
+		let indexS = props.indexOf("speed=");
+		if(indexS !== -1) {
+			retval.speed = "";
+			for(let i = indexS + 6; i < props.length; ++i) {
+				if(props[i] == " ") { break; }
+				retval.speed += props[i];
+			}
+			retval.speed = Number(retval.speed);
 		}
 		return retval;
 	}

@@ -14,6 +14,7 @@ class UtageInfo {
 		this.soundInfo = {};
 		this.textureInfo = {};
 		this.currentTranslation = {};
+		this.bgmLoopData = {};
 	}
 	
 	loadUtageSettings(resolve, reject) {
@@ -26,7 +27,8 @@ class UtageInfo {
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Param.tsv`),
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`)
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/bgmLoop.json`),
 			];
 			Promise.all(promises)
 			.then((success) => {
@@ -41,6 +43,7 @@ class UtageInfo {
 				this.parseParamInfo(success[4]);
 				this.parseSoundInfo(success[5]);
 				this.parseTextureInfo(success[6]);
+				this.bgmLoopData = success[7];
 				resolve();
 			}, (failure) => {
 				reject(failure);
@@ -186,6 +189,7 @@ class UtageInfo {
 				let read = commonFunctions.readLine(line, headers);
 				if(read && read.Label) {
 					if(read.FileName && read.Type) {
+						read.origFileName = read.FileName;
 						if(!read.FileName.includes('.')) {
 							read.FileName = `${read.FileName}.opus`;
 						}

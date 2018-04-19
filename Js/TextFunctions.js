@@ -8,6 +8,8 @@ class TextFunctions {
 		this.dialogBox = undefined;
 		this.character = undefined;
 		this.dialog = undefined;
+		this.scrollControls = undefined;
+		this.nextIndicator = undefined;
 		this.dialogToDisplay = {timeout: undefined, fullText: "", text: "", curPos: 0};
 		this.textScrollSpeedMs = 40;
 		this.scrollingText = false;
@@ -22,34 +24,38 @@ class TextFunctions {
 		this.character = document.getElementById('character');
 		this.dialog = document.getElementById('dialog');
 		this.dialogInner = document.getElementById('dialog-inner');
+		this.scrollControls = document.getElementById('dialog-scroll');
+		this.nextIndicator = document.getElementById('dialog-next');
 	}
 	
 	titleText(show, text) {
 		if(text != undefined) {
 			this.title.innerHTML = text;
 		}
-		this.title.style = show ? "opacity: 1;" : "opacity: 0;";
+		this.title.classList.toggle('hidden', !show);
 	}
 	
 	divaText(show, text) {
 		if(text != undefined) {
 			this.diva.innerHTML = text;
 		}
-		this.diva.style = show ? "opacity: 1;" : "opacity: 0;";
+		this.diva.classList.toggle('hidden', !show);
 	}
 	
 	characterName(show, text) {
 		if(text != undefined) {
 			this.character.innerHTML = text;
 		}
-		this.mainUi.style = show ? "opacity: 1;" : "opacity: 0;";
-		this.character.style = show ? "opacity: 1;" : "opacity: 0;";
+		this.mainUi.classList.toggle('hidden', !show);
+		this.character.classList.toggle('hidden', !show);
 	}
 	
 	dialogText(show, text) {
 		if(this.lineHeight == -1) {
 			this.lineHeight = Number(window.getComputedStyle(this.dialog, null).getPropertyValue("line-height").replace('px', ''));
 		}
+		this.showNextIndicator(false);
+		this.showScrollControls(false);
 		if(text != undefined) {
 			if(this.dialogToDisplay.timeout) {
 				clearTimeout(this.dialogToDisplay.timeout);
@@ -69,8 +75,8 @@ class TextFunctions {
 				this.dialogToDisplay.timeout = setTimeout(putText.bind(this), this.textScrollSpeedMs);
 			}
 		}
-		this.mainUi.style = show ? "opacity: 1;" : "opacity: 0;";
-		this.dialogBox.style = show ? "opacity: 1;" : "opacity: 0;";
+		this.mainUi.classList.toggle('hidden', !show);
+		this.dialogBox.classList.toggle('hidden', !show);
 		
 		//This is based off https://github.com/mattboldt/typed.js/
 		function putText() {
@@ -78,6 +84,7 @@ class TextFunctions {
 			this.dialogToDisplay.curPos = this.typeHtmlChars(this.dialogToDisplay.text, this.dialogToDisplay.curPos);
 			let substr = this.dialogToDisplay.text.substr(this.dialogToDisplay.curPos);
 			if (this.dialogToDisplay.curPos === this.dialogToDisplay.text.length) {
+				this.showNextIndicator(true);
 				this.scrollingText = false;
 				return;
 			} else {
@@ -85,8 +92,10 @@ class TextFunctions {
 				const nextString = this.dialogToDisplay.text.substr(0, this.dialogToDisplay.curPos);
 				this.dialogInner.innerHTML = nextString;
 				let lHeight = this.lineHeight * 2
-				if(this.dialogInner.offsetHeight > lHeight) {
+				//the +5 is just to give a bit of tolerance
+				if(this.dialogInner.offsetHeight > lHeight + 5) {
 					this.dialog.scrollTop = this.dialogInner.offsetHeight - lHeight;
+					this.showScrollControls(true);
 				}
 			}
 			
@@ -100,13 +109,15 @@ class TextFunctions {
 			this.dialogToDisplay.timeout = undefined;
 		}
 		this.dialogInner.innerHTML = this.dialogToDisplay.fullText;
-		let lHeight = this.lineHeight * 2
-		if(this.dialogInner.offsetHeight > lHeight) {
+		let lHeight = this.lineHeight * 2;
+		if(this.dialogInner.offsetHeight > lHeight + 5) {
 			this.dialog.scrollTop = this.dialogInner.offsetHeight - lHeight;
+			this.showScrollControls(true);
 		}
+		this.showNextIndicator(true);
 		this.scrollingText = false;
 	}
-		
+	
 	typeHtmlChars(curString, curStrPos) {
 		const curChar = curString.substr(curStrPos).charAt(0);
 		if (curChar === '<' || curChar === '&') {
@@ -125,10 +136,36 @@ class TextFunctions {
 		return curStrPos;
 	}
 	
+	showScrollControls(show) {
+		this.scrollControls.classList.toggle('hidden', !show);
+	}
+	
+	scrollTextUp() {
+		let lHeight = this.lineHeight * 2;
+		let val = this.dialog.scrollTop - lHeight;
+		if(val < 0) {
+			val = 0;
+		}
+		this.dialog.scrollTop = val;
+	}
+	
+	scrollTextDown() {
+		let lHeight = this.lineHeight * 2;
+		let val = this.dialog.scrollTop + lHeight;
+		if(val > this.dialogInner.offsetHeight - lHeight) {
+			val = this.dialogInner.offsetHeight - lHeight;
+		}
+		this.dialog.scrollTop = val;
+	}
+	
+	showNextIndicator(show) {
+		this.nextIndicator.classList.toggle('hidden', !show);
+	}
+	
 	hideUi(show) {
-		this.mainUi.style = show ? "opacity: 1;" : "opacity: 0;";
-		this.dialogBox.style = show ? "opacity: 1;" : "opacity: 0;";
-		this.character.style = show ? "opacity: 1;" : "opacity: 0;";
+		this.mainUi.classList.toggle('hidden', !show);
+		this.dialogBox.classList.toggle('hidden', !show);
+		this.character.classList.toggle('hidden', !show);
 	}
 	
 	resetAll() {
@@ -136,10 +173,12 @@ class TextFunctions {
 		this.diva.innerHTML = '';
 		this.character.innerHTML = '';
 		this.dialogInner.innerHTML = '';
-		this.title.style = "opacity: 0;";
-		this.diva.style = "opacity: 0;";
-		this.mainUi.style = "opacity: 0;";
-		this.character.style = "opacity: 0;";
-		this.dialogBox.style = "opacity: 0;";
+		this.title.classList.add('hidden');
+		this.diva.classList.add('hidden');
+		this.mainUi.classList.add('hidden');
+		this.character.classList.add('hidden');
+		this.dialogBox.classList.add('hidden');
+		this.scrollControls.classList.add('hidden');
+		this.nextIndicator.classList.add('hidden');
 	}
 }

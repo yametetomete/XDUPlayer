@@ -32,6 +32,7 @@ class Player {
 		this.center = {x: ((baseDimensions.width / 2) * this.resolutionScale), y: ((baseDimensions.height / 2) * this.resolutionScale) };
 		this.assetLoadPercent = 0;
 		this.audioLoadPercent = 0;
+		this.playingVoice = undefined;
 	}
 	
 	playFile() {
@@ -162,8 +163,6 @@ class Player {
 			//center the position of the container then offset it by the value in the layer info
 			let x = (((baseDimensions.width / 2) + Number(l.X)) * this.resolutionScale);
 			let y = (((baseDimensions.height / 2) - Number(l.Y)) * this.resolutionScale);
-			//let x = (Number(l.X) * this.resolutionScale);
-			//let y = (Number(l.Y) * this.resolutionScale);
 			cont.position.set(x, y);
 			cont.visible = false;
 		}
@@ -249,8 +248,7 @@ class Player {
 			//Loop through the lerp targets, modify the needed objects. If a object is at its 1 time state remove it from the list.
 			let toRemove = [];
 			for(let i = 0; i < this.lerpTargets.length; ++i) {
-				try
-				{
+				try {
 					let l = this.lerpTargets[i];
 					l.curTime += deltaTime;
 					if(l.curTime < 0) { continue; }
@@ -264,17 +262,41 @@ class Player {
 							continue;
 						}
 					}
-					let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
-					let split = l.type.split(".");
-					switch(split.length) {
-						case 1:
-							l.object[split[0]] = newValue;
+					switch(l.type) {
+						case "shake": {
+							if(pos === 1) {
+								if(l.object instanceof HTMLElement) {
+									l.object.style = "";
+								} else {
+									l.object.position.set(l.initV.x, l.initV.y);
+								}
+							} else {
+								let x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
+								let y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
+								if(l.object instanceof HTMLElement) {
+									l.object.style = `transform: translate(${x}px, ${y}px);`;
+								} else {
+									l.object.position.set(x, y);
+								}
+							}
 							break;
-						case 2:
-							l.object[split[0]][split[1]] = newValue;
+						}
+						default: {
+							let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
+							let split = l.type.split(".");
+							if(split[0] == 'scale') { debugger; }
+							switch(split.length) {
+								case 1:
+									l.object[split[0]] = newValue;
+									break;
+								case 2:
+									l.object[split[0]][split[1]] = newValue;
+									break;
+								default:
+									continue;
+							}
 							break;
-						default:
-							continue;
+						}
 					}
 				} catch(error) {
 					//If we got an exception during this it probably means the object doesnt exist anymore so just remove it.
@@ -418,14 +440,26 @@ class Player {
 					this.processTween(delta, cur);
 					break;
 				case "bgm":
+					if(!this.utage.soundInfo[cur.Arg1]) {
+						break;
+					}
+					this.audio.playSound(cur.Arg1, 'bgm');
 					break;
 				case "stopbgm":
+					this.audio.stopSound('bgm');
 					break;
 				case "se":
+					if(!this.utage.soundInfo[cur.Arg1]) {
+						break;
+					}
+					this.audio.playSound(cur.Arg1, 'se');
 					break;
-				case "shake":
+				case "shake": {
+					this.processShake(delta, cur);
 					break;
+				}
 				case "henshin01_bgmoff":
+					this.audio.stopSound('bgm');
 					this.checkPutCharacterScreen(cur, true);
 					break;
 				default:
@@ -500,8 +534,11 @@ class Player {
 			lay.container.visible = true;
 		}
 	}
-		
+	
 	checkPutText(cur) {
+		if(this.playingVoice) {
+			this.audio.stopSound(this.playingVoice);
+		}
 		if(!cur.Command && cur.Arg1 && cur.Text) {
 			//If its chracter off screen text
 			var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
@@ -540,6 +577,10 @@ class Player {
 			this.text.characterName(true, "");
 			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			this.manualNext = true;
+		}
+		if(cur.Voice) {
+			this.playingVoice = cur.Voice;
+			this.audio.playSound(cur.Voice);
 		}
 	}
 	
@@ -587,28 +628,78 @@ class Player {
 			}
 			case "punchposition": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				if(!props.time) { props.time = 0.5; }
+				if(!props.time) { props.time = 500; }
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
 				if(props.x) {					
 					this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'fullwait' });
+					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'dampsin' });
 				}
 				if(props.y) {
 					this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'fullwait' });
+					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'dampsin' });
 				}
 				break;
+			}
+			case "scaleto": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3, false);
+				if(!props.time) { props.time = 500; }
+				//cuz I don't care about their values that make no sense when everything else uses time.
+				if(props.speed) { props.time = props.speed * 1000; }
+				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+					this.waitTime = props.time + (props.delay || 0);
+				}
+				if(props.x) {
+					this.lerpTargets.push({type: 'scale.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: curChar.sprite.scale.x * props.x, initV: curChar.sprite.scale.x });
+				}
+				if(props.y) {
+					this.lerpTargets.push({type: 'scale.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: curChar.sprite.scale.y * props.y, initV: curChar.sprite.scale.y });
+				}
 			}
 			case "colorto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
 				if(props.alpha) {
 					if(props.time) {
+						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: props.alpha, initV: curChar.sprite.alpha });
 					} else {
 						curChar.sprite.alpha = 0;
 					}
 				}
+			}
+		}
+	}
+	
+	processShake(delta, cur) {
+		let obj = cur.Arg1;
+		switch(obj.toLowerCase()) {
+			case "camera": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				if(!props.time) { props.time = 1000; }
+				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+					this.waitTime = props.time + (props.delay || 0);
+				}
+				if(!props.x) { props.x = 30; }
+				if(!props.y) { props.y = 30; }
+				let stage = this.pixi.app.stage.position;
+				this.lerpTargets.push({type: 'shake', object: this.pixi.app.stage, curTime: 0 - (props.delay || 0), time: props.time, 
+				finalV: {x: props.x + stage.x, y: props.y + stage.y}, initV: {x: stage.x, y: stage.y} });
+				break;
+			}
+			case "messagewindow": {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				if(!props.time) { props.time = 1000; }
+				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+					this.waitTime = props.time + (props.delay || 0);
+				}
+				if(!props.x) { props.x = 30; }
+				if(!props.y) { props.y = 30; }
+				this.lerpTargets.push({type: 'shake', object: document.getElementById('dialog-box'), curTime: 0 - (props.delay || 0), time: props.time, 
+				finalV: {x: props.x, y: props.y}, initV: {x: 0, y: 0} });
+				break;
 			}
 		}
 	}
@@ -680,9 +771,6 @@ class Player {
 	}
 	
 	updateResolution(res) {
-		//this.resolutionScale = res.height / baseDimensions.height;
-		//this.center = {x: ((baseDimensions.width / 2) * this.resolutionScale), y: ((baseDimensions.height / 2) * this.resolutionScale) };
-		//this.pixi.app.renderer.resolution = res.height / baseDimensions.height;
 		let newScale = res.height / baseDimensions.height;
 		this.pixi.app.stage.scale.set(newScale, newScale);
 		this.pixi.app.renderer.resize(res.width, res.height);
@@ -714,7 +802,9 @@ class Player {
 				this.hasMoreText = false;
 				this.audioLoadPercent = 0;
 				this.assetLoadPercent = 0;
+				this.playingVoice = undefined;
 				this.text.resetAll();
+				this.audio.resetAll();
 				resolve();
 			} catch (error) {
 				reject(error);
