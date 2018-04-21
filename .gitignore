@@ -3,3 +3,6 @@
 web.config
 /Js/Typed
 /node_modules
+/Js/XduPlayer.js
+/Js/XduPlayer.min.js.map
+/Fonts
