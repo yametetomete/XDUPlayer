@@ -13,6 +13,7 @@ class UtageInfo {
 		this.paramInfo = {};
 		this.soundInfo = {};
 		this.textureInfo = {};
+		this.translations = {};
 		this.currentTranslation = {};
 		this.bgmLoopData = {};
 	}
@@ -77,16 +78,24 @@ class UtageInfo {
 		});
 	}
 	
-	loadMissionTranslation(file) {
+	loadMissionTranslation(file, key) {
 		return new Promise((resolve, reject) => {
-			commonFunctions.getFileJson(file)
-			.then((success) => {
-				this.currentTranslation = success;
+			if(this.translations[key]) {
+				debugger;
+				this.currentTranslation = this.translations[key];
 				resolve();
-			}, (failure) => {
-				this.currentTranslation = {};
-				resolve();
-			});
+			} else {
+				commonFunctions.getFileJson(file)
+				.then((success) => {
+					debugger;
+					this.translations[key] = success;
+					this.currentTranslation = success;
+					resolve();
+				}, (failure) => {
+					this.currentTranslation = {};
+					resolve();
+				});
+			}
 		});
 	}
 	
@@ -228,5 +237,10 @@ class UtageInfo {
 				}
 			}
 		}
+	}
+	
+	resetTranslations() {
+		this.translations = {};
+		this.currentTranslation = {};
 	}
 }

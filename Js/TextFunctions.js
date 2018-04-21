@@ -8,12 +8,13 @@ class TextFunctions {
 		this.dialogBox = undefined;
 		this.character = undefined;
 		this.dialog = undefined;
+		this.textScrollSpeedMs = 35;
 		this.scrollControls = undefined;
 		this.nextIndicator = undefined;
 		this.dialogToDisplay = {timeout: undefined, fullText: "", text: "", curPos: 0};
-		this.textScrollSpeedMs = 40;
 		this.scrollingText = false;
 		this.lineHeight = -1;
+		this.textHistory = [];
 	}
 	
 	findTextElements() {
@@ -67,6 +68,7 @@ class TextFunctions {
 			} else {
 				this.dialogToDisplay.text = text;
 				this.dialogToDisplay.fullText = text;
+				this.textHistory.push({ character: this.character.innerHTML, text: text });
 				this.dialogToDisplay.curPos = 0;
 				this.dialogInner.innerHTML = "";
 				//this.dialogInner.innerHTML = this.dialogToDisplay.text[0];
@@ -180,5 +182,12 @@ class TextFunctions {
 		this.dialogBox.classList.add('hidden');
 		this.scrollControls.classList.add('hidden');
 		this.nextIndicator.classList.add('hidden');
+		this.textHistory.length = 0;
+		if(this.dialogToDisplay.timeout) {
+			clearTimeout(this.dialogToDisplay.timeout);
+		}
+		this.dialogToDisplay = {timeout: undefined, fullText: "", text: "", curPos: 0};
+		this.scrollingText = false;
+		this.lineHeight = -1;
 	}
 }

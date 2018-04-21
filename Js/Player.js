@@ -284,7 +284,6 @@ class Player {
 						default: {
 							let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
 							let split = l.type.split(".");
-							if(split[0] == 'scale') { debugger; }
 							switch(split.length) {
 								case 1:
 									l.object[split[0]] = newValue;
@@ -805,6 +804,7 @@ class Player {
 				this.playingVoice = undefined;
 				this.text.resetAll();
 				this.audio.resetAll();
+				this.utage.resetTranslations();
 				resolve();
 			} catch (error) {
 				reject(error);

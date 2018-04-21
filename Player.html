@@ -6,15 +6,15 @@
 		<link rel="stylesheet" type="text/css" href="Css/main.css">
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script> -->
 		<script src="Js/Pixi.min.js"></script>
-		<script src="Js/Common.js"></script>
-		<!--<script src="Js/Typed.min.js"></script>-->
+		<!--<script src="Js/Common.js"></script>
 		<script src="Js/TextFunctions.js"></script>
 		<script src="Js/UtageParse.js"></script>
 		<script src="Js/Audio.js"></script>
-		<script src="Js/Player.js"></script>
+		<script src="Js/Player.js"></script>-->
 	</head>
 	<body onload="onBodyLoaded()">
-		<script src="Js/Main.js"></script>
+		<!--<script src="Js/Main.js"></script>-->
+		<script src="Js/XduPlayer.min.js"></script>
 		<div id="loading-container" class="centered">
 			<h2 id="loading-utage">Loading Utage Data...</h2>
 			<h2 id="loading-font">Loading Fonts...</h2>
@@ -26,6 +26,7 @@
 					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
 				</div>
 				<select id="select-mission" onchange="missionChanged(event);"></select>
+				<select id="select-language" onchange="languageChanged(event);"></select>
 			</div>
 			<!-- Im doing weird shit so that text container is always the base resolution of XDU (1334, 750). 
 			The canvas then resizes as the canvas does and the text-container uses transform scale based off this resolution -->

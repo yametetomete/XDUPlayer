@@ -39,6 +39,19 @@
 	src: url(../Fonts/SourceCodePro-Regular.woff2) format('woff');
 }
 
+@-webkit-keyframes smallbounce { 
+	from { transform: translate(0, 5px); } 
+	to  { transform: translate(0, -5px); } 
+}
+@-moz-keyframes smallbounce { 
+	from { transform: translate(0, 5px); } 
+	to { transform: translate(0, -5px); } 
+}
+@keyframes smallbounce {
+    from { transform: translate(0, 5px); }
+    to  { transform: translate(0, -5px); }
+}
+
 .centered { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
 .hidden { opacity: 0; }
@@ -75,7 +88,7 @@
 
 #dialog #dialog-controls { position: fixed; right: 0; display: flex; height: 135px; align-items: center; }
 
-#dialog-controls #dialog-next { margin-right: 37px; }
+#dialog-controls #dialog-next { margin-right: 37px; animation: smallbounce 0.5s ease-in-out 0s infinite alternate; }
 
 #dialog-next img { height: 80px; }
 
@@ -85,10 +98,16 @@
 
 #dialog-scroll img { height: 35px; }
 
-#other-controls-container { display: flex; width: 100; justify-content: center; }
+#other-controls-container { display: flex; width: 550px; justify-content: center; }
 
-#select-mission { max-width: 300px; }
+#select-mission { min-width: 0; }
+
+#select-language { margin-left: 10px; }
 
 #volume-control { display: flex; margin-right: 10px; }
 
 #volume-control #mute-button { cursor: pointer; }
+
+@media screen and (max-width: 550px) {
+	#other-controls-container { width: 100vw; }
+}
