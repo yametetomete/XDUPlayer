@@ -1,0 +1,1 @@
+run `npm install` then `gulp dist` to build files into Dist folder.
