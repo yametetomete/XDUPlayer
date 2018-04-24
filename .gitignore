@@ -6,3 +6,5 @@ web.config
 /Js/XduPlayer.js
 /Js/XduPlayer.min.js.map
 /Fonts
+/Dist
+/Css/main.min.css

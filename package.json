@@ -1,12 +1,15 @@
 {
-  "name": "XduPlayer",
-  "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-uglify": "^3.0.0",
-    "gulp-uglify-es": "^1.0.1"
-  },
-  "license": "MIT"
+	"name": "XduPlayer",
+	"version": "1.0.0",
+	"private": true,
+	"license": "MIT",
+	"devDependencies": {
+		"gulp": "github:gulpjs/gulp#4.0",
+		"gulp-concat": "~2.6.1",
+		"gulp-cssmin": "~0.2.0",
+		"gulp-rename": "~1.2.2",
+		"gulp-sourcemaps": "~2.6.4",
+		"gulp-uglify": "~3.0.0",
+		"gulp-uglify-es": "~1.0.1"
+	}
 }
