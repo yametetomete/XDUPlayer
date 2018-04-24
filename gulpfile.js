@@ -4,6 +4,7 @@ const rename = require('gulp-rename');
 const uglify = require('gulp-uglify-es').default;
 const sourcemaps = require('gulp-sourcemaps');
 const cssmin = require('gulp-cssmin');
+const jsonmin = require('gulp-jsonminify');
 
 const jsFiles = [
 "Js/Common.js",
@@ -23,7 +24,11 @@ const cssFiles = [
 const cssToCopy = [
 'Css/main.min.css',
 'Css/generic.min.css'
-]
+];
+const jsonFiles = [
+'Js/BgmLoop.json',
+'Js/XduMissions.json'
+];
 
 const jsDest = "Js";
 gulp.task('dev', gulp.series(
@@ -42,6 +47,7 @@ gulp.task('dist', gulp.series(
 				buildCss,
 				copyCss
 			),
+			buildJson,
 			copyHtml,
 			copyImages
 		),
@@ -84,4 +90,10 @@ function copyHtml() {
 function copyImages() {
 	return gulp.src('Images/**')
 		.pipe(gulp.dest('Dist/Images'));
+}
+
+function buildJson() {
+	return gulp.src(jsonFiles)
+        .pipe(jsonmin())
+        .pipe(gulp.dest('Dist/Js'));
 }
