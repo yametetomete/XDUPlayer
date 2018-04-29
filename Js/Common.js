@@ -173,7 +173,7 @@ class commonFunctions {
 	}
 	
 	static getPropertiesFromTweenCommand(props, reverseY = true) {
-		var retval = {};
+		let retval = {};
 		let indexX = props.indexOf("x=");
 		if(indexX !== -1) {
 			retval.x = "";

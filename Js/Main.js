@@ -20,6 +20,7 @@ let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight
 let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
+let prevMission = '{Select}';
 
 function onBodyLoaded() {
 	bodyLoaded = true;
@@ -99,9 +100,9 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			//if(m.includes('MA1-') || m.includes('MA2-')|| m.includes('MA3-')) {
-			//	continue;
-			//}
+			if(!m.includes('MA3.5-')) {
+				continue;
+			}
 			opt.setAttribute('value', m);
 			opt.innerText = m.replace('|', ' - ');
 		}
@@ -121,16 +122,52 @@ function buildLanguageList() {
 	selectBox.value = selectedLang;
 }
 
-function missionChanged(event) {
+function missionDropDownChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}') { return; }
-	
-	let newMission = utage.availableMissions[event.currentTarget.value.split('|')[0]];
+	let cont = document.getElementById("modal-container");
+	let misId = event.currentTarget.value.split('|')[0];
+	let mis = utage.availableMissions[misId];
+	if(!mis) { console.log(`Mission ${misId} not found`); return; }
+	cont.innerHTML = '' +
+	'<div id="mission-modal" class="modal">' +
+		`<span class="mission-title">Name: ${mis.Name || 'none'}</span>` +
+		`<img id="mission-detail" src="${rootUrl}XDUPlayer/XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png">` +
+		`<img id="mission-icon" src="${rootUrl}XDUPlayer/XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png">` +
+		`<span>Summary: ${mis.SummaryText || 'none'}</span>` +
+		'<div id="mission-ids">' +
+			`<span>MstId: ${mis.MstId}</span>` +
+			`<span>Id: ${mis.Id}</span>` +
+		'</div>' +
+		'<div id="modal-buttons">' +
+			'<button onclick="closeMissionModal(event, false)">Close</button>' +
+			`<button onclick="missionChanged(${misId})">Play</button>` +
+		'</div>' +
+	'</div>';
+	document.getElementById("click-catcher").style.cssText = 'display: flex;';
+	cont.style.cssText = 'display: flex;';
+}
+
+function closeMissionModal(event, wasStarted) {
+	if(!wasStarted) {
+		document.getElementById('select-mission').value = prevMission;
+	} else {
+		prevMission = document.getElementById('select-mission').value;
+	}
+	let cont = document.getElementById("modal-container");
+	document.getElementById("click-catcher").style.cssText = 'display: none;';
+	cont.style.cssText = 'display: none;';
+	cont.innerHTML = '';
+}
+
+function missionChanged(value) {
+	let newMission = utage.availableMissions[value];
 	currentMission = newMission;
 	let promises = [
 		utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
 		utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`, selectedLang),
 		player.resetAll()
 	];
+	closeMissionModal(undefined, true);
 	
 	Promise.all(promises)
 	.then((success) => {

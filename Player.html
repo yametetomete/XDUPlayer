@@ -8,6 +8,12 @@
 		<script src="Js/Pixi.min.js"></script>
 	</head>
 	<body onload="onBodyLoaded()">
+		<!-- <script src="Js/Common.js"></script>
+		<script src="Js/TextFunctions.js"></script>
+		<script src="Js/UtageParse.js"></script>
+		<script src="Js/Audio.js"></script>
+		<script src="Js/Player.js"></script>
+		<script src="Js/Main.js"></script> -->
 		<script src="Js/XduPlayer.min.js"></script>
 		<div id="loading-container" class="centered">
 			<h2 id="loading-utage">Loading Utage Data...</h2>
@@ -19,7 +25,7 @@
 					<span onclick="toggleMute(event)" id="mute-button">🔊</span>
 					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
 				</div>
-				<select id="select-mission" onchange="missionChanged(event);"></select>
+				<select id="select-mission" onchange="missionDropDownChanged(event);"></select>
 				<select id="select-language" onchange="languageChanged(event);"></select>
 			</div>
 			<!-- Im doing weird shit so that text container is always the base resolution of XDU (1334, 750). 
@@ -61,5 +67,7 @@
 				<span style="font-family: 'SourceCodePro-Regular'">test</span> -->
 			</div>
 		</div>
+		<div id="click-catcher" style="display: none;" onclick="closeMissionModal(event, false)"></div>
+		<div id="modal-container" style="display: none;"></div>
 	</body>
 </html>

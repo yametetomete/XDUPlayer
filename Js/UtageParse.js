@@ -123,8 +123,13 @@ class UtageInfo {
 					} else {
 						read.NameText = lastNameText;
 					}
-					if(read.FileName && !read.FileName.startsWith('file://')) {
-						read.FileName = `${this.rootDirectory}XDUData/Character/${read.FileName}`;
+					if(read.FileName) {
+						if(!read.FileName.startsWith('file://')) {
+							read.FileName = `${this.rootDirectory}XDUData/Sample/Texture/Character/${read.FileName}`;
+						} else {
+							read.FileName = read.FileName.replace('file://', '');
+							read.FileName = `${this.rootDirectory}XDUData/${read.FileName}`;
+						}
 					}
 					if(!this.characterInfo[lastCharName]) {
 						this.characterInfo[lastCharName] = {};
@@ -203,7 +208,7 @@ class UtageInfo {
 							read.FileName = `${read.FileName}.opus`;
 						}
 						switch(read.Type.toLowerCase()) {
-							case 'se': 
+							case 'se':
 								if(read.FileName.includes(',')) {
 									let s = read.FileName.split(',');
 									read.FileName = `${s[0].split('_').join('/')}/${s[1]}`;
@@ -232,7 +237,12 @@ class UtageInfo {
 			} else {
 				let read = commonFunctions.readLine(line, headers);
 				if(read && read.Label) {
-					read.FileName = `${this.rootDirectory}XDUData/BG/${read.FileName}`;
+					if(!read.FileName.startsWith("file://")) {
+						read.FileName = `${this.rootDirectory}XDUData/Sample/Texture/BG/${read.FileName}`;
+					} else {
+						read.FileName = read.FileName.replace("file://", '');
+						read.FileName = `${this.rootDirectory}XDUData/${read.FileName}`;
+					}
 					this.textureInfo[read.Label] = read;
 				}
 			}

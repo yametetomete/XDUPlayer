@@ -15,19 +15,19 @@ const jsFiles = [
 "Js/Main.js"
 ];
 const jsToCopy = [
-'Js/XduPlayer.min.js', 
-'Js/Pixi.min.js'
+"Js/XduPlayer.min.js", 
+"Js/Pixi.min.js"
 ];
 const cssFiles = [
-'Css/main.css'
+"Css/main.css"
 ];
 const cssToCopy = [
-'Css/main.min.css',
-'Css/generic.min.css'
+"Css/main.min.css",
+"Css/generic.min.css"
 ];
 const jsonFiles = [
-'Js/BgmLoop.json',
-'Js/XduMissions.json'
+"Js/BgmLoop.json",
+"Js/XduMissions.json"
 ];
 
 const jsDest = "Js";
@@ -54,6 +54,11 @@ gulp.task('dist', gulp.series(
 	)
 );
 
+gulp.task('watch', () => {
+	gulp.watch(cssFiles, {ignoreInitial: false}, gulp.series(buildCss)),
+	gulp.watch(jsFiles, {ignoreInitial: false}, gulp.series(buildJs));
+});
+
 function buildJs() {
 	return gulp.src(jsFiles)
 		.pipe(sourcemaps.init())
@@ -67,7 +72,7 @@ function buildJs() {
 
 function copyJs() {
 	return gulp.src(jsToCopy)
-		.pipe(gulp.dest('Dist/Js'));;
+		.pipe(gulp.dest('Dist/Js'));
 }
 
 function buildCss() {

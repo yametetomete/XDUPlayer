@@ -9,14 +9,13 @@ class Player {
 		this.text = text;
 		this.audio = audio;
 		//consts
-		this.resolutionScale = 1;
+		this.resolutionScale = 1; //I created this thinking that I would need to handle changing offset when resolution changes. But lucikly I can just scale the parent container and it works without needing this.
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
-		this.bgLayerName = "背景";
-		this.defaultCharPattern = 'すまし';
+		this.bgLayerName = "背景"; //The label for the BG layer.
+		this.defaultCharPattern = 'すまし'; //The mission file doesn't always give a pattern for putting a character on the screen.
 		this.backCharTint = 0x808080;
-		this.titleWaitTime = 1;
+		this.titleWaitTime = 5;
 		
-		this.blackBackSp = undefined;
 		this.currentCharacters = {};
 		this.lastCharOffLayer = undefined;
 		this.layers = {};
@@ -49,6 +48,7 @@ class Player {
 		return runningPromise;
 	}
 	
+	//Runs through the tsv file and loads any files it will need to play.
 	preCheckFilesToGet() {
 		return new Promise((resolve, reject) => {
 			let toLoadBgm = {};
@@ -143,7 +143,9 @@ class Player {
 		});
 	}
 	
-	//note containers render in the order they are added, eg. the last added is always on top.
+	//Creates all the pixi containers for ther layers defined in layers.tsv
+	//also creates containers for fading
+	//note containers render in the order they are added, eg. the last added is always on top
 	buildLayerContainers() {
 		let layersToAdd = [];
 		for(let l of Object.keys(this.utage.layerInfo)) {
@@ -180,6 +182,8 @@ class Player {
 		}
 	}
 	
+	
+	//Laoding progress functions
 	onPixiProgress(loader, resource) {
 		this.assetLoadPercent = loader.progress;
 		this.text.titleText(true, `Loading Assets... ${loader.progress.toFixed(0)}%`);
@@ -211,9 +215,9 @@ class Player {
 		}
 	}
 	
+	//Runs every frame. Delta is a float scaled from 1=60fps.
 	onPixiTick(delta) {
-		try
-		{
+		try {
 			if(!this.runEvent) { return; }
 			let deltaTime = (1000/this.baseFps)*delta;
 			this.secondTicker -= deltaTime;
@@ -243,6 +247,8 @@ class Player {
 		}
 	}
 	
+	//This loop is run every frame and handles all the animation liek tweens in the mission.
+	//interpolation is not just linear even if its called HandleLerps
 	loopHandleLerps(deltaTime) {
 		try {
 			//Loop through the lerp targets, modify the needed objects. If a object is at its 1 time state remove it from the list.
@@ -310,27 +316,23 @@ class Player {
 		}
 	}
 	
+	//Processes a line from the mission tsv
 	processCommand(delta) {
 		try {
 			let cur = this.currentCommand;
-			//if(this.checkIfAllOff()) {
-			//	this.text.dialogText(false, "");
-			//	this.text.characterName(false, "");
-			//} else {
-			//	this.text.dialogText(true, "");
-			//	this.text.characterName(true, "");
-			//}
 			switch((cur.Command || "").toLowerCase()) {
-				case "scenetitle01":
+				case "scenetitle01": {
 					this.waitTime = this.titleWaitTime * 1000;
-					var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
-				case "divaeffect":
-					this.waitTime = 1000//Number(cur.Arg5) * 1000;
-					var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+				}
+				case "divaeffect": {
+					this.waitTime = Number(cur.Arg5) * 1000;
+					let text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
 					this.text.divaText(true, text);
 					break;
+				}
 				//FadeTo
 				case "fadeout":
 					this.text.dialogText(false, "");
@@ -457,12 +459,13 @@ class Player {
 					this.processShake(delta, cur);
 					break;
 				}
+				default:
+					this.processCommandOther(delta);
+					break;
+				//custom effects
 				case "henshin01_bgmoff":
 					this.audio.stopSound('bgm');
 					this.checkPutCharacterScreen(cur, true);
-					break;
-				default:
-					this.processCommandOther(delta);
 					break;
 			}
 		} catch(error) {
@@ -479,6 +482,7 @@ class Player {
 		this.checkPutText(cur);
 	}
 
+	//Checks if the current command is trying to put a new character on the screen or not
 	checkPutCharacterScreen(cur, special = false) {
 		if((!cur.Command || special) && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
 			let lay = undefined;
@@ -534,13 +538,14 @@ class Player {
 		}
 	}
 	
+	//Checks if the current command is trying to put text on the screen.
 	checkPutText(cur) {
 		if(this.playingVoice) {
 			this.audio.stopSound(this.playingVoice);
 		}
 		if(!cur.Command && cur.Arg1 && cur.Text) {
 			//If its chracter off screen text
-			var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
 			text = commonFunctions.convertUtageTextTags(text);
 			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
 				this.text.characterName(true, cur.Arg1);
@@ -571,8 +576,9 @@ class Player {
 				}
 			}
 			this.manualNext = true;
+		//Sometimes they don't give a Arg1 for the text.
 		} else if(!cur.Command && cur.Arg2.toLowerCase() === "<off>" && cur.Text) {
-			var text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
 			this.text.characterName(true, "");
 			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			this.manualNext = true;
@@ -583,10 +589,12 @@ class Player {
 		}
 	}
 	
+	//Handle a tween command
 	processTween(delta, cur) {
 		this.text.dialogText(false, "");
 		this.text.characterName(false, "");
 		let curChar = undefined;
+		//Find the character for the tween.
 		for(let c of Object.keys(this.currentCharacters)) {
 			if(!this.currentCharacters[c]) { continue; }
 			if(this.currentCharacters[c].charName === cur.Arg1) {
@@ -716,13 +724,6 @@ class Player {
 		this.currentCommand = undefined;
 	}
 	
-	checkIfAllOff() {
-		for(let c of Object.keys(this.currentCharacters)) {
-			if(this.currentCharacters[c]) { return false; }
-		}
-		return true;
-	}
-	
 	onMainClick(event) {
 		if(!this.runEvent) {
 			return
@@ -791,7 +792,6 @@ class Player {
 				this.lastCharOffLayer = undefined;
 				this.layers = {};
 				this.sprites = {};
-				this.blackBackSp = undefined;
 				this.currentCommand = undefined;
 				this.runEvent = false;
 				this.secondTicker = 1000;
