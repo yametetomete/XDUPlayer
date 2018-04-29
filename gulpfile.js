@@ -32,7 +32,7 @@ const jsonFiles = [
 
 const jsDest = "Js";
 gulp.task('dev', gulp.series(
-		buildJs,
+		buildJsDev,
 		buildCss,
 	)
 );
@@ -56,7 +56,7 @@ gulp.task('dist', gulp.series(
 
 gulp.task('watch', () => {
 	gulp.watch(cssFiles, {ignoreInitial: false}, gulp.series(buildCss)),
-	gulp.watch(jsFiles, {ignoreInitial: false}, gulp.series(buildJs));
+	gulp.watch(jsFiles, {ignoreInitial: false}, gulp.series(buildJsDev));
 });
 
 function buildJs() {
@@ -66,6 +66,16 @@ function buildJs() {
 		.pipe(gulp.dest(jsDest))
 		.pipe(rename('XduPlayer.min.js'))
 		.pipe(uglify())
+		.pipe(sourcemaps.write(''))
+		.pipe(gulp.dest(jsDest));
+}
+
+function buildJsDev() {
+	return gulp.src(jsFiles)
+		.pipe(sourcemaps.init())
+		.pipe(concat('XduPlayer.js'))
+		.pipe(gulp.dest(jsDest))
+		.pipe(rename('XduPlayer.min.js'))
 		.pipe(sourcemaps.write(''))
 		.pipe(gulp.dest(jsDest));
 }

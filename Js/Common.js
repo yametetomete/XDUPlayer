@@ -87,7 +87,7 @@ class commonFunctions {
 				break;
 			//Some of the stuff here is just kinda arbitrary
 			case "dampsin":
-				t = (1 * (Math.pow(0.3, t)) * Math.sin((2*Math.PI*t/0.5) + 0)) / 1.25;
+				t = (1 * (Math.pow(0.3, t)) * Math.sin((2*Math.PI*t/1.0) + 0)) / 1.25;
 				if(t < -0.45) { 
 					t = -0.45;
 				}

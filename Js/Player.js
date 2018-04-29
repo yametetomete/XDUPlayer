@@ -277,8 +277,14 @@ class Player {
 									l.object.position.set(l.initV.x, l.initV.y);
 								}
 							} else {
-								let x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
-								let y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
+								let x = l.initV.x;
+								let y = l.initV.y;
+								if(l.initV.x !== l.finalV.x) {
+									x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
+								}
+								if(l.initV.y !== l.finalV.y) {
+									y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
+								}
 								if(l.object instanceof HTMLElement) {
 									l.object.style = `transform: translate(${x}px, ${y}px);`;
 								} else {
@@ -523,7 +529,7 @@ class Player {
 			}
 			//If the layer already has a different character on it remove it.
 			if(curChar && (curChar.character.NameText !== chr.NameText || curChar.character.Pattern !== chr.Pattern)) {
-				this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 100, finalV: 0, initV: 1, post: "destroy" });
+				this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
 				this.currentCharacters[cur.Arg3] = undefined;
 			}
 			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
@@ -531,8 +537,19 @@ class Player {
 			let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
 			sprite.anchor.set(anchor.x, anchor.y);
 			sprite.alpha = 0;
+			let fadeTime = 200;
+			if(cur.Arg4) {
+				sprite.position.x = Number(cur.Arg4);
+			}
+			if(cur.Arg5) {
+				sprite.position.y = Number(cur.Arg5);
+			}
+			if(cur.Arg6) {
+				//Im halving this because their fades take too fucking long and look bad.
+				fadeTime = (Number(cur.Arg6) * 1000) / 2;
+			}
 			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: cur.Arg1, sprite: sprite };
-			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 100, finalV: 1, initV: 0 });
+			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
 			lay.container.addChild(sprite);
 			lay.container.visible = true;
 		}
@@ -611,39 +628,43 @@ class Player {
 		switch(cur.Arg2.toLowerCase()) {
 			case "moveto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				debugger;
 				//moveto has a islocal value that im just assuming is true until I run into a case it actually isint.
+				//note that islocal is local to the layer's position not the characters current position so the final pos will be 0 + what the command says
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
-				if(props.x) {
+				if(props.x != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'exp' });
+						finalV: props.x, initV: curChar.sprite.position.x, inter: 'exp' });
 					} else {
-						curChar.sprite.position.x = curChar.sprite.position.x + props.x;
+						curChar.sprite.position.x = props.x;
 					}
 				}
-				if(props.y) {
+				if(props.y != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'exp' });
+						finalV: props.y, initV: curChar.sprite.position.y, inter: 'exp' });
 					} else {
-						curChar.sprite.position.y = curChar.sprite.position.y + props.y;
+						curChar.sprite.position.y = props.y;
 					}
 				}
 				break;
 			}
 			case "punchposition": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				if(!props.time) { props.time = 500; }
+				if(props.time == undefined) { props.time = 1000; }
+				//just watching these in game they definitely don't take as long as is advertised so i'm shortening it a bit.
+				props.time = props.time * 0.5;
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
-				if(props.x) {					
+				if(props.x != undefined) {					
 					this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'dampsin' });
 				}
-				if(props.y) {
+				if(props.y != undefined) {
 					this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'dampsin' });
 				}
@@ -651,24 +672,24 @@ class Player {
 			}
 			case "scaleto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3, false);
-				if(!props.time) { props.time = 500; }
+				if(props.time == undefined) { props.time = 500; }
 				//cuz I don't care about their values that make no sense when everything else uses time.
 				if(props.speed) { props.time = props.speed * 1000; }
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
-				if(props.x) {
+				if(props.x != undefined) {
 					this.lerpTargets.push({type: 'scale.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 					finalV: curChar.sprite.scale.x * props.x, initV: curChar.sprite.scale.x });
 				}
-				if(props.y) {
+				if(props.y != undefined) {
 					this.lerpTargets.push({type: 'scale.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 					finalV: curChar.sprite.scale.y * props.y, initV: curChar.sprite.scale.y });
 				}
 			}
 			case "colorto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				if(props.alpha) {
+				if(props.alpha != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 						finalV: props.alpha, initV: curChar.sprite.alpha });
@@ -685,12 +706,17 @@ class Player {
 		switch(obj.toLowerCase()) {
 			case "camera": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				if(!props.time) { props.time = 1000; }
-				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
-					this.waitTime = props.time + (props.delay || 0);
+				if(!props.y) { props.y = 0; }
+				if(!props.x) { props.x = 0; }
+				if(!props.x && !props.y) { 
+					props.x = 30;
+					props.y = 30;
 				}
-				if(!props.x) { props.x = 30; }
-				if(!props.y) { props.y = 30; }
+				if(!props.time) { props.time = 1000; }
+				//Im not waiting for these because utage seems to not.
+				//f(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+				//	this.waitTime = props.time + (props.delay || 0);
+				//
 				let stage = this.pixi.app.stage.position;
 				this.lerpTargets.push({type: 'shake', object: this.pixi.app.stage, curTime: 0 - (props.delay || 0), time: props.time, 
 				finalV: {x: props.x + stage.x, y: props.y + stage.y}, initV: {x: stage.x, y: stage.y} });
@@ -698,15 +724,41 @@ class Player {
 			}
 			case "messagewindow": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				if(!props.time) { props.time = 1000; }
-				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
-					this.waitTime = props.time + (props.delay || 0);
+				if(!props.y) { props.y = 0; }
+				if(!props.x) { props.x = 0; }
+				if(!props.x && !props.y) { 
+					props.x = 30;
+					props.y = 30;
 				}
-				if(!props.x) { props.x = 30; }
-				if(!props.y) { props.y = 30; }
+				if(!props.time) { props.time = 1000; }
+				//if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
+				//	this.waitTime = props.time + (props.delay || 0);
+				//}
 				this.lerpTargets.push({type: 'shake', object: document.getElementById('dialog-box'), curTime: 0 - (props.delay || 0), time: props.time, 
 				finalV: {x: props.x, y: props.y}, initV: {x: 0, y: 0} });
 				break;
+			}
+			default: {
+				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				if(!props.y) { props.y = 0; }
+				if(!props.x) { props.x = 0; }
+				if(!props.x && !props.y) { 
+					props.x = 30;
+					props.y = 30;
+				}
+				if(!props.time) { props.time = 1000; }
+				let curChar = undefined;
+				//Find the character.
+				for(let c of Object.keys(this.currentCharacters)) {
+					if(!this.currentCharacters[c]) { continue; }
+					if(this.currentCharacters[c].charName === cur.Arg1) {
+						curChar = this.currentCharacters[c];
+						continue;
+					}
+				}
+				if(!curChar) { return; }
+				this.lerpTargets.push({type: 'shake', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+				finalV: {x: props.x + curChar.sprite.position.x, y: props.y + curChar.sprite.position.y}, initV: {x: curChar.sprite.position.x, y: curChar.sprite.position.y} });
 			}
 		}
 	}

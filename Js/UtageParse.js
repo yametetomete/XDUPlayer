@@ -81,13 +81,11 @@ class UtageInfo {
 	loadMissionTranslation(file, key) {
 		return new Promise((resolve, reject) => {
 			if(this.translations[key]) {
-				debugger;
 				this.currentTranslation = this.translations[key];
 				resolve();
 			} else {
 				commonFunctions.getFileJson(file)
 				.then((success) => {
-					debugger;
 					this.translations[key] = success;
 					this.currentTranslation = success;
 					resolve();
