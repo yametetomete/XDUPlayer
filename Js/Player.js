@@ -32,6 +32,7 @@ class Player {
 		this.assetLoadPercent = 0;
 		this.audioLoadPercent = 0;
 		this.playingVoice = undefined;
+		this.shaders = {};
 	}
 	
 	playFile() {
@@ -182,6 +183,21 @@ class Player {
 		}
 	}
 	
+	buildShaders() {
+		let divalefttorightfade = new PIXI.Filter(null, leftToRightFadeShader, { 
+			time: { type: 'f', value: 0 },
+			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
+			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
+			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
+		});
+		divalefttorightfade.apply = function(filterManager, input, output)
+		{
+			this.uniforms.dimensions[0] = input.sourceFrame.width
+			this.uniforms.dimensions[1] = input.sourceFrame.height
+			filterManager.applyFilter(this, input, output);
+		}
+		this.shaders['divalefttorightfade'] = divalefttorightfade;
+	}
 	
 	//Laoding progress functions
 	onPixiProgress(loader, resource) {
@@ -206,6 +222,7 @@ class Player {
 			setTimeout(() => {
 				this.runEvent = true;
 				this.buildLayerContainers();
+				this.buildShaders();
 				resolve();
 			}, 1000);
 		} else {
@@ -263,9 +280,15 @@ class Player {
 					if(pos >= 1) {
 						pos = 1;
 						toRemove.push(i);
-						if(l.post === "destroy") {
-							l.object.destroy();
-							continue;
+						var split = l.post.split('|');
+						switch(split[0].toLowerCase()) {
+							case "destroy":
+								l.object.destroy();
+								continue;
+							case "clearshader":
+								l.object.filters = null;
+								l.object.alpha = Number(split[1]);
+								break;
 						}
 					}
 					switch(l.type) {
@@ -292,6 +315,12 @@ class Player {
 								}
 							}
 							break;
+						}
+						case "shader": {
+							try {
+								l.object.filters[0].uniforms.time = pos;
+								l.object.filters[0].apply();
+							} catch(error) {}
 						}
 						default: {
 							let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
@@ -353,6 +382,37 @@ class Player {
 					this.layers["bg|whiteFade"].sprite.tint = commonFunctions.getColorFromName(cur.Arg1);
 					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 0, initV: 1});
 					break;
+				case "divalefttorightblackfade": {
+					//This has a color but ive always seen it be black and its called black so im just assuming for now.
+					this.waitTime = Number(cur.Arg6) * 1000;
+					let sprite = this.layers["bg|whiteFade"].sprite;
+					let filter = this.shaders['divalefttorightfade'];
+					var color = commonFunctions.getColorFromName(cur.Arg1);
+					let rgbcolor = commonFunctions.hexToRgb(color);
+					sprite.tint = color;
+					sprite.alpha = 1.0;
+					filter.uniforms.time = 0.0;
+					filter.uniforms.fadeincolor = [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0];
+					filter.uniforms.fadeoutcolor = [0.0,0.0,0.0,0.0];
+					sprite.filters = [ filter ];
+					this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: 'clearshader|1'});
+					break;
+				}
+				case "divalefttorightclearfade": {
+					this.waitTime = Number(cur.Arg6) * 1000;
+					let sprite = this.layers["bg|whiteFade"].sprite
+					let filter = this.shaders['divalefttorightfade'];
+					var color = commonFunctions.getColorFromName(cur.Arg1);
+					let rgbcolor = commonFunctions.hexToRgb(color);
+					sprite.tint = color;
+					sprite.alpha = 1.0;
+					filter.uniforms.time = 0.0;
+					filter.uniforms.fadeincolor = [0.0,0.0,0.0,0.0];
+					filter.uniforms.fadeoutcolor = [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0];
+					sprite.filters = [ filter ];
+					this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: 'clearshader|0'});
+					break;
+				}
 				case "bg": {
 					let bgInfo = this.utage.textureInfo[cur.Arg1];
 					let container = this.layers[this.bgLayerName].container;
@@ -436,6 +496,7 @@ class Player {
 						let curChar = this.currentCharacters[c];
 						if(curChar.charName === cur.Arg1) {
 							let time = Number(cur.Arg6) * 1000;
+							if(!time) { time = 100; }
 							this.lastCharOffLayer = this.currentCharacters[c].layer;
 							this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: time, finalV: 0, initV: 1, post: "destroy" });
 							this.currentCharacters[c] = undefined;
@@ -628,7 +689,6 @@ class Player {
 		switch(cur.Arg2.toLowerCase()) {
 			case "moveto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
-				debugger;
 				//moveto has a islocal value that im just assuming is true until I run into a case it actually isint.
 				//note that islocal is local to the layer's position not the characters current position so the final pos will be 0 + what the command says
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
@@ -637,7 +697,7 @@ class Player {
 				if(props.x != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.x, initV: curChar.sprite.position.x, inter: 'exp' });
+						finalV: props.x, initV: curChar.sprite.position.x, inter: 'quadinout' });
 					} else {
 						curChar.sprite.position.x = props.x;
 					}
@@ -645,7 +705,7 @@ class Player {
 				if(props.y != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.y, initV: curChar.sprite.position.y, inter: 'exp' });
+						finalV: props.y, initV: curChar.sprite.position.y, inter: 'quadinout' });
 					} else {
 						curChar.sprite.position.y = props.y;
 					}

@@ -100,7 +100,7 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			if(!m.includes('MA3.5-')) {
+			if(!m.includes('101000111') && !m.includes('MA3.5-')) {
 				continue;
 			}
 			opt.setAttribute('value', m);

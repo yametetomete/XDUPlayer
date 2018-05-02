@@ -8,6 +8,7 @@ const jsonmin = require('gulp-jsonminify');
 
 const jsFiles = [
 "Js/Common.js",
+"JS/Shaders.js",
 "Js/TextFunctions.js",
 "Js/UtageParse.js",
 "Js/Audio.js",
