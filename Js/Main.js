@@ -7,9 +7,8 @@ const pixiApp = {
 
 const utage = new UtageInfo();
 const textFunc = new TextFunctions();
-const audio = new audioController(utage);
+let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio);
-const context = new (window.AudioContext || window.webkitAudioContext)();
 const languages = ["eng", "jpn"];
 let bodyLoaded = false;
 let utageLoaded = false;
@@ -72,12 +71,14 @@ function loadLocalStorage() {
 	//audio
 	volume = localStorage.getItem('volume') || 0.5;
 	volume = Number(volume);
-	audio.changeVolume(volume);
 	document.getElementById('volume-range').value = volume * 100;
 	isMuted = localStorage.getItem('ismuted') || false;
 	if(isMuted === "false") { isMuted = false; }
 	else if(isMuted === "true") { isMuted = true; }
-	audio.mute(isMuted);
+	if(audio) {
+		audio.changeVolume(volume);
+		audio.mute(isMuted);
+	}
 	if(isMuted) {
 		document.getElementById('mute-button').innerText = "🔇";
 	} else {
@@ -160,29 +161,39 @@ function closeMissionModal(event, wasStarted) {
 }
 
 function missionChanged(value) {
-	let newMission = utage.availableMissions[value];
-	currentMission = newMission;
-	let promises = [
-		utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
-		utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`, selectedLang),
-		player.resetAll()
-	];
-	closeMissionModal(undefined, true);
-	
-	Promise.all(promises)
+	if(!audio) {
+		audio = new audioController(utage);
+		audio.changeVolume(volume);
+		audio.mute(isMuted);
+		player.audio = audio;
+	}
+	player.resetAll()
 	.then((success) => {
-		let res = player.playFile()
+		let newMission = utage.availableMissions[value];
+		currentMission = newMission;
+		let promises = [
+			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
+			utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`, selectedLang)
+		];
+		closeMissionModal(undefined, true);
+		
+		Promise.all(promises)
 		.then((success) => {
-			player.resetAll();
-			currentMission = undefined;
-			debugger;
+			let res = player.playFile()
+			.then((success) => {
+				player.resetAll();
+				currentMission = undefined;
+				debugger;
+			}, (failure) => {
+				debugger;
+				currentMission = undefined;
+				console.log(failure);
+			});
 		}, (failure) => {
-			debugger;
 			currentMission = undefined;
 			console.log(failure);
 		});
 	}, (failure) => {
-		currentMission = undefined;
 		console.log(failure);
 	});
 }
@@ -215,7 +226,9 @@ function dialogScrollDown(event) {
 
 function toggleMute(event) {
 	isMuted = !isMuted;
-	audio.mute(isMuted);
+	if(audio) {
+		audio.mute(isMuted);
+	}
 	localStorage.setItem('ismuted', isMuted);
 	if(isMuted) {
 		document.getElementById('mute-button').innerText = "🔇";
@@ -225,9 +238,11 @@ function toggleMute(event) {
 }
 
 function onVolumeChange(event) {
-	let vol = event.currentTarget.value / 100;
-	audio.changeVolume(vol);
-	localStorage.setItem('volume', vol);
+	volume = Number(event.currentTarget.value) / 100;
+	if(audio) {
+		audio.changeVolume(volume);
+	}
+	localStorage.setItem('volume', volume);
 }
 
 function onWindowResize(event) {

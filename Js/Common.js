@@ -92,14 +92,24 @@ class commonFunctions {
 					t = -0.45;
 				}
 				break;
+			case "punch": {
+				if (t === 0 || t === 1)
+					return start;
+				debugger;
+				let change = end - start;
+				let num = 0.3;
+				let rad = Math.PI * 2;
+				let num2 = num / rad * Math.asin(0);
+				return change * Math.pow(2, -10 * t) * Math.sin((t * 1 - num2) * rad / num);
+			}
 			//http://www.gizma.com/easing/
-			case "quadinout":
-				var change = end - start;
+			case "quadinout": {
+				let change = end - start;
 				t = t * 2;
 				if (t < 1) { return change/2*t*t + start; }
 				t--;
 				return -change/2 * (t*(t-2) - 1) + start;
-				break;
+			}
 		}
 		return (1 - t) * start + t * end;
 		//-(2*x-1)^4 +1
@@ -118,10 +128,9 @@ class commonFunctions {
 	
 	static hexToRgb (hex) {
 		hex = hex.toString(16);
-		let bigint = parseInt(hex, 16);
-		let r = (bigint >> 16) & 255;
-		let g = (bigint >> 8) & 255;
-		let b = bigint & 255;
+		let r = (hex >> 16) & 255;
+		let g = (hex >> 8) & 255;
+		let b = hex & 255;
 		return [r, g, b];
 	}
 	

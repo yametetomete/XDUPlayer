@@ -17,7 +17,6 @@ class Player {
 		this.titleWaitTime = 5;
 		
 		this.currentCharacters = {};
-		this.lastCharOffLayer = undefined;
 		this.layers = {};
 		this.sprites = {};
 		this.currentCommand = undefined;
@@ -134,6 +133,8 @@ class Player {
 			});
 			//Manually load white bg for fading. Can be tinted to change color.
 			this.loader.add('bg|whiteFade', `${this.utage.rootDirectory}Images/white.png`);
+			//this isint in the texture file.
+			this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/bg_title.jpg`)
 			this.loader
 			.on("progress", (loader, resource) => {
 				this.onPixiProgress(loader, resource);
@@ -183,6 +184,7 @@ class Player {
 		}
 	}
 	
+	//https://jsfiddle.net/60e5pp8d/1/
 	buildShaders() {
 		let divalefttorightfade = new PIXI.Filter(null, leftToRightFadeShader, { 
 			time: { type: 'f', value: 0 },
@@ -190,13 +192,22 @@ class Player {
 			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
 			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
 		});
-		divalefttorightfade.apply = function(filterManager, input, output)
-		{
+		divalefttorightfade.apply = baseShaderApply;
+		this.shaders['divalefttorightfade'] = divalefttorightfade;
+		let divarighttoleftfade = new PIXI.Filter(null, leftToRightFadeShader, { 
+			time: { type: 'f', value: 0 },
+			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
+			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
+			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
+		});
+		divarighttoleftfade.apply = baseShaderApply;
+		this.shaders['divarighttoleftfade'] = divarighttoleftfade;
+		
+		function baseShaderApply(filterManager, input, output) {
 			this.uniforms.dimensions[0] = input.sourceFrame.width
 			this.uniforms.dimensions[1] = input.sourceFrame.height
 			filterManager.applyFilter(this, input, output);
 		}
-		this.shaders['divalefttorightfade'] = divalefttorightfade;
 	}
 	
 	//Laoding progress functions
@@ -280,15 +291,17 @@ class Player {
 					if(pos >= 1) {
 						pos = 1;
 						toRemove.push(i);
-						var split = l.post.split('|');
-						switch(split[0].toLowerCase()) {
-							case "destroy":
-								l.object.destroy();
-								continue;
-							case "clearshader":
-								l.object.filters = null;
-								l.object.alpha = Number(split[1]);
-								break;
+						if(l.post) {
+							var split = l.post.split('|');
+							switch(split[0].toLowerCase()) {
+								case "destroy":
+									l.object.destroy();
+									continue;
+								case "clearshader":
+									l.object.filters = null;
+									l.object.alpha = Number(split[1]);
+									break;
+							}
 						}
 					}
 					switch(l.type) {
@@ -358,6 +371,17 @@ class Player {
 			switch((cur.Command || "").toLowerCase()) {
 				case "scenetitle01": {
 					this.waitTime = this.titleWaitTime * 1000;
+					try {
+						let container = this.layers[this.bgLayerName].container;
+						let sprite = new PIXI.Sprite(this.loader.resources[`bg|titlecard`].texture);
+						container.visible = true;
+						sprite.scale.set(1.30273438, 1.30273438);
+						sprite.anchor.set(0.5, 0.5);
+						sprite.alpha = 0;
+						container.addChild(sprite);
+						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 300, finalV: 1, initV: 0});
+						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: -(this.waitTime+500), time: 300, finalV: 0, initV: 1, post: "destroy"});
+					} catch (error) { }
 					let text = cur.English ? (utage.currentTranslation[cur.English] || cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
@@ -383,41 +407,26 @@ class Player {
 					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 0, initV: 1});
 					break;
 				case "divalefttorightblackfade": {
-					//This has a color but ive always seen it be black and its called black so im just assuming for now.
-					this.waitTime = Number(cur.Arg6) * 1000;
-					let sprite = this.layers["bg|whiteFade"].sprite;
-					let filter = this.shaders['divalefttorightfade'];
-					var color = commonFunctions.getColorFromName(cur.Arg1);
-					let rgbcolor = commonFunctions.hexToRgb(color);
-					sprite.tint = color;
-					sprite.alpha = 1.0;
-					filter.uniforms.time = 0.0;
-					filter.uniforms.fadeincolor = [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0];
-					filter.uniforms.fadeoutcolor = [0.0,0.0,0.0,0.0];
-					sprite.filters = [ filter ];
-					this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: 'clearshader|1'});
+					this.processDivaFade(cur, false, false);
 					break;
 				}
 				case "divalefttorightclearfade": {
-					this.waitTime = Number(cur.Arg6) * 1000;
-					let sprite = this.layers["bg|whiteFade"].sprite
-					let filter = this.shaders['divalefttorightfade'];
-					var color = commonFunctions.getColorFromName(cur.Arg1);
-					let rgbcolor = commonFunctions.hexToRgb(color);
-					sprite.tint = color;
-					sprite.alpha = 1.0;
-					filter.uniforms.time = 0.0;
-					filter.uniforms.fadeincolor = [0.0,0.0,0.0,0.0];
-					filter.uniforms.fadeoutcolor = [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0];
-					sprite.filters = [ filter ];
-					this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: 'clearshader|0'});
+					this.processDivaFade(cur, true, false);
+					break;
+				}
+				case "divarighttoleftblackfade": {
+					this.processDivaFade(cur, false, true);
+					break;
+				}
+				case "divarighttoleftclearfade": {
+					this.processDivaFade(cur, true, true);
 					break;
 				}
 				case "bg": {
 					let bgInfo = this.utage.textureInfo[cur.Arg1];
 					let container = this.layers[this.bgLayerName].container;
 					//If we have a fadetime we need to keep the old bg, fade its alpha out, then destroy it.
-					if(cur.Arg6) {
+					if(cur.Arg6 && container.children[0]) {
 						//I know im assuming a lot that there is already only one bg on the layer.
 						this.lerpTargets.push({type: 'alpha', object: container.children[0], curTime: 0, time: (Number(cur.Arg6) * 1000), finalV: 0, initV: 1, post: "destroy"});
 					} else {
@@ -496,8 +505,7 @@ class Player {
 						let curChar = this.currentCharacters[c];
 						if(curChar.charName === cur.Arg1) {
 							let time = Number(cur.Arg6) * 1000;
-							if(!time) { time = 100; }
-							this.lastCharOffLayer = this.currentCharacters[c].layer;
+							if(!time) { time = 250; }
 							this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: time, finalV: 0, initV: 1, post: "destroy" });
 							this.currentCharacters[c] = undefined;
 							break;
@@ -508,6 +516,7 @@ class Player {
 					this.processTween(delta, cur);
 					break;
 				case "bgm":
+					this.audio.stopSound('bgm');
 					if(!this.utage.soundInfo[cur.Arg1]) {
 						break;
 					}
@@ -540,6 +549,21 @@ class Player {
 		}
 	}
 	
+	processDivaFade(command, clear, rtl) {
+		this.waitTime = Number(command.Arg6) * 1000;
+		let sprite = this.layers["bg|whiteFade"].sprite;
+		let filter = this.shaders[(rtl ? 'divarighttoleftblackfade' : 'divalefttorightfade')];
+		var color = commonFunctions.getColorFromName(command.Arg1);
+		let rgbcolor = commonFunctions.hexToRgb(color);
+		sprite.tint = color;
+		sprite.alpha = 1.0;
+		filter.uniforms.time = 0.0;
+		filter.uniforms.fadeincolor = (clear ? [0.0,0.0,0.0,0.0] : [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0]);
+		filter.uniforms.fadeoutcolor = (clear ? [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0] : [0.0,0.0,0.0,0.0]);
+		sprite.filters = [filter];
+		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : '1')}`});
+	}
+	
 	//This should mostly be handling things like text
 	processCommandOther(delta) {
 		let cur = this.currentCommand;
@@ -553,7 +577,8 @@ class Player {
 	checkPutCharacterScreen(cur, special = false) {
 		if((!cur.Command || special) && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
 			let lay = undefined;
-			let curChar = undefined;
+			let curChar = undefined; //The character that is currently on screen with the same name as Arg1.
+			let prevChar = undefined; //The character that is already on the layer we are trying to put the new char on.
 			//First check if the character is already on screen
 			for(let c of Object.keys(this.currentCharacters)) {
 				if(!this.currentCharacters[c]) { continue; }
@@ -574,23 +599,36 @@ class Player {
 			}
 			let chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
 			//If the script gives us a layer get that layer and if there is a character on it already.
-			if(cur.Arg3 && !curChar) {
+			if(cur.Arg3) {
 				lay = this.layers[cur.Arg3];
-				curChar = this.currentCharacters[cur.Arg3];
+				prevChar = this.currentCharacters[cur.Arg3];
 				if(!lay) { return; }
-			//If they didn't give us a layer try to use the last layer a character was removed from.
-			} else if(!curChar) {
-				lay = this.lastCharOffLayer;
+			//If they didn't give us a layer check for left and right positioning or try to go to default (middle)
+			} else if(!curChar && !lay) {
+				if(isCharOnLeft.apply(this)) {
+					lay = this.layers['キャラ右'];
+				} else if(isCharOnRight.apply(this)) {
+					lay = this.layers['キャラ左'];
+				} else {
+					lay = this.layers['キャラ中央'];
+				}
 				if(!lay) { return; }
 				cur.Arg3 = lay.info.LayerName;
+				prevChar = this.currentCharacters[cur.Arg3];
 			}
-			//If this chracter is already here and not changing patterns don't change anything.
-			if(curChar && curChar.charName === cur.Arg1 && curChar.character.Pattern === cur.Arg2) {
+			//If the character is already on screen on another layer move them to the new layer.
+			if(curChar && lay && curChar.layer.info.LayerName !== cur.Arg3) {
+				this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+				this.currentCharacters[curChar.layer.info.LayerName] = undefined;
+			}
+			//If this character is already here and not changing patterns don't change anything.
+			else if(curChar && curChar.charName === cur.Arg1 && curChar.character.Pattern === cur.Arg2) {
 				return;
 			}
+			
 			//If the layer already has a different character on it remove it.
-			if(curChar && (curChar.character.NameText !== chr.NameText || curChar.character.Pattern !== chr.Pattern)) {
-				this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+			if(prevChar && (prevChar.character.NameText !== chr.NameText || prevChar.character.Pattern !== chr.Pattern)) {
+				this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
 				this.currentCharacters[cur.Arg3] = undefined;
 			}
 			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
@@ -599,6 +637,11 @@ class Player {
 			sprite.anchor.set(anchor.x, anchor.y);
 			sprite.alpha = 0;
 			let fadeTime = 200;
+			//If the character is already on screen put te new sprite in the same position as the old one.
+			if(curChar) {
+				sprite.position.x = curChar.sprite.position.x;
+				sprite.position.y = curChar.sprite.position.y;
+			}
 			if(cur.Arg4) {
 				sprite.position.x = Number(cur.Arg4);
 			}
@@ -606,13 +649,43 @@ class Player {
 				sprite.position.y = Number(cur.Arg5);
 			}
 			if(cur.Arg6) {
-				//Im halving this because their fades take too fucking long and look bad.
+				//Im halving this because their fades take too fucking long and looks bad.
 				fadeTime = (Number(cur.Arg6) * 1000) / 2;
 			}
 			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: cur.Arg1, sprite: sprite };
-			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
+			if(fadeTime > 0) {
+				this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
+			} else {
+				sprite.alpha = 1;
+			}
 			lay.container.addChild(sprite);
 			lay.container.visible = true;
+		}
+		
+		function isCharOnLeft() {
+			for(let l of Object.keys(this.layers)) {
+				let lay = this.layers[l].info;
+				if(!lay) { continue; }
+				if(lay.LayerName.includes('キャラ左')) {
+					if(this.currentCharacters[lay.LayerName]) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		function isCharOnRight() {
+			for(let l of Object.keys(this.layers)) {
+				let lay = this.layers[l].info;
+				if(!lay) { continue; }
+				if(lay.LayerName.includes('キャラ右')) {
+					if(this.currentCharacters[lay.LayerName]) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 	}
 	
@@ -715,18 +788,16 @@ class Player {
 			case "punchposition": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
 				if(props.time == undefined) { props.time = 1000; }
-				//just watching these in game they definitely don't take as long as is advertised so i'm shortening it a bit.
-				props.time = props.time * 0.5;
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
 				if(props.x != undefined) {					
 					this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'dampsin' });
+					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'punch' });
 				}
 				if(props.y != undefined) {
 					this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'dampsin' });
+					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'punch' });
 				}
 				break;
 			}
@@ -899,9 +970,9 @@ class Player {
 						PIXI.utils.TextureCache[tex].destroy(true); 
 					}
 				}
+				utage.currentPlayingFile.length = 0;
 				this.loader.reset();
 				this.currentCharacters = {};
-				this.lastCharOffLayer = undefined;
 				this.layers = {};
 				this.sprites = {};
 				this.currentCommand = undefined;
