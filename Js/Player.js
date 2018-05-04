@@ -292,7 +292,7 @@ class Player {
 						pos = 1;
 						toRemove.push(i);
 						if(l.post) {
-							var split = l.post.split('|');
+							let split = l.post.split('|');
 							switch(split[0].toLowerCase()) {
 								case "destroy":
 									l.object.destroy();
@@ -315,16 +315,16 @@ class Player {
 							} else {
 								let x = l.initV.x;
 								let y = l.initV.y;
-								if(l.initV.x !== l.finalV.x) {
+								if(l.finalV.x) {
 									x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
 								}
-								if(l.initV.y !== l.finalV.y) {
+								if(l.finalV.y) {
 									y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
 								}
 								if(l.object instanceof HTMLElement) {
 									l.object.style = `transform: translate(${x}px, ${y}px);`;
 								} else {
-									l.object.position.set(x, y);
+									l.object.position.set(l.initV.x + x, l.initV.y + y);
 								}
 							}
 							break;
@@ -393,19 +393,23 @@ class Player {
 					break;
 				}
 				//FadeTo
-				case "fadeout":
+				case "fadeout": {
 					this.text.dialogText(false, "");
 					this.text.characterName(false, "");
 					this.waitTime = Number(cur.Arg6) * 1000;
-					this.layers["bg|whiteFade"].sprite.tint = commonFunctions.getColorFromName(cur.Arg1);
-					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 1, initV: 0});
+					let fadeColor = commonFunctions.getColorFromName(cur.Arg1);
+					this.layers["bg|whiteFade"].sprite.tint = fadeColor.color;
+					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: fadeColor.alpha, initV: 0});
 					break;
+				}
 				//FadeFrom
-				case "fadein":
+				case "fadein": {
 					this.waitTime = Number(cur.Arg6) * 1000;
-					this.layers["bg|whiteFade"].sprite.tint = commonFunctions.getColorFromName(cur.Arg1);
-					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 0, initV: 1});
+					let fadeColor = commonFunctions.getColorFromName(cur.Arg1);
+					this.layers["bg|whiteFade"].sprite.tint = fadeColor.color;
+					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 0, initV: fadeColor.alpha});
 					break;
+				}
 				case "divalefttorightblackfade": {
 					this.processDivaFade(cur, false, false);
 					break;
@@ -553,15 +557,15 @@ class Player {
 		this.waitTime = Number(command.Arg6) * 1000;
 		let sprite = this.layers["bg|whiteFade"].sprite;
 		let filter = this.shaders[(rtl ? 'divarighttoleftblackfade' : 'divalefttorightfade')];
-		var color = commonFunctions.getColorFromName(command.Arg1);
-		let rgbcolor = commonFunctions.hexToRgb(color);
-		sprite.tint = color;
-		sprite.alpha = 1.0;
+		let color = commonFunctions.getColorFromName(command.Arg1);
+		let rgbcolor = commonFunctions.hexToRgb(color.color);
+		sprite.tint = color.color;
+		sprite.alpha = color.alpha;
 		filter.uniforms.time = 0.0;
 		filter.uniforms.fadeincolor = (clear ? [0.0,0.0,0.0,0.0] : [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0]);
 		filter.uniforms.fadeoutcolor = (clear ? [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0] : [0.0,0.0,0.0,0.0]);
 		sprite.filters = [filter];
-		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : '1')}`});
+		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : `${color.alpha}`)}`});
 	}
 	
 	//This should mostly be handling things like text
@@ -888,8 +892,9 @@ class Player {
 					}
 				}
 				if(!curChar) { return; }
+				//The sprite's position should be added to the final x and y when setting the shake position.
 				this.lerpTargets.push({type: 'shake', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-				finalV: {x: props.x + curChar.sprite.position.x, y: props.y + curChar.sprite.position.y}, initV: {x: curChar.sprite.position.x, y: curChar.sprite.position.y} });
+				finalV: {x: props.x, y: props.y}, initV: {x: curChar.sprite.position.x, y: curChar.sprite.position.y} });
 			}
 		}
 	}

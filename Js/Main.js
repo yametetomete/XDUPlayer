@@ -183,9 +183,8 @@ function missionChanged(value) {
 			.then((success) => {
 				player.resetAll();
 				currentMission = undefined;
-				debugger;
 			}, (failure) => {
-				debugger;
+				player.resetAll();
 				currentMission = undefined;
 				console.log(failure);
 			});

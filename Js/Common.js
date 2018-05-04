@@ -95,7 +95,6 @@ class commonFunctions {
 			case "punch": {
 				if (t === 0 || t === 1)
 					return start;
-				debugger;
 				let change = end - start;
 				let num = 0.3;
 				let rad = Math.PI * 2;
@@ -116,13 +115,26 @@ class commonFunctions {
 	}
 	
 	static getColorFromName(name) {
-		if(!name) { return 0xFFFFFF }
+		if(!name) { return { color: 0xFFFFFF, alpha: 1 } }
 		
-		switch(name.toLowerCase()) {
-			case 'black':
-				return 0x000000;
-			case 'white':
-				return 0xFFFFFF;
+		if(name.startsWith('#')) {
+			let alpha = '';
+			let color = '';
+			name = name.substring(1);
+			if(name.length === 8) {
+				color = name.slice(0, 6);
+				alpha = name.slice(6, 8);
+			}
+			color = parseInt(color, 16);
+			alpha = parseInt(alpha, 16) / 255;
+			return { color, alpha };
+		} else {
+			switch(name.toLowerCase()) {
+				case 'black':
+					return { color: 0x000000, alpha: 1 };
+				case 'white':
+					return { color: 0xFFFFFF, alpha: 1 };
+			}
 		}
 	}
 	
