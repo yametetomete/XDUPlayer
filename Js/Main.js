@@ -6,9 +6,10 @@ const pixiApp = {
 };
 
 const utage = new UtageInfo();
+const shaders = new Shaders();
 const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
-const player = new Player(pixiApp, utage, textFunc, audio);
+const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn"];
 let bodyLoaded = false;
 let utageLoaded = false;

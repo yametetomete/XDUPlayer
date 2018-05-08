@@ -102,6 +102,10 @@ class commonFunctions {
 				return change * Math.pow(2, -10 * t) * Math.sin((t * 1 - num2) * rad / num);
 			}
 			//http://www.gizma.com/easing/
+			case "quadout": {
+				let change = end - start;
+				return -change * t*(t-2) + start;
+			}
 			case "quadinout": {
 				let change = end - start;
 				t = t * 2;
@@ -138,12 +142,11 @@ class commonFunctions {
 		}
 	}
 	
-	static hexToRgb (hex) {
-		hex = hex.toString(16);
+	static hexToRgb(hex) {
 		let r = (hex >> 16) & 255;
 		let g = (hex >> 8) & 255;
 		let b = hex & 255;
-		return [r, g, b];
+		return [r/255, g/255, b/255];
 	}
 	
 	static convertUtageTextTags(text) {

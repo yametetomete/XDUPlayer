@@ -2,12 +2,13 @@
 
 const baseDimensions = {width: 1334, height: 750};
 class Player {
-	constructor(pixi, utage, text, audio) {
+	constructor(pixi, utage, text, audio, shaderscript) {
 		this.pixi = pixi;
 		this.loader = pixi.loader;
 		this.utage = utage;
 		this.text = text;
 		this.audio = audio;
+		this.shaders = shaders;
 		//consts
 		this.resolutionScale = 1; //I created this thinking that I would need to handle changing offset when resolution changes. But lucikly I can just scale the parent container and it works without needing this.
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
@@ -31,7 +32,6 @@ class Player {
 		this.assetLoadPercent = 0;
 		this.audioLoadPercent = 0;
 		this.playingVoice = undefined;
-		this.shaders = {};
 	}
 	
 	playFile() {
@@ -76,13 +76,22 @@ class Player {
 							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
 								Arg2 = this.defaultCharPattern;
 							}
+							//I know the nesting here isint pretty
+							//If the character at arg1|arg2 exists and arg2 is not <off>
 							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2] && Arg2 && Arg2 != "<Off>") {
 								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
 									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
 								}
+							//If the character at arg1|arg2 isint here check at arg1|none. If not there put error in console.
 							} else if(c.Arg1 && Arg2 && Arg2 != "<Off>" && 
 							(!this.utage.characterInfo[c.Arg1] || !this.utage.characterInfo[c.Arg1][Arg2])) {
-								console.log(`Failed to get Character: ${c.Arg1}|${Arg2}`);
+								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1]['none']) {
+									if(!this.loader.resources[`char|${c.Arg1}|none`]) {
+										this.loader.add(`char|${c.Arg1}|none`, this.utage.characterInfo[c.Arg1]['none'].FileName);
+									}
+								} else {
+									console.log(`Failed to get Character: ${c.Arg1}|${Arg2}`);
+								}
 							}
 							//These voices arent in the Sound.tsv because fuck you
 							if(c.Voice) {
@@ -186,28 +195,7 @@ class Player {
 	
 	//https://jsfiddle.net/60e5pp8d/1/
 	buildShaders() {
-		let divalefttorightfade = new PIXI.Filter(null, leftToRightFadeShader, { 
-			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
-			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
-			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
-		});
-		divalefttorightfade.apply = baseShaderApply;
-		this.shaders['divalefttorightfade'] = divalefttorightfade;
-		let divarighttoleftfade = new PIXI.Filter(null, leftToRightFadeShader, { 
-			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
-			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
-			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
-		});
-		divarighttoleftfade.apply = baseShaderApply;
-		this.shaders['divarighttoleftfade'] = divarighttoleftfade;
-		
-		function baseShaderApply(filterManager, input, output) {
-			this.uniforms.dimensions[0] = input.sourceFrame.width
-			this.uniforms.dimensions[1] = input.sourceFrame.height
-			filterManager.applyFilter(this, input, output);
-		}
+		this.shaders.buildShaders();
 	}
 	
 	//Laoding progress functions
@@ -284,71 +272,78 @@ class Player {
 			for(let i = 0; i < this.lerpTargets.length; ++i) {
 				try {
 					let l = this.lerpTargets[i];
-					l.curTime += deltaTime;
-					if(l.curTime < 0) { continue; }
-					let inter = l.inter || "linear";
-					let pos = l.curTime / l.time;
-					if(pos >= 1) {
-						pos = 1;
+					if(l.cancel) {
 						toRemove.push(i);
-						if(l.post) {
-							let split = l.post.split('|');
-							switch(split[0].toLowerCase()) {
-								case "destroy":
-									l.object.destroy();
-									continue;
-								case "clearshader":
-									l.object.filters = null;
-									l.object.alpha = Number(split[1]);
-									break;
+					} else {
+						l.curTime += deltaTime;
+						if(l.curTime < 0) { continue; }
+						let inter = l.inter || "linear";
+						let pos = l.curTime / l.time;
+						if(l.cancel) {
+							pos = 1;
+						}
+						if(pos >= 1) {
+							pos = 1;
+							toRemove.push(i);
+							if(l.post) {
+								let split = l.post.split('|');
+								switch(split[0].toLowerCase()) {
+									case "destroy":
+										l.object.destroy();
+										continue;
+									case "clearshader":
+										l.object.filters = null;
+										l.object.alpha = Number(split[1]);
+										break;
+								}
 							}
 						}
-					}
-					switch(l.type) {
-						case "shake": {
-							if(pos === 1) {
-								if(l.object instanceof HTMLElement) {
-									l.object.style = "";
+						switch(l.type) {
+							case "shake": {
+								if(pos === 1) {
+									if(l.object instanceof HTMLElement) {
+										l.object.style = "";
+									} else {
+										l.object.position.set(l.initV.x, l.initV.y);
+									}
 								} else {
-									l.object.position.set(l.initV.x, l.initV.y);
+									let x = l.initV.x;
+									let y = l.initV.y;
+									if(l.finalV.x) {
+										x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
+									}
+									if(l.finalV.y) {
+										y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
+									}
+									if(l.object instanceof HTMLElement) {
+										l.object.style = `transform: translate(${x}px, ${y}px);`;
+									} else {
+										l.object.position.set(l.initV.x + x, l.initV.y + y);
+									}
 								}
-							} else {
-								let x = l.initV.x;
-								let y = l.initV.y;
-								if(l.finalV.x) {
-									x = Math.floor(Math.random() * (l.finalV.x * (1-pos)));
-								}
-								if(l.finalV.y) {
-									y = Math.floor(Math.random() * (l.finalV.y * (1-pos)));
-								}
-								if(l.object instanceof HTMLElement) {
-									l.object.style = `transform: translate(${x}px, ${y}px);`;
-								} else {
-									l.object.position.set(l.initV.x + x, l.initV.y + y);
-								}
+								break;
 							}
-							break;
-						}
-						case "shader": {
-							try {
-								l.object.filters[0].uniforms.time = pos;
-								l.object.filters[0].apply();
-							} catch(error) {}
-						}
-						default: {
-							let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
-							let split = l.type.split(".");
-							switch(split.length) {
-								case 1:
-									l.object[split[0]] = newValue;
-									break;
-								case 2:
-									l.object[split[0]][split[1]] = newValue;
-									break;
-								default:
-									continue;
+							case "shader": {
+								try {
+									l.object.filters[0].uniforms.time = pos;
+									l.object.filters[0].apply();
+								} catch(error) {}
 							}
-							break;
+							default: {
+								let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
+								let split = l.type.split(".");
+								switch(split.length) {
+									case 1:
+										l.object[split[0]] = newValue;
+										break;
+									case 2:
+										l.object[split[0]][split[1]] = newValue;
+										break;
+									default:
+										continue;
+								}
+								break;
+							}
 						}
 					}
 				} catch(error) {
@@ -397,6 +392,8 @@ class Player {
 					this.text.dialogText(false, "");
 					this.text.characterName(false, "");
 					this.waitTime = Number(cur.Arg6) * 1000;
+					if(!cur.Arg1)
+						cur.Arg1 = 'white';
 					let fadeColor = commonFunctions.getColorFromName(cur.Arg1);
 					this.layers["bg|whiteFade"].sprite.tint = fadeColor.color;
 					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: fadeColor.alpha, initV: 0});
@@ -405,25 +402,43 @@ class Player {
 				//FadeFrom
 				case "fadein": {
 					this.waitTime = Number(cur.Arg6) * 1000;
+					if(!cur.Arg1)
+						cur.Arg1 = 'white';
 					let fadeColor = commonFunctions.getColorFromName(cur.Arg1);
 					this.layers["bg|whiteFade"].sprite.tint = fadeColor.color;
 					this.lerpTargets.push({type: 'alpha', object: this.layers["bg|whiteFade"].sprite, curTime: 0, time: this.waitTime, finalV: 0, initV: fadeColor.alpha});
 					break;
 				}
 				case "divalefttorightblackfade": {
-					this.processDivaFade(cur, false, false);
+					this.processDivaFadeHor(cur, false, false);
 					break;
 				}
 				case "divalefttorightclearfade": {
-					this.processDivaFade(cur, true, false);
+					this.processDivaFadeHor(cur, true, false);
 					break;
 				}
 				case "divarighttoleftblackfade": {
-					this.processDivaFade(cur, false, true);
+					this.processDivaFadeHor(cur, false, true);
 					break;
 				}
 				case "divarighttoleftclearfade": {
-					this.processDivaFade(cur, true, true);
+					this.processDivaFadeHor(cur, true, true);
+					break;
+				}
+				case "divauptodownblackfade": {
+					this.processDivaFadeVert(cur, false, true);
+					break;
+				}
+				case "divauptodownclearfade": {
+					this.processDivaFadeVert(cur, true, true);
+					break;
+				}
+				case "divadowntoupblackfade": {
+					this.processDivaFadeVert(cur, false, false);
+					break;
+				}
+				case "divadowntoupclearfade": {
+					this.processDivaFadeVert(cur, true, false);
 					break;
 				}
 				case "bg": {
@@ -446,7 +461,7 @@ class Player {
 					sprite.anchor.set(0.5, 0.5);
 					if(cur.Arg6) {
 						container.addChild(sprite);
-						sprite.alpha = 0
+						sprite.alpha = 0;
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: (Number(cur.Arg6) * 1000), finalV: 1, initV: 0});
 					} else {
 						container.addChild(sprite);
@@ -543,9 +558,19 @@ class Player {
 					this.processCommandOther(delta);
 					break;
 				//custom effects
-				case "henshin01_bgmoff":
+				case "henshin01_bgmoff": //101000111
 					this.audio.stopSound('bgm');
 					this.checkPutCharacterScreen(cur, true);
+					break;
+				case "attachit02": //103500221
+					break;
+				case "attacshot12": //103500231
+					break;
+				case "attacslash02": //103500231
+					break;
+				case "attacshot11": //103500251
+					break;
+				case "getitem01": //103400252
 					break;
 			}
 		} catch(error) {
@@ -553,10 +578,13 @@ class Player {
 		}
 	}
 	
-	processDivaFade(command, clear, rtl) {
+	processDivaFadeHor(command, clear, rtl) {
 		this.waitTime = Number(command.Arg6) * 1000;
 		let sprite = this.layers["bg|whiteFade"].sprite;
-		let filter = this.shaders[(rtl ? 'divarighttoleftblackfade' : 'divalefttorightfade')];
+		let filter = this.shaders.shaders[(rtl ? 'divarighttoleftfade' : 'divalefttorightfade')];
+		if(!command.Arg1) {
+			command.Arg1 = 'white';
+		}
 		let color = commonFunctions.getColorFromName(command.Arg1);
 		let rgbcolor = commonFunctions.hexToRgb(color.color);
 		sprite.tint = color.color;
@@ -564,6 +592,26 @@ class Player {
 		filter.uniforms.time = 0.0;
 		filter.uniforms.fadeincolor = (clear ? [0.0,0.0,0.0,0.0] : [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0]);
 		filter.uniforms.fadeoutcolor = (clear ? [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0] : [0.0,0.0,0.0,0.0]);
+		sprite.filters = [filter];
+		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : `${color.alpha}`)}`});
+	}
+	
+	//utd is UpToDown
+	processDivaFadeVert(command, clear, utd) {
+		this.waitTime = Number(command.Arg6) * 1000;
+		let sprite = this.layers["bg|whiteFade"].sprite;
+		let filter = this.shaders.shaders[(utd ? 'divauptodownfade' : 'divadowntoupfade')];
+		if(!command.Arg1) {
+			command.Arg1 = 'white';
+		}
+		let color = commonFunctions.getColorFromName(command.Arg1);
+		let rgbcolor = commonFunctions.hexToRgb(color.color);
+		sprite.tint = color.color;
+		sprite.alpha = color.alpha;
+		filter.uniforms.time = 0.0;
+		filter.uniforms.fadeincolor = (clear ? [0.0,0.0,0.0,0.0] : [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0]);
+		filter.uniforms.fadeoutcolor = (clear ? [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0] : [0.0,0.0,0.0,0.0]);
+		debugger;
 		sprite.filters = [filter];
 		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : `${color.alpha}`)}`});
 	}
@@ -602,6 +650,13 @@ class Player {
 				cur.Arg2 = curChar.character.Pattern;
 			}
 			let chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
+			if(!chr) {
+				//Non character sprites don't have a pattern and just use none as a key so if we don't find a character at arg1|arg2 look for this.
+				cur.Arg2 = 'none';
+				chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
+			}
+			//If we didn't find the character at all just abandon.
+			if(!chr) { return; }
 			//If the script gives us a layer get that layer and if there is a character on it already.
 			if(cur.Arg3) {
 				lay = this.layers[cur.Arg3];
@@ -635,6 +690,7 @@ class Player {
 				this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
 				this.currentCharacters[cur.Arg3] = undefined;
 			}
+			
 			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
 			sprite.scale.set(Number(chr.Scale), Number(chr.Scale));
 			let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
@@ -774,7 +830,7 @@ class Player {
 				if(props.x != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.x, initV: curChar.sprite.position.x, inter: 'quadinout' });
+						finalV: props.x, initV: curChar.sprite.position.x, inter: 'quadout' });
 					} else {
 						curChar.sprite.position.x = props.x;
 					}
@@ -782,7 +838,7 @@ class Player {
 				if(props.y != undefined) {
 					if(props.time) {
 						this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.y, initV: curChar.sprite.position.y, inter: 'quadinout' });
+						finalV: props.y, initV: curChar.sprite.position.y, inter: 'quadout' });
 					} else {
 						curChar.sprite.position.y = props.y;
 					}
@@ -829,7 +885,13 @@ class Player {
 						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 						finalV: props.alpha, initV: curChar.sprite.alpha });
 					} else {
-						curChar.sprite.alpha = 0;
+						curChar.sprite.alpha = props.alpha;
+					}
+					for(let l of this.lerpTargets) {
+						if(l.type === 'alpha' && l.object === curChar.sprite) {
+							debugger;
+							l.cancel = true;
+						}
 					}
 				}
 			}
