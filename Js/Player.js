@@ -1,6 +1,5 @@
 'use strict';
 
-const baseDimensions = {width: 1334, height: 750};
 class Player {
 	constructor(pixi, utage, text, audio, shaderscript) {
 		this.pixi = pixi;
@@ -70,7 +69,7 @@ class Player {
 							}
 							break;
 						//Text
-						case "":
+						case "": {
 							//Character Text
 							let Arg2 = c.Arg2;
 							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
@@ -106,6 +105,38 @@ class Player {
 								}
 							}
 							break;
+						}
+						case "henshin01_bgmoff": {
+							let Arg2 = c.Arg2;
+							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
+								Arg2 = this.defaultCharPattern;
+							}
+							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2]) {
+								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
+									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
+								}
+							}
+							break;
+						}
+						case "henshin01": {
+							let Arg2 = c.Arg2;
+							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
+								Arg2 = this.defaultCharPattern;
+							}
+							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2]) {
+								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
+									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
+								}
+							}
+							if(this.utage.soundInfo[c.Arg4]) {
+								if(!toLoadBgm[c.Arg4]) {
+									toLoadBgm[c.Arg4] = this.utage.soundInfo[c.Arg4];
+								}
+							} else {
+								console.log(`Failed to get BGM: ${c.Arg4}`);
+							}
+							break;
+						}
 						case "bgm":
 							if(this.utage.soundInfo[c.Arg1]) {
 								if(!toLoadBgm[c.Arg1]) {
@@ -193,7 +224,6 @@ class Player {
 		}
 	}
 	
-	//https://jsfiddle.net/60e5pp8d/1/
 	buildShaders() {
 		this.shaders.buildShaders();
 	}
@@ -441,6 +471,16 @@ class Player {
 					this.processDivaFadeVert(cur, true, false);
 					break;
 				}
+				case "divasepiacamera": { //103500311
+					let filter = this.shaders.shaders['sepia'];
+					filter.uniforms.factor = 0.5;
+					this.layers["bg|mainparent"].container.filters = [filter];
+					break;
+				}
+				case "divasepiacameraclear": {
+					this.layers["bg|mainparent"].container.filters = null;
+					break;
+				}
 				case "bg": {
 					let bgInfo = this.utage.textureInfo[cur.Arg1];
 					let container = this.layers[this.bgLayerName].container;
@@ -490,19 +530,23 @@ class Player {
 					if(time) {
 						this.waitTime = time * 1000;
 						if(cont.scale.x !== scale) {
+							this.cancelLerpOfType('scale.x', cont);
 							this.lerpTargets.push({type: 'scale.x', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: scale, initV: cont.scale.x });
 						}
 						if(cont.scale.y !== scale) {
+							this.cancelLerpOfType('scale.y', cont);
 							this.lerpTargets.push({type: 'scale.y', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: scale, initV: cont.scale.y });
 						}
 						
 						if(cont.position.x !== x) {
+							this.cancelLerpOfType('position.x', cont);
 							this.lerpTargets.push({type: 'position.x', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: x, initV: cont.position.x });
 						}
 						if(cont.position.y !== y) {
+							this.cancelLerpOfType('position.y', cont);
 							this.lerpTargets.push({type: 'position.y', object: cont, curTime: 0, 
 							time: this.waitTime, finalV: y, initV: cont.position.y });
 						}
@@ -511,6 +555,10 @@ class Player {
 							this.waitTime = 0;
 						}
 					} else {
+						this.cancelLerpOfType('scale.x', cont);
+						this.cancelLerpOfType('scale.y', cont);
+						this.cancelLerpOfType('position.x', cont);
+						this.cancelLerpOfType('position.y', cont);
 						cont.scale.set(scale, scale);
 						cont.position.set(x, y);
 					}
@@ -525,7 +573,7 @@ class Player {
 						if(curChar.charName === cur.Arg1) {
 							let time = Number(cur.Arg6) * 1000;
 							if(!time) { time = 250; }
-							this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: time, finalV: 0, initV: 1, post: "destroy" });
+							this.lerpTargets.push({type: 'alpha', object: curChar.sprite, name: cur.Arg1, curTime: 0, time: time, finalV: 0, initV: 1, post: "destroy" });
 							this.currentCharacters[c] = undefined;
 							break;
 						}
@@ -559,7 +607,17 @@ class Player {
 					break;
 				//custom effects
 				case "henshin01_bgmoff": //101000111
+					this.waitTime = 1000;
 					this.audio.stopSound('bgm');
+					this.checkPutCharacterScreen(cur, true);
+					break;
+				case "henshin01":
+					this.waitTime = 1000;
+					this.audio.stopSound('bgm');
+					if(this.utage.soundInfo[cur.Arg4]) {
+						this.audio.playSound(cur.Arg4, 'bgm');
+					}
+					cur.Arg4 = 0;
 					this.checkPutCharacterScreen(cur, true);
 					break;
 				case "attachit02": //103500221
@@ -571,6 +629,38 @@ class Player {
 				case "attacshot11": //103500251
 					break;
 				case "getitem01": //103400252
+					break;
+
+				case "skillmovie": //103500341
+					break;
+				case "arcanoise_appearance02": { //103500341
+					if(cur.Arg1 && cur.Arg2) {
+						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: .5 };
+						this.checkPutCharacterScreen(customCommand1, false);
+						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: .5 };
+						this.checkPutCharacterScreen(customCommand2, false);
+					}
+					break;
+				}
+				case "noise_disappearance01": //103500331
+					this.waitTime = cur.Arg1 * 1000;
+					break;
+				case "noise_disappearance02": { //103500341
+					this.waitTime = cur.Arg1 * 1000;
+					//let c1 = this.currentCharacters['キャラ右'];
+					//if(c1) {
+					//	this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+					//	this.currentCharacters['キャラ右'] = undefined;
+					//}
+					//let c2 = this.currentCharacters['キャラ左'];
+					//if(c2) {
+					//	this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+					//	this.currentCharacters['キャラ左'] = undefined;
+					//}
+					break;
+				}
+				case "noise_disappearance11": //103500341
+					this.waitTime = cur.Arg1 * 1000;
 					break;
 			}
 		} catch(error) {
@@ -611,7 +701,6 @@ class Player {
 		filter.uniforms.time = 0.0;
 		filter.uniforms.fadeincolor = (clear ? [0.0,0.0,0.0,0.0] : [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0]);
 		filter.uniforms.fadeoutcolor = (clear ? [rgbcolor[0],rgbcolor[1],rgbcolor[2],1.0] : [0.0,0.0,0.0,0.0]);
-		debugger;
 		sprite.filters = [filter];
 		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : `${color.alpha}`)}`});
 	}
@@ -697,10 +786,17 @@ class Player {
 			sprite.anchor.set(anchor.x, anchor.y);
 			sprite.alpha = 0;
 			let fadeTime = 200;
-			//If the character is already on screen put te new sprite in the same position as the old one.
+			//If the character is already on screen put the new sprite in the same position as the old one.
 			if(curChar) {
 				sprite.position.x = curChar.sprite.position.x;
 				sprite.position.y = curChar.sprite.position.y;
+				//if the current character is doing a tween transfer the tween to the new one.
+				for(let l of this.lerpTargets) {
+					if(l.type.includes('position') && l.object === curChar.sprite) {
+						l.object = sprite;
+						break;
+					}
+				}
 			}
 			if(cur.Arg4) {
 				sprite.position.x = Number(cur.Arg4);
@@ -887,12 +983,7 @@ class Player {
 					} else {
 						curChar.sprite.alpha = props.alpha;
 					}
-					for(let l of this.lerpTargets) {
-						if(l.type === 'alpha' && l.object === curChar.sprite) {
-							debugger;
-							l.cancel = true;
-						}
-					}
+					this.cancelLerpOfType('alpha', curChar.sprite);
 				}
 			}
 		}
@@ -957,6 +1048,14 @@ class Player {
 				//The sprite's position should be added to the final x and y when setting the shake position.
 				this.lerpTargets.push({type: 'shake', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 				finalV: {x: props.x, y: props.y}, initV: {x: curChar.sprite.position.x, y: curChar.sprite.position.y} });
+			}
+		}
+	}
+	
+	cancelLerpOfType(type, object) {
+		for(let l of this.lerpTargets) {
+			if(l.type.includes(type) && l.object === object) {
+				l.cancel = true;
 			}
 		}
 	}

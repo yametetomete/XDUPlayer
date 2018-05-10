@@ -1,6 +1,7 @@
 'use strict';
 
 let rootUrl = `${window.location.protocol}//${window.location.host}/`;
+const baseDimensions = {width: 1334, height: 750};
 const screenRatio = 9/16;
 
 class commonFunctions {	
