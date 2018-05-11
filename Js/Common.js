@@ -135,10 +135,13 @@ class commonFunctions {
 			return { color, alpha };
 		} else {
 			switch(name.toLowerCase()) {
+				default:
 				case 'black':
 					return { color: 0x000000, alpha: 1 };
 				case 'white':
 					return { color: 0xFFFFFF, alpha: 1 };
+				case 'silver':
+					return { color: 0xD7D7D7, alpha: 1 };
 			}
 		}
 	}

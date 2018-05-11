@@ -72,6 +72,10 @@ class Player {
 						case "": {
 							//Character Text
 							let Arg2 = c.Arg2;
+							//because fuck me.
+							if(Arg2 === '＜Off>') {
+								Arg2 = '<Off>'
+							}
 							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
 								Arg2 = this.defaultCharPattern;
 							}
@@ -106,6 +110,24 @@ class Player {
 							}
 							break;
 						}
+						case "bgm":
+							if(this.utage.soundInfo[c.Arg1]) {
+								if(!toLoadBgm[c.Arg1]) {
+									toLoadBgm[c.Arg1] = this.utage.soundInfo[c.Arg1];
+								}
+							} else {
+								console.log(`Failed to get BGM: ${c.Arg1}`);
+							}
+							break;
+						case "se":
+							if(this.utage.soundInfo[c.Arg1]) {
+								if(!toLoadSe[c.Arg1]) {
+									toLoadSe[c.Arg1] = this.utage.soundInfo[c.Arg1];
+								}
+							} else {
+								console.log(`Failed to get SE: ${c.Arg1}`);
+							}
+							break;
 						case "henshin01_bgmoff": {
 							let Arg2 = c.Arg2;
 							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
@@ -137,24 +159,31 @@ class Player {
 							}
 							break;
 						}
-						case "bgm":
-							if(this.utage.soundInfo[c.Arg1]) {
-								if(!toLoadBgm[c.Arg1]) {
-									toLoadBgm[c.Arg1] = this.utage.soundInfo[c.Arg1];
+						case "arcanoise_appearance02":
+						case "arcanoise_appearance03": {
+							let Pat = this.defaultCharPattern;
+							if(c.Arg1) {
+								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Pat]) {
+									if(!this.loader.resources[`char|${c.Arg1}|${Pat}`]) {
+									this.loader.add(`char|${c.Arg1}|${Pat}`, this.utage.characterInfo[c.Arg1][Pat].FileName);
+									}
 								}
-							} else {
-								console.log(`Failed to get BGM: ${c.Arg1}`);
 							}
-							break;
-						case "se":
-							if(this.utage.soundInfo[c.Arg1]) {
-								if(!toLoadSe[c.Arg1]) {
-									toLoadSe[c.Arg1] = this.utage.soundInfo[c.Arg1];
+							if(c.Arg2) {
+								if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][Pat]) {
+									if(!this.loader.resources[`char|${c.Arg2}|${Pat}`]) {
+									this.loader.add(`char|${c.Arg2}|${Pat}`, this.utage.characterInfo[c.Arg2][Pat].FileName);
+									}
 								}
-							} else {
-								console.log(`Failed to get SE: ${c.Arg1}`);
 							}
-							break;
+							if(c.Arg3) {
+								if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][Pat]) {
+									if(!this.loader.resources[`char|${c.Arg3}|${Pat}`]) {
+									this.loader.add(`char|${c.Arg3}|${Pat}`, this.utage.characterInfo[c.Arg3][Pat].FileName);
+									}
+								}
+							}
+						}
 					}
 				} catch (error) {
 					console.log(error);
@@ -267,6 +296,10 @@ class Player {
 			if(!this.runEvent) { return; }
 			let deltaTime = (1000/this.baseFps)*delta;
 			this.secondTicker -= deltaTime;
+			if(isNaN(this.waitTime)) {
+				this.waitTime = 0;
+				console.log('WaitTime was NaN');
+			}
 			if(this.waitTime >= 0) {
 				this.waitTime -= deltaTime;
 			}
@@ -393,6 +426,9 @@ class Player {
 	processCommand(delta) {
 		try {
 			let cur = this.currentCommand;
+			if(cur.Arg2 === '＜Off>') {
+				cur.Arg2 = '<off>';
+			}
 			switch((cur.Command || "").toLowerCase()) {
 				case "scenetitle01": {
 					this.waitTime = this.titleWaitTime * 1000;
@@ -418,7 +454,12 @@ class Player {
 					break;
 				}
 				//FadeTo
+				case "continue01":
 				case "fadeout": {
+					if(cur.Command.toLowerCase() === "continue01") {
+						cur.Arg1 = 'black';
+						cur.Arg6 = 1;
+					}
 					this.text.dialogText(false, "");
 					this.text.characterName(false, "");
 					this.waitTime = Number(cur.Arg6) * 1000;
@@ -532,23 +573,23 @@ class Player {
 						if(cont.scale.x !== scale) {
 							this.cancelLerpOfType('scale.x', cont);
 							this.lerpTargets.push({type: 'scale.x', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: scale, initV: cont.scale.x });
+							time: this.waitTime, finalV: scale, initV: cont.scale.x, inter: 'quadout' });
 						}
 						if(cont.scale.y !== scale) {
 							this.cancelLerpOfType('scale.y', cont);
 							this.lerpTargets.push({type: 'scale.y', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: scale, initV: cont.scale.y });
+							time: this.waitTime, finalV: scale, initV: cont.scale.y, inter: 'quadout' });
 						}
 						
 						if(cont.position.x !== x) {
 							this.cancelLerpOfType('position.x', cont);
 							this.lerpTargets.push({type: 'position.x', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: x, initV: cont.position.x });
+							time: this.waitTime, finalV: x, initV: cont.position.x, inter: 'quadout' });
 						}
 						if(cont.position.y !== y) {
 							this.cancelLerpOfType('position.y', cont);
 							this.lerpTargets.push({type: 'position.y', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: y, initV: cont.position.y });
+							time: this.waitTime, finalV: y, initV: cont.position.y, inter: 'quadout' });
 						}
 						
 						if(cur.Arg6 && cur.Arg6.toLowerCase() === "nowait") {
@@ -622,9 +663,15 @@ class Player {
 					break;
 				case "attachit02": //103500221
 					break;
+				case "attachit03":
+					break;
 				case "attacshot12": //103500231
 					break;
+				case "attacslash01": //103500642
+					break;
 				case "attacslash02": //103500231
+					break;
+				case "attacslash05": //103500552
 					break;
 				case "attacshot11": //103500251
 					break;
@@ -635,6 +682,7 @@ class Player {
 					break;
 				case "arcanoise_appearance02": { //103500341
 					if(cur.Arg1 && cur.Arg2) {
+						this.waitTime = 1000;
 						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: .5 };
 						this.checkPutCharacterScreen(customCommand1, false);
 						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: .5 };
@@ -642,11 +690,23 @@ class Player {
 					}
 					break;
 				}
+				case "arcanoise_appearance03": { //103500521
+					if(cur.Arg1 && cur.Arg2 && cur.Arg3) {
+						this.waitTime = 1000;
+						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: .5 };
+						this.checkPutCharacterScreen(customCommand1, false);
+						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: .5 };
+						this.checkPutCharacterScreen(customCommand2, false);
+						let customCommand3 = { Command: "", Arg1: cur.Arg3, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .5 };
+						this.checkPutCharacterScreen(customCommand3, false);
+					}
+					break;
+				}
 				case "noise_disappearance01": //103500331
-					this.waitTime = cur.Arg1 * 1000;
+					this.waitTime = Number(cur.Arg1) * 1000;
 					break;
 				case "noise_disappearance02": { //103500341
-					this.waitTime = cur.Arg1 * 1000;
+					this.waitTime = Number(cur.Arg1) * 1000;
 					//let c1 = this.currentCharacters['キャラ右'];
 					//if(c1) {
 					//	this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
@@ -659,8 +719,29 @@ class Player {
 					//}
 					break;
 				}
+				case "noise_disappearance03": { //103500552
+				debugger;
+					this.waitTime = Number(cur.Arg1) * 1000;
+					let c1 = this.currentCharacters['キャラ右'] || this.currentCharacters['キャラ右02'];
+					if(c1) {
+						this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
+						this.currentCharacters['キャラ右'] = undefined;
+					}
+					let c2 = this.currentCharacters['キャラ左'] || this.currentCharacters['キャラ左02'];
+					if(c2) {
+						this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
+						this.currentCharacters['キャラ左'] = undefined;
+					}
+					let c3 = this.currentCharacters['キャラ中央'];
+					if(c3) {
+						this.lerpTargets.push({type: 'alpha', object: c3.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
+						this.currentCharacters['キャラ中央'] = undefined;
+					}
+				}
 				case "noise_disappearance11": //103500341
-					this.waitTime = cur.Arg1 * 1000;
+					this.waitTime = Number(cur.Arg1) * 1000;
+					break;
+				case "continue01":
 					break;
 			}
 		} catch(error) {
@@ -1005,7 +1086,23 @@ class Player {
 				//f(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 				//	this.waitTime = props.time + (props.delay || 0);
 				//
-				let stage = this.pixi.app.stage.position;
+				//If the screen is currently shaking the second shake will offset it so get the init 
+				// position from that shake not the current position
+				let currentShake = undefined;
+				for(let l of this.lerpTargets) {
+					if(l.type.includes('shake') && l.object === this.pixi.app.stage) {
+						currentShake = l;
+						l.cancel = true;
+						break;
+					}
+				}
+				let stage = undefined;
+				if(currentShake) {
+					stage = currentShake.initV;
+				} else {
+					stage = this.pixi.app.stage.position;
+				}
+				
 				this.lerpTargets.push({type: 'shake', object: this.pixi.app.stage, curTime: 0 - (props.delay || 0), time: props.time, 
 				finalV: {x: props.x + stage.x, y: props.y + stage.y}, initV: {x: stage.x, y: stage.y} });
 				break;
@@ -1098,8 +1195,8 @@ class Player {
 		}
 		event.preventDefault();
 		event.stopPropagation();
-		this.uiHidden = true;
-		this.text.hideUi(false);
+		this.uiHidden = !this.uiHidden;
+		this.text.hideUi(!this.uiHidden);
 	}
 
 	onEndFile() {
