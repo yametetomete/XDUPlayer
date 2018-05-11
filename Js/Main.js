@@ -133,8 +133,8 @@ function missionDropDownChanged(event) {
 	cont.innerHTML = '' +
 	'<div id="mission-modal" class="modal">' +
 		`<span class="mission-title">Name: ${mis.Name || 'none'}</span>` +
-		`<img id="mission-detail" src="${rootUrl}XDUPlayer/XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png">` +
-		`<img id="mission-icon" src="${rootUrl}XDUPlayer/XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png">` +
+		`<img id="mission-detail" src="XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png">` +
+		`<img id="mission-icon" src="XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png">` +
 		`<span>Summary: ${mis.SummaryText || 'none'}</span>` +
 		'<div id="mission-ids">' +
 			`<span>MstId: ${mis.MstId}</span>` +
