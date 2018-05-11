@@ -3,6 +3,7 @@
 
 class bufferLoader {
 	constructor(context, soundMap, callback) {
+		debugger;
 		this.context = context;
 		this.soundMap = soundMap;
 		this.onloadUpdate = callback;
@@ -41,7 +42,8 @@ class bufferLoader {
 								}
 								resolve(`${this.loadCount}|${this.soundMap.length}`);
 							},
-							function(error) {
+							(error) => {
+								
 								console.log(error);
 								console.log(`url: ${url}, name: ${name}`);
 								if(this.onloadUpdate) {
@@ -52,10 +54,16 @@ class bufferLoader {
 						);
 					});
 				}, (failure) => {
+					if(this.onloadUpdate) {
+						this.onloadUpdate((++this.loadCount / this.soundMap.length) * 100);
+					}
 					console.log(failure);
 					reject(failure);
 				});
 			} catch(error) {
+				if(this.onloadUpdate) {
+					this.onloadUpdate((++this.loadCount / this.soundMap.length) * 100);
+				}
 				console.log(error);
 				reject(error);
 			}
