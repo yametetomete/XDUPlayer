@@ -4,7 +4,7 @@
 class UtageInfo {
 	constructor() {
 		this.currentPlayingFile = [];
-		this.rootDirectory = `${rootUrl}XDUPlayer/`;
+		this.rootDirectory = ``;
 		this.availableMissions = {};
 		this.missionsList = [];
 		this.characterInfo = {};
