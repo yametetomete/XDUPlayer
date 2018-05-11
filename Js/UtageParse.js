@@ -29,7 +29,7 @@ class UtageInfo {
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`),
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/bgmLoop.json`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`),
 			];
 			Promise.all(promises)
 			.then((success) => {
