@@ -3,7 +3,6 @@
 
 class bufferLoader {
 	constructor(context, soundMap, callback) {
-		debugger;
 		this.context = context;
 		this.soundMap = soundMap;
 		this.onloadUpdate = callback;

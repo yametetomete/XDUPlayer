@@ -102,7 +102,7 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			if(!m.includes('101000111') && !m.includes('MA3.5-')) {
+			if(!m.includes('MA3.5-')) {
 				continue;
 			}
 			opt.setAttribute('value', m);
@@ -133,8 +133,8 @@ function missionDropDownChanged(event) {
 	cont.innerHTML = '' +
 	'<div id="mission-modal" class="modal">' +
 		`<span class="mission-title">Name: ${mis.Name || 'none'}</span>` +
-		`<img id="mission-detail" src="XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>` +
-		`<img id="mission-icon" src="XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>` +
+		`<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>` +
+		`<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>` +
 		`<span>Summary: ${mis.SummaryText || 'none'}</span>` +
 		'<div id="mission-ids">' +
 			`<span>MstId: ${mis.MstId}</span>` +

@@ -856,7 +856,7 @@ class Player {
 			}
 			
 			//If the layer already has a different character on it remove it.
-			if(prevChar && (prevChar.character.NameText !== chr.NameText || prevChar.character.Pattern !== chr.Pattern)) {
+			if(prevChar && (prevChar.charName !== cur.Arg1 || prevChar.character.Pattern !== chr.Pattern)) {
 				this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
 				this.currentCharacters[cur.Arg3] = undefined;
 			}
