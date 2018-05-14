@@ -69,26 +69,31 @@ function onAllLoaded(success) {
 }
 
 function loadLocalStorage() {
-	//audio
-	volume = localStorage.getItem('volume') || 0.5;
-	volume = Number(volume);
-	document.getElementById('volume-range').value = volume * 100;
-	isMuted = localStorage.getItem('ismuted') || false;
-	if(isMuted === "false") { isMuted = false; }
-	else if(isMuted === "true") { isMuted = true; }
-	if(audio) {
-		audio.changeVolume(volume);
-		audio.mute(isMuted);
-	}
-	if(isMuted) {
-		document.getElementById('mute-button').innerText = "🔇";
-	} else {
-		document.getElementById('mute-button').innerText = "🔊";
-	}
-	//language
-	let lang = localStorage.getItem('language') || "eng";
-	if(languages.includes(lang)) {
-		selectedLang = lang;
+	try {
+		//audio
+		volume = localStorage.getItem('volume') || 0.5;
+		volume = Number(volume);
+		document.getElementById('volume-range').value = volume * 100;
+		isMuted = localStorage.getItem('ismuted') || false;
+		if(isMuted === "false") { isMuted = false; }
+		else if(isMuted === "true") { isMuted = true; }
+		if(audio) {
+			audio.changeVolume(volume);
+			audio.mute(isMuted);
+		}
+		if(isMuted) {
+			document.getElementById('mute-button').innerText = "🔇";
+		} else {
+			document.getElementById('mute-button').innerText = "🔊";
+		}
+		//language
+		let lang = localStorage.getItem('language') || "eng";
+		if(languages.includes(lang)) {
+			selectedLang = lang;
+		}
+		utage.setTranslationLanguage(selectedLang, '');
+	} catch(error) {
+		console.log(error);
 	}
 }
 
@@ -174,7 +179,7 @@ function missionChanged(value) {
 		currentMission = newMission;
 		let promises = [
 			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
-			utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`, selectedLang)
+			utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
 		];
 		closeMissionModal(undefined, true);
 		
@@ -201,7 +206,11 @@ function missionChanged(value) {
 function languageChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}' || !languages.includes(event.currentTarget.value)) { return; }
 	selectedLang = event.currentTarget.value;
-	utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${currentMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`, selectedLang);
+	let missionPath = '';
+	if(currentMission) {
+		missionPath = `${utage.rootDirectory}XDUData/${currentMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
+	}
+	utage.setTranslationLanguage(selectedLang, missionPath);
 }
 
 function onMainClick(event) {

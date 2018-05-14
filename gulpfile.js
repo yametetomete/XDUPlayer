@@ -30,6 +30,9 @@ const jsonFiles = [
 "Js/BgmLoop.json",
 "Js/XduMissions.json"
 ];
+const translations = [
+"Js/Translations/*.json"
+];
 
 const jsDest = "Js";
 gulp.task('dev', gulp.series(
@@ -49,6 +52,7 @@ gulp.task('dist', gulp.series(
 				copyCss
 			),
 			buildJson,
+			buildJsonTranslations,
 			copyHtml,
 			copyImages
 		),
@@ -112,4 +116,10 @@ function buildJson() {
 	return gulp.src(jsonFiles)
         .pipe(jsonmin())
         .pipe(gulp.dest('Dist/Js'));
+}
+
+function buildJsonTranslations() {
+	return gulp.src(translations)
+        .pipe(jsonmin())
+        .pipe(gulp.dest('Dist/Js/Translations'));
 }

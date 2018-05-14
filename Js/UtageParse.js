@@ -13,8 +13,9 @@ class UtageInfo {
 		this.paramInfo = {};
 		this.soundInfo = {};
 		this.textureInfo = {};
-		this.translations = {};
-		this.currentTranslation = {};
+		this.translationsInner = {};
+		this.currentTranslation = 'eng';
+		this.charTranslationsInner = {};
 		this.bgmLoopData = {};
 	}
 	
@@ -78,19 +79,57 @@ class UtageInfo {
 		});
 	}
 	
-	loadMissionTranslation(file, key) {
+	get translations() {
+		return this.translationsInner[this.currentTranslation];
+	}
+	
+	get charTranslations() {
+		return this.charTranslationsInner[this.currentTranslation];
+	}
+	
+	setTranslationLanguage(key, missionPath) {
 		return new Promise((resolve, reject) => {
-			if(this.translations[key]) {
-				this.currentTranslation = this.translations[key];
+			this.currentTranslation = key;
+			var promises = [this.loadCharacterTranslations(key)];
+			if(missionPath) {
+				promises.push(this.loadMissionTranslation(missionPath, key));
+			}
+			Promise.all(promises)
+			.then((success) => {
+				resolve();
+			}, (failure) => {
+				console.log(failure);
+				resolve();
+			});
+		});
+	}
+	
+	loadMissionTranslation(file) {
+		return new Promise((resolve, reject) => {
+			if(this.translationsInner[this.currentTranslation]) {
 				resolve();
 			} else {
 				commonFunctions.getFileJson(file)
 				.then((success) => {
-					this.translations[key] = success;
-					this.currentTranslation = success;
+					this.translationsInner[this.currentTranslation] = success;
 					resolve();
 				}, (failure) => {
-					this.currentTranslation = {};
+					resolve();
+				});
+			}
+		});
+	}
+	
+	loadCharacterTranslations() {
+		return new Promise((resolve, reject) => {
+			if(this.charTranslationsInner[this.currentTranslation]) {
+				resolve();
+			} else {
+				commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/nametranslations_${this.currentTranslation}.json`)
+				.then((success) => {
+					this.charTranslationsInner[this.currentTranslation] = success;
+					resolve();
+				}, (failure) => {
 					resolve();
 				});
 			}
@@ -248,7 +287,6 @@ class UtageInfo {
 	}
 	
 	resetTranslations() {
-		this.translations = {};
-		this.currentTranslation = {};
+		this.translationsInner = {};
 	}
 }

@@ -74,7 +74,7 @@
 
 #dialog-box { color: white; font-weight: bold; text-shadow: 1px 1px 6px black; transition: opacity 0.1s; }
 
-#dialog-box #character { position: absolute; top: -5px; left: 70px; font-size: 30px; cursor: default; user-select: none; }
+#dialog-box #character { position: absolute; left: 70px; font-size: 30px; cursor: default; user-select: none; }
 
 #dialog-box #dialog { overflow: hidden; position: absolute; padding: 0 30px 0 70px; margin-top: 60px; box-sizing: border-box; height: 120px; width: 100%; font-size: 28px; font-weight: normal; line-height: 68px; }
 
