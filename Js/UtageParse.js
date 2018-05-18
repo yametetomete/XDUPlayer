@@ -5,7 +5,7 @@ class UtageInfo {
 	constructor() {
 		this.currentPlayingFile = [];
 		this.rootDirectory = ``;
-		this.availableMissions = {};
+		this.groupedMissions = {};
 		this.missionsList = [];
 		this.characterInfo = {};
 		this.layerInfo = {};
@@ -13,9 +13,10 @@ class UtageInfo {
 		this.paramInfo = {};
 		this.soundInfo = {};
 		this.textureInfo = {};
-		this.translationsInner = {};
 		this.currentTranslation = 'eng';
+		this.translationsInner = {};
 		this.charTranslationsInner = {};
+		this.missionTranslationsInner = {};
 		this.bgmLoopData = {};
 	}
 	
@@ -34,9 +35,9 @@ class UtageInfo {
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.availableMissions = success[0];
-				this.missionsList = Object.keys(this.availableMissions).map((k) => {
-					return `${this.availableMissions[k].Id}|${this.availableMissions[k].Name}`;
+				this.groupMissions(success[0]);
+				this.missionsList = Object.keys(this.groupedMissions).map((k) => {
+					return {Name: this.groupedMissions[k].Name, MstId: this.groupedMissions[k].MstId};
 				});
 				this.missionsList.sort();
 				this.parseCharacterInfo(success[1]);
@@ -79,6 +80,24 @@ class UtageInfo {
 		});
 	}
 	
+		
+	groupMissions(missions) {
+		for(let key of Object.keys(missions)) {
+			let mis = missions[key];
+			if(!this.groupedMissions[mis.MstId]) {
+				this.groupedMissions[mis.MstId] = {
+					Name: mis.Name,
+					SummaryText: mis.SummaryText,
+					MstId: mis.MstId,
+					Missions: {}
+				}
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+			} else {
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+			}
+		}
+	}
+	
 	get translations() {
 		return this.translationsInner[this.currentTranslation];
 	}
@@ -87,10 +106,15 @@ class UtageInfo {
 		return this.charTranslationsInner[this.currentTranslation];
 	}
 	
+	get missionTranslations() {
+		return this.missionTranslationsInner[this.currentTranslation];
+	}
+	
 	setTranslationLanguage(key, missionPath) {
 		return new Promise((resolve, reject) => {
 			this.currentTranslation = key;
-			var promises = [this.loadCharacterTranslations(key)];
+			let promises = [this.loadCharacterTranslations(key),
+			this.loadMissionNamesTranslations(key)];
 			if(missionPath) {
 				promises.push(this.loadMissionTranslation(missionPath, key));
 			}
@@ -114,6 +138,7 @@ class UtageInfo {
 					this.translationsInner[this.currentTranslation] = success;
 					resolve();
 				}, (failure) => {
+					console.log(failure);
 					resolve();
 				});
 			}
@@ -130,6 +155,24 @@ class UtageInfo {
 					this.charTranslationsInner[this.currentTranslation] = success;
 					resolve();
 				}, (failure) => {
+					console.log(failure);
+					resolve();
+				});
+			}
+		});
+	}
+	
+	loadMissionNamesTranslations() {
+		return new Promise((resolve, reject) => {
+			if(this.missionTranslationsInner[this.currentTranslation]) {
+				resolve();
+			} else {
+				commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`)
+				.then((success) => {
+					this.missionTranslationsInner[this.currentTranslation] = success;
+					resolve();
+				}, (failure) => {
+					console.log(failure);
 					resolve();
 				});
 			}

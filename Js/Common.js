@@ -45,6 +45,37 @@ class commonFunctions {
 		});
 	}
 	
+	static readQueryParameters() {
+		let params = {};
+		let indexOfStart = window.location.href.indexOf("?");
+		let toCheck = window.location.href.slice(indexOfStart + 1);
+		let name = "";
+		let value = "";
+		let nameStep = true;
+		for(let i = 0; i < toCheck.length; ++i) {
+			if(toCheck[i] === "=") {
+				name = name.toLowerCase();
+				params[decodeURIComponent(name)] = "";
+				nameStep = false
+				continue;
+			}
+			if(toCheck[i] === "&") {
+				params[name] = decodeURIComponent(value);
+				name = "";
+				value = "";
+				nameStep = true;
+				continue;
+			}
+			if(nameStep) {
+				name += toCheck[i];
+			} else {
+				value += toCheck[i];
+			}
+		}
+		params[name] = decodeURIComponent(value);
+		return params;
+	}
+	
 	static readLine(line, headers) {
 		if(line.startsWith('//')) {
 			return {comment: line};

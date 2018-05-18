@@ -426,6 +426,7 @@ class Player {
 	processCommand(delta) {
 		try {
 			let cur = this.currentCommand;
+			//No seriously this is a thing they did
 			if(cur.Arg2 === '＜Off>') {
 				cur.Arg2 = '<off>';
 			}

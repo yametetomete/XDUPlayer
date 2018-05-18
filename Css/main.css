@@ -52,6 +52,8 @@
     to  { transform: translate(0, -5px); }
 }
 
+body { margin: 0; }
+
 .centered { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
 .hidden { opacity: 0; }
@@ -98,6 +100,8 @@
 
 #dialog-scroll img { height: 35px; }
 
+#title-container { margin-bottom: 2px; }
+
 #other-controls-container { display: flex; width: 550px; justify-content: center; }
 
 #select-mission { min-width: 0; }
@@ -122,9 +126,11 @@
 
 #mission-modal span { max-width: 100%; word-break: break-word; max-height: 120px; overflow: auto;}
 
-#mission-modal .mission-title { text-align: center; }
+#mission-modal .mission-title { font-weight: bold; text-align: center; }
 
-#mission-modal #mission-ids { margin-top: auto; width: 100%; display: flex; justify-content: space-around; }
+#mission-modal #mission-ids { margin-top: auto; width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+#mission-modal #mission-ids div { display: flex; align-items: center; }
 
 #modal-buttons { bottom: 0; margin-top: 10px; width: 100%; display: flex; justify-content: space-between; }
 

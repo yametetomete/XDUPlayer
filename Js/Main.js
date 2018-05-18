@@ -13,8 +13,13 @@ const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn"];
 let bodyLoaded = false;
 let utageLoaded = false;
+let languagesLoaded = false;
 let selectedLang = "eng";
 let currentMission = undefined;
+let currentMissionMst = 0;
+let currentMissionIndex = 0;
+let currentMissionList = [];
+let urlParams = {};
 let screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 let screenSizeTimeout = undefined;
@@ -44,14 +49,14 @@ function onBodyLoaded() {
 		document.getElementById('loading-font').style.cssText = "display: none;";
 		loadLocalStorage();
 	}
-	if(utageLoaded) {
+	if(utageLoaded && languagesLoaded) {
 		document.getElementById('loading-utage').style.cssText = "display: none;";
 	}
-	if(bodyLoaded && utageLoaded) {
+	if(bodyLoaded && utageLoaded && languagesLoaded) {
 		document.getElementById('loading-container').style.cssText = "opacity: 0;";
 		onAllLoaded();
 	} else {
-		setTimeout(checkIsLoaded, 300);
+		setTimeout(checkIsLoaded, 200);
 	}
 })();
 
@@ -65,6 +70,7 @@ function onAllLoaded(success) {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
+		checkQueryParameters();
 	}, 0);
 }
 
@@ -91,7 +97,13 @@ function loadLocalStorage() {
 		if(languages.includes(lang)) {
 			selectedLang = lang;
 		}
-		utage.setTranslationLanguage(selectedLang, '');
+		utage.setTranslationLanguage(selectedLang, '')
+		.then((success) => {
+			languagesLoaded = true;
+		}, (failure) => {
+			languagesLoaded = true;
+			console.log(failure);
+		});
 	} catch(error) {
 		console.log(error);
 	}
@@ -107,11 +119,16 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			if(!m.includes('MA3.5-')) {
+			//Only allowing 3.5 right now
+			if(!(m.MstId >= 104001 && m.MstId <= 104008)) {
 				continue;
 			}
-			opt.setAttribute('value', m);
-			opt.innerText = m.replace('|', ' - ');
+			opt.setAttribute('value', m.MstId);
+			let name = m.Name;
+			if(utage.missionTranslations[m.MstId]) {
+				name = utage.missionTranslations[m.MstId].Name || name;
+			}
+			opt.innerText = name;
 		}
 		selectBox.appendChild(opt);
 	}
@@ -129,27 +146,46 @@ function buildLanguageList() {
 	selectBox.value = selectedLang;
 }
 
+function checkQueryParameters() {
+	urlParams = commonFunctions.readQueryParameters();
+	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
+		missionChanged(urlParams['mstid'], urlParams['id']);
+	}
+}
+
 function missionDropDownChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}') { return; }
 	let cont = document.getElementById("modal-container");
-	let misId = event.currentTarget.value.split('|')[0];
-	let mis = utage.availableMissions[misId];
+	let misId = event.currentTarget.value;
+	let mis = utage.groupedMissions[misId];
 	if(!mis) { console.log(`Mission ${misId} not found`); return; }
-	cont.innerHTML = '' +
-	'<div id="mission-modal" class="modal">' +
-		`<span class="mission-title">Name: ${mis.Name || 'none'}</span>` +
-		`<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>` +
-		`<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>` +
-		`<span>Summary: ${mis.SummaryText || 'none'}</span>` +
-		'<div id="mission-ids">' +
-			`<span>MstId: ${mis.MstId}</span>` +
-			`<span>Id: ${mis.Id}</span>` +
-		'</div>' +
-		'<div id="modal-buttons">' +
-			'<button onclick="closeMissionModal(event, false)">Close</button>' +
-			`<button onclick="missionChanged(${misId})">Play</button>` +
-		'</div>' +
-	'</div>';
+	let name = mis.Name;
+	let summary = mis.SummaryText;
+	if(utage.missionTranslations[mis.MstId]) {
+		name = utage.missionTranslations[mis.MstId].Name || name;
+		summary = utage.missionTranslations[mis.MstId].SummaryText || summary;
+	}
+	let chapterSelect = '<div><span>Chapter Select:</span><select id="ChapterSelect">';
+	for(let k of Object.keys(mis.Missions)) {
+		var m = mis.Missions[k];
+		chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
+	}
+	chapterSelect += '</select></div>';
+	cont.innerHTML = `
+	<div id="mission-modal" class="modal">
+		<span class="mission-title">${name || 'none'}</span>
+		<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>
+		<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>
+		<span>Summary: ${summary || 'none'}</span>
+		<div id="mission-ids">
+			${chapterSelect}
+		</div>
+		<div id="modal-buttons">
+			<button onclick="closeMissionModal(event, false)">Close</button>
+			<span>MstId: ${mis.MstId}</span>
+			<button onclick="missionChanged(${mis.MstId})">Play</button>
+		</div>
+	</div>`;
 	document.getElementById("click-catcher").style.cssText = 'display: flex;';
 	cont.style.cssText = 'display: flex;';
 }
@@ -166,7 +202,15 @@ function closeMissionModal(event, wasStarted) {
 	cont.innerHTML = '';
 }
 
-function missionChanged(value) {
+function missionChanged(mstId, value) {
+	let mst = utage.groupedMissions[mstId];
+	let name = mst.Name;
+	if(utage.missionTranslations[mstId]) {
+		name = utage.missionTranslations[mstId].Name || name;
+	}
+	if(!value) {
+		value = document.getElementById("ChapterSelect").value;
+	}
 	if(!audio) {
 		audio = new audioController(utage);
 		audio.changeVolume(volume);
@@ -175,27 +219,33 @@ function missionChanged(value) {
 	}
 	player.resetAll()
 	.then((success) => {
-		let newMission = utage.availableMissions[value];
+		let newMission = mst.Missions[value];
+		checkMissionList(mst.Missions, value);
 		currentMission = newMission;
+		currentMissionMst = mstId;
 		let promises = [
 			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
 			utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
 		];
 		closeMissionModal(undefined, true);
-		
 		Promise.all(promises)
 		.then((success) => {
-			let res = player.playFile()
+			document.getElementById("playing-title").innerText = `${name} (${value})`;
+			player.playFile()
 			.then((success) => {
-				player.resetAll();
-				currentMission = undefined;
+				if(currentMissionIndex !== currentMissionList.length - 1) {
+					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id)
+				} else {
+					player.resetAll();
+					resetMissions();
+				}
 			}, (failure) => {
 				player.resetAll();
-				currentMission = undefined;
+				resetMissions();
 				console.log(failure);
 			});
 		}, (failure) => {
-			currentMission = undefined;
+			resetMissions();
 			console.log(failure);
 		});
 	}, (failure) => {
@@ -213,12 +263,49 @@ function languageChanged(event) {
 	utage.setTranslationLanguage(selectedLang, missionPath);
 }
 
+function checkMissionList(missions, currentvalue) {
+	currentMissionList = [];
+	let i = 0;
+	for(var m of Object.keys(missions)) {
+		currentMissionList.push(m);
+		if(m === currentvalue) {
+			currentMissionIndex = i;
+		}
+		++i;
+	}
+	if(currentMissionIndex + 1 === currentMissionList.length) {
+		document.getElementById("skip-button").style.cssText = "display: none;";
+	} else {
+		document.getElementById("skip-button").style.cssText = "display: inline-block;";
+	}
+}
+
+function resetMissions() {
+	currentMissionIndex = 0;
+	currentMissionList = [];
+	currentMission = undefined;
+	currentMissionMst = 0;
+	document.getElementById("skip-button").style.cssText = "display: inline-block;";
+	document.getElementById("playing-title").innerText = 'None';
+	document.getElementById('select-mission').value = '{Select}';
+}
+
 function onMainClick(event) {
 	player.onMainClick(event);
 }
 
 function hideUiClicked(event) {
 	player.hideUiClicked(event);
+}
+
+function skipClicked(event) {
+	if(player.uiHidden) {
+		player.hideUiClicked(event);
+	} else if(player.runEvent && currentMissionIndex !== currentMissionList.length - 1) {
+		event.preventDefault();
+		event.stopPropagation();
+		missionChanged(currentMissionMst, utage.groupedMissions[currentMissionMst].Missions[currentMissionList[currentMissionIndex+1]].Id);
+	}
 }
 
 function dialogScrollUp(event) {
@@ -263,6 +350,7 @@ function onWindowResize(event) {
 		screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 		screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 		let topContainerHeight = document.getElementById('other-controls-container').offsetHeight + 6;
+		topContainerHeight += document.getElementById('title-container').offsetHeight;
 		let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, topContainerHeight);
 		player.updateResolution(res);
 		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
