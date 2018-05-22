@@ -31,7 +31,7 @@ const jsonFiles = [
 "Js/XduMissions.json"
 ];
 const translations = [
-"Js/Translations/*.json"
+"Js/Translations/**"
 ];
 
 const jsDest = "Js";

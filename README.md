@@ -1,1 +1,1 @@
-run `npm install` then `gulp dist` to build files into Dist folder.
+run `npm install` then `gulp dist` or `node(nodejs) node_modules/gulp/bin/gulp.js dist` to build files into Dist folder.

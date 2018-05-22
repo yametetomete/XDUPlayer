@@ -448,6 +448,9 @@ class Player {
 					this.text.titleText(true, text);
 					break;
 				}
+				case "scenetitle13": {
+					
+				}
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
 					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;

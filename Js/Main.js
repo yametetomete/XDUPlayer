@@ -225,7 +225,7 @@ function missionChanged(mstId, value) {
 		currentMissionMst = mstId;
 		let promises = [
 			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
-			utage.loadMissionTranslation(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
+			utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
 		];
 		closeMissionModal(undefined, true);
 		Promise.all(promises)
@@ -258,7 +258,7 @@ function languageChanged(event) {
 	selectedLang = event.currentTarget.value;
 	let missionPath = '';
 	if(currentMission) {
-		missionPath = `${utage.rootDirectory}XDUData/${currentMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
+		missionPath = `${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
 	}
 	utage.setTranslationLanguage(selectedLang, missionPath);
 }
