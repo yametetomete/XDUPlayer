@@ -4319,11 +4319,29 @@
     "Name": "SI2-60:早朝トレーニング",
     "SummaryText": "もうすぐマラソン大会ッ！響たちと一緒に\n練習に参加することにしたクリスだったが、\nその内容は予想以上にハードでッ！？"
   },
+  "201007311": {
+    "Path": "Asset/Utage/side02/Scenario/201007311.tsv.utage",
+    "MstId": 202068,
+    "Id": "201007311",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "SI2-64:ポカポカ陽気で",
+    "SummaryText": "切歌の計画は、忙しいエルフナインを外に\n連れ出すことッ！そのまま家に招くはずが、\n暖かな日差しにまどろんでしまい……。"
+  },
+  "201007312": {
+    "Path": "Asset/Utage/side02/Scenario/201007312.tsv.utage",
+    "MstId": 202068,
+    "Id": "201007312",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "SI2-64:ポカポカ陽気で",
+    "SummaryText": "切歌の計画は、忙しいエルフナインを外に\n連れ出すことッ！そのまま家に招くはずが、\n暖かな日差しにまどろんでしまい……。"
+  },
   "201007411": {
     "Path": "Asset/Utage/side02/Scenario/201007411.tsv.utage",
     "MstId": 202065,
     "Id": "201007411",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
     "Name": "SI2-61:中国拳法大特訓",
     "SummaryText": "中国拳法の特訓をすることになった翼。\n響の主張によると、特訓にはある衣装が\n必要不可欠らしくて……ッ！？"
@@ -4332,10 +4350,19 @@
     "Path": "Asset/Utage/side02/Scenario/201007412.tsv.utage",
     "MstId": 202065,
     "Id": "201007412",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
     "Name": "SI2-61:中国拳法大特訓",
     "SummaryText": "中国拳法の特訓をすることになった翼。\n響の主張によると、特訓にはある衣装が\n必要不可欠らしくて……ッ！？"
+  },
+  "201007511": {
+    "Path": "Asset/Utage/side02/Scenario/201007511.tsv.utage",
+    "MstId": 202069,
+    "Id": "201007511",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "SI2-65:他愛もない幸せ",
+    "SummaryText": "そうだ、ピクニックにいこうッ！\n４人で空を見上げる……そんな時間が、\n彼女たちにとってかけがえのない幸せ。"
   },
   "201007611": {
     "Path": "Asset/Utage/side02/Scenario/201007611.tsv.utage",
@@ -4350,7 +4377,7 @@
     "Path": "Asset/Utage/side02/Scenario/201007711.tsv.utage",
     "MstId": 202066,
     "Id": "201007711",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
     "Name": "SI2-62:愛情表現",
     "SummaryText": "大きな犬と会った調、切歌、セレナの３人。\nフライングディスクで意外な才能を発揮した\nセレナに、ワンコの愛情表現が炸裂するッ！"
@@ -4359,10 +4386,19 @@
     "Path": "Asset/Utage/side02/Scenario/201007712.tsv.utage",
     "MstId": 202066,
     "Id": "201007712",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
     "Name": "SI2-62:愛情表現",
     "SummaryText": "大きな犬と会った調、切歌、セレナの３人。\nフライングディスクで意外な才能を発揮した\nセレナに、ワンコの愛情表現が炸裂するッ！"
+  },
+  "201007811": {
+    "Path": "Asset/Utage/side02/Scenario/201007811.tsv.utage",
+    "MstId": 202070,
+    "Id": "201007811",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "SI2-66:翼のバースデー2018",
+    "SummaryText": "ついに来た翼の誕生日。サプライズを\n成功させるためのミッション開始ッ！\nしかし、気づかれそうになり……ッ！？"
   },
   "202000111": {
     "Path": "Asset/Utage/side01/Scenario/202000111.tsv.utage",
@@ -6168,27 +6204,63 @@
     "Path": "Asset/Utage/side01/Scenario/206070111.tsv.utage",
     "MstId": 333001,
     "Id": "206070111",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
-    "Name": "EV27-S1:燃えよッ！カンフーマスター：前編",
+    "Name": "EV29-S1:燃えよッ！カンフーマスター：前編",
     "SummaryText": ""
   },
   "206070211": {
     "Path": "Asset/Utage/side01/Scenario/206070211.tsv.utage",
     "MstId": 333002,
     "Id": "206070211",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
-    "Name": "EV27-S2:燃えよッ！カンフーマスター：中編",
+    "Name": "EV29-S2:燃えよッ！カンフーマスター：中編",
     "SummaryText": ""
   },
   "206070311": {
     "Path": "Asset/Utage/side01/Scenario/206070311.tsv.utage",
     "MstId": 333003,
     "Id": "206070311",
-    "LastUpdateTime": 636591411500000000,
+    "LastUpdateTime": 636619058250000000,
     "Type": 1,
-    "Name": "EV27-S3:燃えよッ！カンフーマスター：後編",
+    "Name": "EV29-S3:燃えよッ！カンフーマスター：後編",
+    "SummaryText": ""
+  },
+  "206080111": {
+    "Path": "Asset/Utage/side01/Scenario/206080111.tsv.utage",
+    "MstId": 334001,
+    "Id": "206080111",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "EV30-S1:怒りのッ！カンフー３姉妹：前編",
+    "SummaryText": ""
+  },
+  "206080211": {
+    "Path": "Asset/Utage/side01/Scenario/206080211.tsv.utage",
+    "MstId": 334002,
+    "Id": "206080211",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "EV30-S2:怒りのッ！カンフー３姉妹：中編",
+    "SummaryText": ""
+  },
+  "206080311": {
+    "Path": "Asset/Utage/side01/Scenario/206080311.tsv.utage",
+    "MstId": 334003,
+    "Id": "206080311",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "EV30-S3:怒りのッ！カンフー３姉妹：後編",
+    "SummaryText": ""
+  },
+  "206080411": {
+    "Path": "Asset/Utage/side01/Scenario/206080411.tsv.utage",
+    "MstId": 334012,
+    "Id": "206080411",
+    "LastUpdateTime": 636625973860000000,
+    "Type": 1,
+    "Name": "EV30-BS:怒りのッ！カンフー３姉妹：後日談",
     "SummaryText": ""
   },
   "207010111": {
