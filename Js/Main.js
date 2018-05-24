@@ -202,6 +202,10 @@ function closeMissionModal(event, wasStarted) {
 	} else {
 		prevMission = document.getElementById('select-mission').value;
 	}
+	closeModal(event);
+}
+
+function closeModal(event) {
 	let cont = document.getElementById("modal-container");
 	document.getElementById("click-catcher").style.cssText = 'display: none;';
 	cont.style.cssText = 'display: none;';
@@ -332,6 +336,35 @@ function onBodyKey(event) {
 		event.stopPropagation();
 		player.onMainClick(event);
 	}
+}
+
+function openHelpModal(event) {
+	let cont = document.getElementById("modal-container");
+	cont.innerHTML = `
+	<div id="mission-modal" class="modal">
+		<span class="mission-title">YameteTomete XDUPlayer V1.0</span>
+		<div>
+			<div style="margin: 5px;">Browser Support:<br/>
+			Chromium: 57+, May work earlier with no audio<br/>
+			Firefox: 52+, 57+ recommended<br/>
+			Edge: 17+, older may not have audio<br/>
+			Safari: 11+, no audio<br/>
+			IE: Never
+			</div>
+			<div style="margin: 5px;">Mobile:<br/>
+			Android: 5+, Updated Chrome/Firefox/Edge<br/>
+			iOS: 11+, no audio<br/>
+			Recommended to request desktop site
+			</div>
+		</div>
+		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
+		<div id="modal-buttons">
+			<button onclick="closeModal(event)">Close</button>
+			<a href="https://git.poweris.moe/xduplayer.git/" target="_blank">Source</a>
+		</div>
+	</div>`;
+	document.getElementById("click-catcher").style.cssText = 'display: flex;';
+	cont.style.cssText = 'display: flex;';
 }
 
 function toggleMute(event) {
