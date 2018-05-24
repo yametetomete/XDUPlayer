@@ -71,9 +71,6 @@ function onAllLoaded(success) {
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
 		checkQueryParameters();
-		//Firefox52 hack for weird sizing thing.
-		document.body.style.zoom = 1.0000001;
-		setTimeout(function(){document.body.style.zoom = 1;},50);
 	}, 0);
 }
 
@@ -153,8 +150,13 @@ function buildLanguageList() {
 function checkQueryParameters() {
 	urlParams = commonFunctions.readQueryParameters();
 	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
-		missionChanged(urlParams['mstid'], urlParams['id']);
+		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
 	}
+}
+
+function playFromQuery(event) {
+	missionChanged(urlParams['mstid'], urlParams['id']);
+	document.getElementById('play-from-query').style.cssText = "display: none;";
 }
 
 function missionDropDownChanged(event) {
@@ -358,8 +360,5 @@ function onWindowResize(event) {
 		let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, topContainerHeight);
 		player.updateResolution(res);
 		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
-		//Firefox52 hack for weird sizing thing.
-		document.body.style.zoom = 1.0000001;
-		setTimeout(function(){document.body.style.zoom = 1;},50);
 	}, 400);
 }

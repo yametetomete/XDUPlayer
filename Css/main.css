@@ -102,7 +102,7 @@ body { margin: 0; }
 
 #title-container { margin-bottom: 2px; }
 
-#other-controls-container { display: flex; width: 550px; justify-content: center; }
+#other-controls-container { display: flex; width: 550px; justify-content: center; z-index: 10; }
 
 #select-mission { min-width: 0; }
 
