@@ -326,6 +326,14 @@ function dialogScrollDown(event) {
 	textFunc.scrollTextDown();
 }
 
+function onBodyKey(event) {
+	if(event.code.toLowerCase() === "space") {
+		event.preventDefault();
+		event.stopPropagation();
+		player.onMainClick(event);
+	}
+}
+
 function toggleMute(event) {
 	isMuted = !isMuted;
 	if(audio) {

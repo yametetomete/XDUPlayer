@@ -210,6 +210,19 @@ class commonFunctions {
 				text = text.replace(m, `<ruby>${innerText}<rt>${rText}</rt></ruby>`);
 			}
 		}
+		//convert size tags to spans with font size
+		let sizeMatches = text.match(/<size=.*?>/g);
+		if(sizeMatches) {
+			for(let i = 0; i < sizeMatches.length; ++i) {
+				let m = sizeMatches[i];
+				let size = m.match(/\d{1,3}/);
+				if(size[0]) {
+					let s = Number(size[0]) - 1;
+					text = text.replace(m, `<span style="font-size:${s}px;">`);
+				}
+			}
+		}
+		text = text.replace('</size>', '</span>')
 		return text;
 	}
 	
