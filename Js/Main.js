@@ -71,6 +71,9 @@ function onAllLoaded(success) {
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
 		checkQueryParameters();
+		//Firefox52 hack for weird sizing thing.
+		document.body.style.zoom = 1.0000001;
+		setTimeout(function(){document.body.style.zoom = 1;},50);
 	}, 0);
 }
 
@@ -120,7 +123,8 @@ function buildMissionSelectList() {
 		} else {
 			let m = utage.missionsList[i];
 			//Only allowing 3.5 right now
-			if(!(m.MstId >= 104001 && m.MstId <= 104008)) {
+			//if(!(m.MstId >= 104001 && m.MstId <= 104008)) {
+			if(m.MstId !== 202070) {
 				continue;
 			}
 			opt.setAttribute('value', m.MstId);
@@ -354,5 +358,8 @@ function onWindowResize(event) {
 		let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, topContainerHeight);
 		player.updateResolution(res);
 		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
+		//Firefox52 hack for weird sizing thing.
+		document.body.style.zoom = 1.0000001;
+		setTimeout(function(){document.body.style.zoom = 1;},50);
 	}, 400);
 }
