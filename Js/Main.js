@@ -342,7 +342,7 @@ function openHelpModal(event) {
 	let cont = document.getElementById("modal-container");
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
-		<span class="mission-title">YameteTomete XDUPlayer V1.0</span>
+		<span class="mission-title">YameteTomete XDUPlayer V1.0.0</span>
 		<div>
 			<div style="margin: 5px;">Browser Support:<br/>
 			Chromium: 57+, May work earlier with no audio<br/>
@@ -357,6 +357,7 @@ function openHelpModal(event) {
 			Recommended to request desktop site
 			</div>
 		</div>
+		<a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g">YameteTomete Discord</a>
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
 		<div id="modal-buttons">
 			<button onclick="closeModal(event)">Close</button>
