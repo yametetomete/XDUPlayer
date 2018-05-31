@@ -26,6 +26,7 @@ let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
 let prevMission = '{Select}';
+const availableMstIds = [202070, 202013];
 
 function onBodyLoaded() {
 	bodyLoaded = true;
@@ -119,9 +120,7 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			//Only allowing 3.5 right now
-			//if(!(m.MstId >= 104001 && m.MstId <= 104008)) {
-			if(m.MstId !== 202070) {
+			if(!availableMstIds.includes(m.MstId)) {
 				continue;
 			}
 			opt.setAttribute('value', m.MstId);

@@ -153,12 +153,18 @@ class audioController {
 	}
 	
 	loadSounds(soundMap, callback) {
-		this.loader = new bufferLoader(this.audioCtx, soundMap, (percent) => {
+		if(!soundMap || soundMap.length === 0) {
 			if (callback) {
-				callback(percent);
+				callback(100);
 			}
-		});
-		this.loader.load();
+		} else {
+			this.loader = new bufferLoader(this.audioCtx, soundMap, (percent) => {
+				if (callback) {
+					callback(percent);
+				}
+			});
+			this.loader.load();
+		}
 	}
 	
 	resetAll() {
