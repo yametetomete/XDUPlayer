@@ -681,7 +681,6 @@ class Player {
 					break;
 				case "getitem01": //103400252
 					break;
-
 				case "skillmovie": //103500341
 					break;
 				case "arcanoise_appearance02": { //103500341
@@ -724,7 +723,6 @@ class Player {
 					break;
 				}
 				case "noise_disappearance03": { //103500552
-				debugger;
 					this.waitTime = Number(cur.Arg1) * 1000;
 					let c1 = this.currentCharacters['キャラ右'] || this.currentCharacters['キャラ右02'];
 					if(c1) {
@@ -744,6 +742,21 @@ class Player {
 				}
 				case "noise_disappearance11": //103500341
 					this.waitTime = Number(cur.Arg1) * 1000;
+					break;
+				case "enemy_disappearance01": //312000112
+					processTryRemoveChar(cur.Arg1);
+					break;
+				case "enemy_disappearance02": //312000111
+					processTryRemoveChar(cur.Arg1);
+					processTryRemoveChar(cur.Arg2);
+					break;
+				case "darkaura01": //312000111
+					break;
+				case "somethingnew_appearance01": //312000111
+					break;
+				case "unhappyseed_appearance01"://312000112
+					break;
+				case "unhappyseed_appearance02": //312000111
 					break;
 				case "continue01":
 					break;
@@ -928,6 +941,18 @@ class Player {
 			}
 			return false;
 		}
+	}
+	
+	processTryRemoveChar(character) {
+		let curChar = undefined;
+		for(let c of Object.keys(this.currentCharacters)) {
+			if(!this.currentCharacters[c]) { continue; }
+			if(this.currentCharacters[c].charName === character) {
+				curChar = this.currentCharacters[c];
+			}
+		}
+		if(!curChar)
+			return;
 	}
 	
 	//Checks if the current command is trying to put text on the screen.
