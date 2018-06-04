@@ -159,31 +159,42 @@ class Player {
 							}
 							break;
 						}
+						case "somethingnew_appearance01":
+						case "unhappyseed_appearance01":
+						case "unhappyseed_appearance02":
 						case "arcanoise_appearance02":
 						case "arcanoise_appearance03": {
-							let Pat = this.defaultCharPattern;
+							let pat = this.defaultCharPattern;
 							if(c.Arg1) {
-								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Pat]) {
-									if(!this.loader.resources[`char|${c.Arg1}|${Pat}`]) {
-									this.loader.add(`char|${c.Arg1}|${Pat}`, this.utage.characterInfo[c.Arg1][Pat].FileName);
+								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][pat]) {
+									if(!this.loader.resources[`char|${c.Arg1}|${pat}`]) {
+										this.loader.add(`char|${c.Arg1}|${pat}`, this.utage.characterInfo[c.Arg1][pat].FileName);
 									}
 								}
 							}
 							if(c.Arg2) {
-								if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][Pat]) {
-									if(!this.loader.resources[`char|${c.Arg2}|${Pat}`]) {
-									this.loader.add(`char|${c.Arg2}|${Pat}`, this.utage.characterInfo[c.Arg2][Pat].FileName);
+								if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][pat]) {
+									if(!this.loader.resources[`char|${c.Arg2}|${pat}`]) {
+										this.loader.add(`char|${c.Arg2}|${pat}`, this.utage.characterInfo[c.Arg2][pat].FileName);
 									}
 								}
 							}
 							if(c.Arg3) {
-								if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][Pat]) {
-									if(!this.loader.resources[`char|${c.Arg3}|${Pat}`]) {
-									this.loader.add(`char|${c.Arg3}|${Pat}`, this.utage.characterInfo[c.Arg3][Pat].FileName);
+								if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][pat]) {
+									if(!this.loader.resources[`char|${c.Arg3}|${pat}`]) {
+										this.loader.add(`char|${c.Arg3}|${pat}`, this.utage.characterInfo[c.Arg3][pat].FileName);
 									}
 								}
 							}
+							break;
 						}
+						case "scenetitle01":
+							//this isint in the texture file.
+							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/bg_title.jpg`);
+							break;
+						case "scenetitle13":
+							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/event0010.png`);
+							break;
 					}
 				} catch (error) {
 					console.log(error);
@@ -202,8 +213,6 @@ class Player {
 			});
 			//Manually load white bg for fading. Can be tinted to change color.
 			this.loader.add('bg|whiteFade', `${this.utage.rootDirectory}Images/white.png`);
-			//this isint in the texture file.
-			this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/bg_title.jpg`)
 			this.loader
 			.on("progress", (loader, resource) => {
 				this.onPixiProgress(loader, resource);
@@ -430,8 +439,11 @@ class Player {
 			if(cur.Arg2 === '＜Off>') {
 				cur.Arg2 = '<off>';
 			}
+			if ((cur.Command || "").toLowerCase().includes('scenetitle')) {
+				cur.Command = 'scenetitle';
+			}
 			switch((cur.Command || "").toLowerCase()) {
-				case "scenetitle01": {
+				case "scenetitle": {
 					this.waitTime = this.titleWaitTime * 1000;
 					try {
 						let container = this.layers[this.bgLayerName].container;
@@ -447,9 +459,6 @@ class Player {
 					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
-				}
-				case "scenetitle13": {
-					
 				}
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
@@ -610,8 +619,12 @@ class Player {
 					break;
 				}
 				case "characteroff": {
-					this.text.dialogText(false, "");
-					this.text.characterName(false, "");
+					if(cur.Text) {
+						checkPutText(cur);
+					} else {
+						this.text.dialogText(false, "");
+						this.text.characterName(false, "");
+					}
 					for(let c of Object.keys(this.currentCharacters)) {
 						if(!this.currentCharacters[c]) { continue; }
 						let curChar = this.currentCharacters[c];
@@ -623,6 +636,7 @@ class Player {
 							break;
 						}
 					}
+					break;
 				}
 				case "tween":
 					this.processTween(delta, cur);
@@ -683,6 +697,12 @@ class Player {
 					break;
 				case "skillmovie": //103500341
 					break;
+				case "unhappyseed_appearance01": { //312000112
+					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .5 };
+					this.checkPutCharacterScreen(customCommand, false);
+					break;
+				}
+				case "unhappyseed_appearance02": //312000111
 				case "arcanoise_appearance02": { //103500341
 					if(cur.Arg1 && cur.Arg2) {
 						this.waitTime = 1000;
@@ -753,10 +773,6 @@ class Player {
 				case "darkaura01": //312000111
 					break;
 				case "somethingnew_appearance01": //312000111
-					break;
-				case "unhappyseed_appearance01"://312000112
-					break;
-				case "unhappyseed_appearance02": //312000111
 					break;
 				case "continue01":
 					break;
@@ -1188,11 +1204,11 @@ class Player {
 
 	processEndCommand(delta) {
 		let cur = this.currentCommand;
-		switch(cur.Command) {
-			case "SceneTitle01":
+		switch((cur.Command || "").toLowerCase()) {
+			case "scenetitle":
 				this.text.titleText(false, '');
 				break;
-			case "DivaEffect":
+			case "divaeffect":
 				this.text.divaText(false, '');
 				break;
 		}

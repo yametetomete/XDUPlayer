@@ -32,10 +32,11 @@ class UtageInfo {
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`),
 				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/XduMissionsCustom.json`),
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.groupMissions(success[0]);
+				this.groupMissions(success[0], success[8]);
 				this.missionsList = Object.keys(this.groupedMissions).map((k) => {
 					return {Name: this.groupedMissions[k].Name, MstId: this.groupedMissions[k].MstId};
 				});
@@ -81,9 +82,23 @@ class UtageInfo {
 	}
 	
 		
-	groupMissions(missions) {
+	groupMissions(missions, customMissions) {
 		for(let key of Object.keys(missions)) {
 			let mis = missions[key];
+			if(!this.groupedMissions[mis.MstId]) {
+				this.groupedMissions[mis.MstId] = {
+					Name: mis.Name,
+					SummaryText: mis.SummaryText,
+					MstId: mis.MstId,
+					Missions: {}
+				}
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+			} else {
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+			}
+		}
+		for(let key of Object.keys(customMissions)) {
+			let mis = customMissions[key];
 			if(!this.groupedMissions[mis.MstId]) {
 				this.groupedMissions[mis.MstId] = {
 					Name: mis.Name,
@@ -167,9 +182,16 @@ class UtageInfo {
 			if(this.missionTranslationsInner[this.currentTranslation]) {
 				resolve();
 			} else {
-				commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`)
+				var promises = [
+					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`),
+					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`)
+				];
+				Promise.all(promises)
 				.then((success) => {
-					this.missionTranslationsInner[this.currentTranslation] = success;
+					for(let m of Object.keys(success[1])) {
+						success[0][m] = success[1][m];
+					}
+					this.missionTranslationsInner[this.currentTranslation] = success[0];
 					resolve();
 				}, (failure) => {
 					console.log(failure);
