@@ -269,7 +269,10 @@ function languageChanged(event) {
 	if(currentMission) {
 		missionPath = `${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
 	}
-	utage.setTranslationLanguage(selectedLang, missionPath);
+	utage.setTranslationLanguage(selectedLang, missionPath)
+	.then((success) => {
+		buildMissionSelectList();
+	});
 }
 
 function checkMissionList(missions, currentvalue) {

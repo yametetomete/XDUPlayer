@@ -680,18 +680,31 @@ class Player {
 					this.checkPutCharacterScreen(cur, true);
 					break;
 				case "attachit02": //103500221
+					this.waitTime = 300;
 					break;
-				case "attachit03":
+				case "attachit03": //312000112
+					this.waitTime = 300;
 					break;
 				case "attacshot12": //103500231
+					this.waitTime = 300;
 					break;
 				case "attacslash01": //103500642
+					this.waitTime = 300;
 					break;
 				case "attacslash02": //103500231
+					this.waitTime = 300;
+					break;
+				case "attacslash03": //312000112
+					this.waitTime = 300;
+					break;
+				case "attacslash04": //312000142
+					this.waitTime = 300;
 					break;
 				case "attacslash05": //103500552
+					this.waitTime = 300;
 					break;
 				case "attacshot11": //103500251
+					this.waitTime = 300;
 					break;
 				case "getitem01": //103400252
 					break;
@@ -764,16 +777,26 @@ class Player {
 					this.waitTime = Number(cur.Arg1) * 1000;
 					break;
 				case "enemy_disappearance01": //312000112
-					processTryRemoveChar(cur.Arg1);
-					break;
 				case "enemy_disappearance02": //312000111
-					processTryRemoveChar(cur.Arg1);
-					processTryRemoveChar(cur.Arg2);
+				case "enemy_disappearance03": //312000142
+					this.processTryRemoveChar(cur.Arg1);
+					if(cur.Arg2) {
+						this.processTryRemoveChar(cur.Arg2);
+					}
+					if(cur.Arg3) {
+						this.processTryRemoveChar(cur.Arg3);
+					}
 					break;
 				case "darkaura01": //312000111
 					break;
-				case "somethingnew_appearance01": //312000111
+				case "somethingnew_appearance01": { //312000111
+					let c = this.currentCharacters['キャラ中央'];
+					this.waitTime = 1500;
+					this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .200 };
+					this.checkPutCharacterScreen(customCommand, false);
 					break;
+				}
 				case "continue01":
 					break;
 			}
@@ -901,7 +924,7 @@ class Player {
 			sprite.alpha = 0;
 			let fadeTime = 200;
 			//If the character is already on screen put the new sprite in the same position as the old one.
-			if(curChar) {
+			if(curChar && curChar.layer.info.LayerName === cur.Arg3) {
 				sprite.position.x = curChar.sprite.position.x;
 				sprite.position.y = curChar.sprite.position.y;
 				//if the current character is doing a tween transfer the tween to the new one.
@@ -967,8 +990,11 @@ class Player {
 				curChar = this.currentCharacters[c];
 			}
 		}
-		if(!curChar)
+		if(!curChar) {
 			return;
+		}
+		this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 500, finalV: 0, initV: 1, post: "destroy" });
+		this.currentCharacters[curChar.layer.info.LayerName] = undefined;
 	}
 	
 	//Checks if the current command is trying to put text on the screen.

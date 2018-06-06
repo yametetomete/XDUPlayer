@@ -183,7 +183,7 @@ class UtageInfo {
 				resolve();
 			} else {
 				var promises = [
-					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`),
+					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`),
 					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`)
 				];
 				Promise.all(promises)
