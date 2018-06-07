@@ -138,6 +138,13 @@ class Player {
 									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
 								}
 							}
+							if(this.utage.soundInfo["se_変身演出"]) {
+								if(!toLoadSe["se_変身演出"]) {
+									toLoadSe["se_変身演出"] = this.utage.soundInfo["se_変身演出"];
+								}
+							} else {
+								console.log(`Failed to get Henshin SE: se_変身演出`);
+							}
 							break;
 						}
 						case "henshin01": {
@@ -157,13 +164,39 @@ class Player {
 							} else {
 								console.log(`Failed to get BGM: ${c.Arg4}`);
 							}
+							if(this.utage.soundInfo["se_変身演出"]) {
+								if(!toLoadSe["se_変身演出"]) {
+									toLoadSe["se_変身演出"] = this.utage.soundInfo["se_変身演出"];
+								}
+							} else {
+								console.log(`Failed to get Henshin SE: se_変身演出`);
+							}
 							break;
 						}
 						case "somethingnew_appearance01":
 						case "unhappyseed_appearance01":
 						case "unhappyseed_appearance02":
 						case "arcanoise_appearance02":
-						case "arcanoise_appearance03": {
+						case "arcanoise_appearance03":
+						case "darkaura01": {
+							switch(c.Command ? c.Command.toLowerCase() : '') {
+								case "somethingnew_appearance01":
+									if(this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)']) {
+										toLoadSe['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'] = this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'];
+									} else {
+										console.log(`Failed to get somethingnew_appearance01 SE: Se_サムシング・ニューの叫び声(アアア”ア”ア”)`);
+									}
+									break;
+								case "darkaura01":
+								case "unhappyseed_appearance02":
+								case "unhappyseed_appearance01":
+									if(this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)']) {
+										toLoadSe['Se_不幸のオーラ(ヴォォオンン)'] = this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)'];
+									} else {
+										console.log(`Failed to get unhappyseed_appearance SE: Se_不幸のオーラ(ヴォォオンン)`);
+									}
+									break;
+							}
 							let pat = this.defaultCharPattern;
 							if(c.Arg1) {
 								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][pat]) {
@@ -194,6 +227,49 @@ class Player {
 							break;
 						case "scenetitle13":
 							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/event0010.png`);
+							break;
+						case "attachit02":
+						case "attachit03":
+							if(this.utage.soundInfo['se_打撃音（大）']) {
+								toLoadSe['se_打撃音（大）'] = this.utage.soundInfo['se_打撃音（大）'];
+							} else {
+								console.log(`Failed to get attachit SE: se_打撃音（大）`);
+							}
+							break;
+						case "attacshot02":
+							if(this.utage.soundInfo['se_銃撃（単発）']) {
+								toLoadSe['se_銃撃（単発）'] = this.utage.soundInfo['se_銃撃（単発）'];
+							} else {
+								console.log(`Failed to get attacshot SE: se_ガトリング音`);
+							}
+						case "attacshot11": 
+						case "attacshot12": 
+							if(this.utage.soundInfo['se_ガトリング音']) {
+								toLoadSe['se_ガトリング音'] = this.utage.soundInfo['se_ガトリング音'];
+							} else {
+								console.log(`Failed to get attacshot SE: se_ガトリング音`);
+							}
+							break;
+						case "attacslash01":
+						case "attacslash02": 
+						case "attacslash03": 
+						case "attacslash04": 
+						case "attacslash05": 
+							if(this.utage.soundInfo['se_斬撃音']) {
+								toLoadSe['se_斬撃音'] = this.utage.soundInfo['se_斬撃音'];
+							} else {
+								console.log(`Failed to get attacslash SE: se_斬撃音`);
+							}
+							break;
+						case "attaclaser01":
+							if(this.utage.soundInfo['se_レーザーが放たれる音']) {
+								toLoadSe['se_レーザーが放たれる音'] = this.utage.soundInfo['se_レーザーが放たれる音'];
+							} else {
+								console.log(`Failed to get attaclaser SE: se_レーザーが放たれる音`);
+							}
+							break;
+						case "":
+							
 							break;
 					}
 				} catch (error) {
@@ -666,62 +742,93 @@ class Player {
 					break;
 				//custom effects
 				case "henshin01_bgmoff": //101000111
-					this.waitTime = 1000;
+					this.waitTime = 3850;
 					this.audio.stopSound('bgm');
 					this.checkPutCharacterScreen(cur, true);
+					this.audio.playSound('se_変身演出', 'Se');
 					break;
 				case "henshin01":
-					this.waitTime = 1000;
+					this.waitTime = 3850;
 					this.audio.stopSound('bgm');
 					if(this.utage.soundInfo[cur.Arg4]) {
 						this.audio.playSound(cur.Arg4, 'bgm');
 					}
+					this.audio.playSound('se_変身演出', 'Se');
 					cur.Arg4 = 0;
 					this.checkPutCharacterScreen(cur, true);
 					break;
 				case "attachit02": //103500221
-					this.waitTime = 300;
+					this.waitTime = 850;
+					this.audio.playSound('se_打撃音（大）', 'Se');
 					break;
 				case "attachit03": //312000112
-					this.waitTime = 300;
+					this.waitTime = 850;
+					this.audio.playSound('se_打撃音（大）', 'Se');
 					break;
-				case "attacshot12": //103500231
-					this.waitTime = 300;
-					break;
-				case "attacslash01": //103500642
-					this.waitTime = 300;
-					break;
-				case "attacslash02": //103500231
-					this.waitTime = 300;
-					break;
-				case "attacslash03": //312000112
-					this.waitTime = 300;
-					break;
-				case "attacslash04": //312000142
-					this.waitTime = 300;
-					break;
-				case "attacslash05": //103500552
-					this.waitTime = 300;
+				case "attacshot02":
+					this.waitTime = 1500;
+					this.audio.playSound('se_銃撃（単発）', 'Se');
 					break;
 				case "attacshot11": //103500251
-					this.waitTime = 300;
+					this.waitTime = 1680;
+					this.audio.playSound('se_ガトリング音', 'Se');
+					break;
+				case "attacshot12": //103500231
+					this.waitTime = 1680;
+					this.audio.playSound('se_ガトリング音', 'Se');
+					break;
+				case "attacslash01": //103500642
+					this.waitTime = 870;
+					this.audio.playSound('se_斬撃音', 'Se');
+					break;
+				case "attacslash02": //103500231
+					this.waitTime = 870;
+					this.audio.playSound('se_斬撃音', 'Se');
+					break;
+				case "attacslash03": //312000112
+					this.waitTime = 870;
+					this.audio.playSound('se_斬撃音', 'Se');
+					break;
+				case "attacslash04": //312000142
+					this.waitTime = 870;
+					this.audio.playSound('se_斬撃音', 'Se');
+					break;
+				case "attacslash05": //103500552
+					this.waitTime = 870;
+					this.audio.playSound('se_斬撃音', 'Se');
+					break;
+				case "attaclaser01": //312000222
+					this.waitTime = 2360;
+					this.audio.playSound('se_レーザーが放たれる音', 'Se');
 					break;
 				case "getitem01": //103400252
 					break;
 				case "skillmovie": //103500341
 					break;
 				case "unhappyseed_appearance01": { //312000112
+					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
+					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
+					this.waitTime = 2000;
 					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .5 };
 					this.checkPutCharacterScreen(customCommand, false);
 					break;
 				}
 				case "unhappyseed_appearance02": //312000111
 				case "arcanoise_appearance02": { //103500341
-					if(cur.Arg1 && cur.Arg2) {
+					let spawnTime = 0.5;
+					if(cur.Command.toLowerCase().includes("unhappyseed_appearance")) {
+						this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
+						this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
+						this.waitTime = 3000;
+						spawnTime = 2.5;
+					} else {
 						this.waitTime = 1000;
-						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: .5 };
+					}
+					if(cur.Arg1 && cur.Arg2) {
+						
+						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: spawnTime };
 						this.checkPutCharacterScreen(customCommand1, false);
-						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: .5 };
+						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: spawnTime };
 						this.checkPutCharacterScreen(customCommand2, false);
 					}
 					break;
@@ -788,13 +895,16 @@ class Player {
 					}
 					break;
 				case "darkaura01": //312000111
+					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
+					this.waitTime = 2500;
 					break;
 				case "somethingnew_appearance01": { //312000111
+					this.audio.playSound('Se_サムシング・ニューの叫び声(アアア”ア”ア”)', 'Se');
 					let c = this.currentCharacters['キャラ中央'];
-					this.waitTime = 1500;
-					this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .200 };
-					this.checkPutCharacterScreen(customCommand, false);
+					this.waitTime = 4000;
+					this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 3000, finalV: 0, initV: 1, post: "destroy" });
+					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: 3 };
+					this.checkPutCharacterScreen(customCommand, false, true);
 					break;
 				}
 				case "continue01":
@@ -851,20 +961,24 @@ class Player {
 		this.checkPutText(cur);
 	}
 
-	//Checks if the current command is trying to put a new character on the screen or not
-	checkPutCharacterScreen(cur, special = false) {
+	//Checks if the current command is trying to put a new character on the screen or not.
+	//special is used if the command actually has a command param such as Henshin since normal text commands dont.
+	//ignoreCurrent is used for if you are remvoing a current character yourself and don't want this to add another fade out to it such as somethingnew_appearance01.
+	checkPutCharacterScreen(cur, special = false, ignoreCurrent = false,) {
 		if((!cur.Command || special) && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
 			let lay = undefined;
 			let curChar = undefined; //The character that is currently on screen with the same name as Arg1.
 			let prevChar = undefined; //The character that is already on the layer we are trying to put the new char on.
 			//First check if the character is already on screen
-			for(let c of Object.keys(this.currentCharacters)) {
-				if(!this.currentCharacters[c]) { continue; }
-				if(this.currentCharacters[c].charName === cur.Arg1) {
-					curChar = this.currentCharacters[c];
-					lay = this.currentCharacters[c].layer;
-					if(!cur.Arg3) { 
-						cur.Arg3 = c;
+			if(!ignoreCurrent) {
+				for(let c of Object.keys(this.currentCharacters)) {
+					if(!this.currentCharacters[c]) { continue; }
+					if(this.currentCharacters[c].charName === cur.Arg1) {
+						curChar = this.currentCharacters[c];
+						lay = this.currentCharacters[c].layer;
+						if(!cur.Arg3) { 
+							cur.Arg3 = c;
+						}
 					}
 				}
 			}
@@ -911,10 +1025,12 @@ class Player {
 				return;
 			}
 			
+			if(!ignoreCurrent) {
 			//If the layer already has a different character on it remove it.
-			if(prevChar && (prevChar.charName !== cur.Arg1 || prevChar.character.Pattern !== chr.Pattern)) {
-				this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-				this.currentCharacters[cur.Arg3] = undefined;
+				if(prevChar && (prevChar.charName !== cur.Arg1 || prevChar.character.Pattern !== chr.Pattern)) {
+					this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
+					this.currentCharacters[cur.Arg3] = undefined;
+				}
 			}
 			
 			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);

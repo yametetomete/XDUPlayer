@@ -26,7 +26,7 @@ let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
 let prevMission = '{Select}';
-const availableMstIds = [202070, 202013, 338001, 338002, 338003, 338004, 338005, 338006, 338007, 338009, 338010, 338011];
+const availableMstIds = [202070, 202013, 338001, 338002, 338003, 338004]//[202070, 202013, 338001, 338002, 338003, 338004, 338005, 338006, 338007, 338009, 338010, 338011];
 
 function onBodyLoaded() {
 	bodyLoaded = true;
