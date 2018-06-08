@@ -348,7 +348,7 @@ function openHelpModal(event) {
 	let cont = document.getElementById("modal-container");
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
-		<span class="mission-title">YameteTomete XDUPlayer V1.0.0</span>
+		<span class="mission-title">YameteTomete XDUPlayer V1.1.0</span>
 		<div>
 			<div style="margin: 5px;">Browser Support:<br/>
 			Chromium: 57+, May work earlier with no audio<br/>
