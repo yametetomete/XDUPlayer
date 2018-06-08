@@ -90,7 +90,7 @@ class audioController {
 		if(!this.loader.bufferList[sound]) {
 			return;
 		}
-		let source = this.audioCtx.createBufferSource()
+		let source = this.audioCtx.createBufferSource();
 		this.sources[sound] = source;
 		source.buffer = this.loader.bufferList[sound];
 		source.loop = false;

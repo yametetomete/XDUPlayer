@@ -158,11 +158,12 @@ class commonFunctions {
 			let color = '';
 			name = name.substring(1);
 			if(name.length === 8) {
-				color = name.slice(0, 6);
-				alpha = name.slice(6, 8);
+				color = parseInt(name.slice(0, 6), 16);
+				alpha = parseInt(name.slice(6, 8), 16) / 255;
+			} else {
+				color = parseInt(name, 16);
+				alpha = 1;
 			}
-			color = parseInt(color, 16);
-			alpha = parseInt(alpha, 16) / 255;
 			return { color, alpha };
 		} else {
 			switch(name.toLowerCase()) {
@@ -182,6 +183,15 @@ class commonFunctions {
 		let g = (hex >> 8) & 255;
 		let b = hex & 255;
 		return [r/255, g/255, b/255];
+	}
+	
+	static componentToHex(c) {
+		var hex = parseInt(c).toString(16);
+		return hex.length == 1 ? "0" + hex : hex;
+	}
+	
+	static rgbToHex(rgb) {
+		return `#${this.componentToHex(rgb[0] * 255)}${this.componentToHex(rgb[1]* 255)}${this.componentToHex(rgb[2]* 255)}`;
 	}
 	
 	static convertUtageTextTags(text) {
@@ -316,6 +326,15 @@ class commonFunctions {
 				retval.speed += props[i];
 			}
 			retval.speed = Number(retval.speed);
+		}
+		let indexC = props.indexOf("color=");
+		if(indexC !== -1) {
+			retval.color = "";
+			for(let i = indexC + 6; i < props.length; ++i) {
+				if(props[i] == " ") { break; }
+				retval.color += props[i];
+			}
+			retval.color = retval.color;
 		}
 		return retval;
 	}

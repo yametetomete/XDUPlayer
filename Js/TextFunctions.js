@@ -88,6 +88,7 @@ class TextFunctions {
 			if (this.dialogToDisplay.curPos === this.dialogToDisplay.text.length) {
 				this.showNextIndicator(true);
 				this.scrollingText = false;
+				this.dialog.scrollTop = 0;
 				return;
 			} else {
 				this.dialogToDisplay.curPos += 1;
@@ -113,7 +114,7 @@ class TextFunctions {
 		this.dialogInner.innerHTML = this.dialogToDisplay.fullText;
 		let lHeight = this.lineHeight * 2;
 		if(this.dialogInner.offsetHeight > lHeight + 5) {
-			this.dialog.scrollTop = this.dialogInner.offsetHeight - lHeight;
+			this.dialog.scrollTop = 0//this.dialogInner.offsetHeight - lHeight;
 			this.showScrollControls(true);
 		}
 		this.showNextIndicator(true);

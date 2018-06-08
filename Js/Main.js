@@ -26,7 +26,7 @@ let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
 let prevMission = '{Select}';
-const availableMstIds = [202070, 202013];
+const availableMstIds = [202070, 202013, 338001, 338002, 338003, 338004]//[202070, 202013, 338001, 338002, 338003, 338004, 338005, 338006, 338007, 338009, 338010, 338011];
 
 function onBodyLoaded() {
 	bodyLoaded = true;
@@ -269,7 +269,10 @@ function languageChanged(event) {
 	if(currentMission) {
 		missionPath = `${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
 	}
-	utage.setTranslationLanguage(selectedLang, missionPath);
+	utage.setTranslationLanguage(selectedLang, missionPath)
+	.then((success) => {
+		buildMissionSelectList();
+	});
 }
 
 function checkMissionList(missions, currentvalue) {
@@ -330,7 +333,11 @@ function dialogScrollDown(event) {
 }
 
 function onBodyKey(event) {
-	if(event.code.toLowerCase() === "space") {
+	if(event.code.toLowerCase() === "arrowdown") {
+		dialogScrollDown(event)
+	} else if(event.code.toLowerCase() === "arrowup") {
+		dialogScrollUp(event);
+	} else if(event.code.toLowerCase() === "space") {
 		event.preventDefault();
 		event.stopPropagation();
 		player.onMainClick(event);

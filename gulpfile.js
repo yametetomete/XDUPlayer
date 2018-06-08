@@ -28,7 +28,8 @@ const cssToCopy = [
 ];
 const jsonFiles = [
 "Js/BgmLoop.json",
-"Js/XduMissions.json"
+"Js/XduMissions.json",
+"Js/XduMissionsCustom.json"
 ];
 const translations = [
 "Js/Translations/**"
