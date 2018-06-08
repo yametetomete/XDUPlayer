@@ -18,7 +18,6 @@ class Player {
 		
 		this.currentCharacters = {};
 		this.layers = {};
-		this.sprites = {};
 		this.currentCommand = undefined;
 		this.runEvent = false;
 		this.secondTicker = 1000;
@@ -433,17 +432,11 @@ class Player {
 						if(pos >= 1) {
 							pos = 1;
 							toRemove.push(i);
-							if(l.post) {
-								let split = l.post.split('|');
-								switch(split[0].toLowerCase()) {
-									case "destroy":
-										l.object.destroy();
-										continue;
-									case "clearshader":
-										l.object.filters = null;
-										l.object.alpha = Number(split[1]);
-										break;
-								}
+							let postRes = postLerpAction(l)
+							if(postRes === "continue") {
+								continue;
+							} else if(postRes === "break") {
+								false;
 							}
 						}
 						switch(l.type) {
@@ -476,6 +469,18 @@ class Player {
 									l.object.filters[0].uniforms.time = pos;
 									l.object.filters[0].apply();
 								} catch(error) {}
+								break;
+							}
+							case "tint": {
+								let lRgb = commonFunctions.hexToRgb(l.initV);
+								let fRgb = commonFunctions.hexToRgb(l.finalV);
+								let newR = commonFunctions.lerp(lRgb[0], fRgb[0], pos, inter);
+								let newG = commonFunctions.lerp(lRgb[1], fRgb[1], pos, inter);
+								let newB = commonFunctions.lerp(lRgb[2], fRgb[2], pos, inter);
+								let hexValue = commonFunctions.rgbToHex([newR, newG, newB]);
+								let newValue = commonFunctions.getColorFromName(hexValue).color;
+								l.object.tint = newValue;
+								break;
 							}
 							default: {
 								let newValue = commonFunctions.lerp(l.initV, l.finalV, pos, inter);
@@ -497,6 +502,7 @@ class Player {
 				} catch(error) {
 					//If we got an exception during this it probably means the object doesnt exist anymore so just remove it.
 					toRemove.push(i);
+					postLerpAction(this.lerpTargets[i]);
 				}
 			}
 			for(let i = toRemove.length - 1; i > -1; --i) {
@@ -504,6 +510,24 @@ class Player {
 			}
 		} catch (error) {
 			console.log(error);
+		}
+		
+		function postLerpAction(postLerp) {
+			try {
+				if(!postLerp || !postLerp.object || !postLerp.post) {
+					return '';
+				}
+				let split = postLerp.post.split('|');
+				switch(split[0].toLowerCase()) {
+					case "destroy":
+						postLerp.object.destroy({children: true});
+						return 'continue';
+					case "clearshader":
+						postLerp.object.filters = null;
+						postLerp.object.alpha = Number(split[1]);
+						return 'break';
+				}
+			} catch(error) { }
 		}
 	}
 	
@@ -621,7 +645,7 @@ class Player {
 					} else {
 						//clear the sprite for the bg currently in use.
 						for(let i = 0; i < container.children.length; ++i) {
-							container.children[i].destroy();
+							container.children[i].destroy({children: true});
 						}
 					}
 					container.visible = true;
@@ -895,6 +919,7 @@ class Player {
 					}
 					break;
 				case "darkaura01": //312000111
+					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
 					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
 					this.waitTime = 2500;
 					break;
@@ -902,7 +927,9 @@ class Player {
 					this.audio.playSound('Se_サムシング・ニューの叫び声(アアア”ア”ア”)', 'Se');
 					let c = this.currentCharacters['キャラ中央'];
 					this.waitTime = 4000;
-					this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 3000, finalV: 0, initV: 1, post: "destroy" });
+					if(c) {
+						this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 3000, finalV: 0, initV: 1, post: "destroy" });
+					}
 					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: 3 };
 					this.checkPutCharacterScreen(customCommand, false, true);
 					break;
@@ -1245,13 +1272,24 @@ class Player {
 			case "colorto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
 				if(props.alpha != undefined) {
+					this.cancelLerpOfType('alpha', curChar.sprite);
 					if(props.time) {
 						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 						finalV: props.alpha, initV: curChar.sprite.alpha });
 					} else {
 						curChar.sprite.alpha = props.alpha;
 					}
-					this.cancelLerpOfType('alpha', curChar.sprite);
+					
+				}
+				if(props.color != undefined) {
+					this.cancelLerpOfType('tint', curChar.sprite);
+					let color = commonFunctions.getColorFromName(props.color);
+					if(props.time) {
+						this.lerpTargets.push({type: 'tint', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: color.color, initV: curChar.sprite.tint });
+					} else {
+						curChar.sprite.tint = color.color;
+					}
 				}
 			}
 		}
@@ -1414,17 +1452,9 @@ class Player {
 		return new Promise((resolve, reject) => {
 			try {
 				this.pixi.app.ticker.remove(this.onPixiTick, this);
-				this.pixi.app.stage.children.forEach(function(child) { child.destroy(true, true, true); });
-				for(let tex of Object.keys(PIXI.utils.TextureCache)) {
-					if(PIXI.utils.TextureCache[tex]) {
-						PIXI.utils.TextureCache[tex].destroy(true); 
-					}
-				}
 				utage.currentPlayingFile.length = 0;
-				this.loader.reset();
 				this.currentCharacters = {};
 				this.layers = {};
-				this.sprites = {};
 				this.currentCommand = undefined;
 				this.runEvent = false;
 				this.secondTicker = 1000;
@@ -1438,6 +1468,18 @@ class Player {
 				this.text.resetAll();
 				this.audio.resetAll();
 				this.utage.resetTranslations();
+				this.pixi.app.stage.children.forEach(function(child) { child.destroy({children: true, texture: true, baseTexture: true}); });
+				for(let tex of Object.keys(PIXI.utils.TextureCache)) {
+					if(PIXI.utils.TextureCache[tex]) {
+						PIXI.utils.TextureCache[tex].destroy(true); 
+					}
+				}
+				for(let tex of Object.keys(PIXI.utils.BaseTextureCache)) {
+					if(PIXI.utils.BaseTextureCache[tex]) {
+						PIXI.utils.BaseTextureCache[tex].destroy(true); 
+					}
+				}
+				this.loader.reset();
 				resolve();
 			} catch (error) {
 				reject(error);

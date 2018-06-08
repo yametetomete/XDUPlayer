@@ -333,7 +333,11 @@ function dialogScrollDown(event) {
 }
 
 function onBodyKey(event) {
-	if(event.code.toLowerCase() === "space") {
+	if(event.code.toLowerCase() === "arrowdown") {
+		dialogScrollDown(event)
+	} else if(event.code.toLowerCase() === "arrowup") {
+		dialogScrollUp(event);
+	} else if(event.code.toLowerCase() === "space") {
 		event.preventDefault();
 		event.stopPropagation();
 		player.onMainClick(event);
