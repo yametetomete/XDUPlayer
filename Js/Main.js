@@ -11,6 +11,7 @@ const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn"];
+const version = "YameteTomete XDUPlayer V1.1.0";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
@@ -30,6 +31,7 @@ const availableMstIds = [202070, 202013, 338001, 338002, 338003, 338004]//[20207
 
 function onBodyLoaded() {
 	bodyLoaded = true;
+	document.getElementById("title-tag").innerText = version;
 }
 
 (function startLoad() {
@@ -240,6 +242,7 @@ function missionChanged(mstId, value) {
 		Promise.all(promises)
 		.then((success) => {
 			document.getElementById("playing-title").innerText = `${name} (${value})`;
+			document.getElementById("title-tag").innerText = name;
 			player.playFile()
 			.then((success) => {
 				if(currentMissionIndex !== currentMissionList.length - 1) {
@@ -299,6 +302,7 @@ function resetMissions() {
 	currentMissionMst = 0;
 	document.getElementById("skip-button").style.cssText = "display: inline-block;";
 	document.getElementById("playing-title").innerText = 'None';
+	document.getElementById("title-tag").innerText = version;
 	document.getElementById('select-mission').value = '{Select}';
 }
 
@@ -348,7 +352,7 @@ function openHelpModal(event) {
 	let cont = document.getElementById("modal-container");
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
-		<span class="mission-title">YameteTomete XDUPlayer V1.1.0</span>
+		<span class="mission-title">${version}</span>
 		<div>
 			<div style="margin: 5px;">Browser Support:<br/>
 			Chromium: 57+, May work earlier with no audio<br/>

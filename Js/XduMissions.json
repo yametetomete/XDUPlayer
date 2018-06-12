@@ -4400,6 +4400,15 @@
     "Name": "SI2-66:翼のバースデー2018",
     "SummaryText": "ついに来た翼の誕生日。サプライズを\n成功させるためのミッション開始ッ！\nしかし、気づかれそうになり……ッ！？"
   },
+  "201007911": {
+    "Path": "Asset/Utage/side02/Scenario/201007911.tsv.utage",
+    "MstId": 202071,
+    "Id": "201007911",
+    "LastUpdateTime": 636642672220000000,
+    "Type": 1,
+    "Name": "SI2-67:優雅なダンス",
+    "SummaryText": "社交ダンスの練習をしに来た奏のパートナー\nになったのは、まさかのマリアッ！\nいざ手を取り合って、Shall We Dance？"
+  },
   "202000111": {
     "Path": "Asset/Utage/side01/Scenario/202000111.tsv.utage",
     "MstId": 201001,
