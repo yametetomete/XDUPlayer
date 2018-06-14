@@ -1443,8 +1443,14 @@ class Player {
 	
 	updateResolution(res) {
 		let newScale = res.height / baseDimensions.height;
-		this.pixi.app.stage.scale.set(newScale, newScale);
-		this.pixi.app.renderer.resize(res.width, res.height);
+		//Set the scale by the pixel ratio so pixi makes the stage the proper size
+		this.pixi.app.stage.scale.set(newScale * window.devicePixelRatio, newScale * window.devicePixelRatio);
+		//Sizes the canvas/pixi's renderer to the actual render resolution
+		this.pixi.app.renderer.resize(res.width * window.devicePixelRatio, res.height * window.devicePixelRatio);
+		//Css size overwrites the display size of the canvas
+		this.pixi.app.view.style.width = res.width;
+		this.pixi.app.view.style.height = res.height;
+		//Transform the text container to be the right scale, browser handles all dpi stuff for html elements itself
 		document.getElementById('text-container').style.cssText = `transform: scale(${newScale})`;
 	}
 	

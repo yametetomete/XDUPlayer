@@ -11,7 +11,7 @@ const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn"];
-const version = "YameteTomete XDUPlayer V1.1.0";
+const version = "YameteTomete XDUPlayer V1.2.0";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
@@ -26,12 +26,17 @@ let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight
 let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
+let fullScreen = false;
 let prevMission = '{Select}';
 const availableMstIds = [202070, 202071, 202013, 338001, 338002, 338003, 338004]//[202070, 202013, 338001, 338002, 338003, 338004, 338005, 338006, 338007, 338009, 338010, 338011];
 
 function onBodyLoaded() {
 	bodyLoaded = true;
 	document.getElementById("title-tag").innerText = version;
+	document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+    document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+    document.addEventListener('fullscreenchange', onFullScreenChange, false);
+    document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
 }
 
 (function startLoad() {
@@ -122,7 +127,7 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			if(!availableMstIds.includes(m.MstId)) {
+			if(!Object.keys(utage.groupedMissions[m.MstId].Missions).some((mis) => { return utage.groupedMissions[m.MstId].Missions[mis].Enabled === true })) {
 				continue;
 			}
 			opt.setAttribute('value', m.MstId);
@@ -168,14 +173,25 @@ function missionDropDownChanged(event) {
 	if(!mis) { console.log(`Mission ${misId} not found`); return; }
 	let name = mis.Name;
 	let summary = mis.SummaryText;
+	let credits = "";
 	if(utage.missionTranslations[mis.MstId]) {
 		name = utage.missionTranslations[mis.MstId].Name || name;
 		summary = utage.missionTranslations[mis.MstId].SummaryText || summary;
+		credits = utage.missionTranslations[mis.MstId].Credits || credits;
+	}
+	if(!credits) {
+		if(selectedLang === "eng") {
+			credits = "YameteTomete";
+		} else {
+			credits = "None";
+		}
 	}
 	let chapterSelect = '<div><span>Chapter Select:</span><select id="ChapterSelect">';
 	for(let k of Object.keys(mis.Missions)) {
 		var m = mis.Missions[k];
-		chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
+		if(m.Enabled) {
+			chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
+		}
 	}
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
@@ -183,7 +199,9 @@ function missionDropDownChanged(event) {
 		<span class="mission-title">${name || 'none'}</span>
 		<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>
 		<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>
-		<span>Summary: ${summary || 'none'}</span>
+		<div id="mission-summary">Summary: ${summary || 'none'}</div>
+		<div class="flex-grow"></div>
+		<div>Credits (${selectedLang}): ${credits}</div>
 		<div id="mission-ids">
 			${chapterSelect}
 		</div>
@@ -234,6 +252,10 @@ function missionChanged(mstId, value) {
 		checkMissionList(mst.Missions, value);
 		currentMission = newMission;
 		currentMissionMst = mstId;
+		if(!currentMission.Enabled) {
+			missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
+			return;
+		}
 		let promises = [
 			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
 			utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
@@ -246,7 +268,7 @@ function missionChanged(mstId, value) {
 			player.playFile()
 			.then((success) => {
 				if(currentMissionIndex !== currentMissionList.length - 1) {
-					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id)
+					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
 				} else {
 					player.resetAll();
 					resetMissions();
@@ -364,7 +386,6 @@ function openHelpModal(event) {
 			<div style="margin: 5px;">Mobile:<br/>
 			Android: 5+, Updated Chrome/Firefox/Edge<br/>
 			iOS: 11+, no audio<br/>
-			Recommended to request desktop site
 			</div>
 		</div>
 		<a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g">YameteTomete Discord</a>
@@ -399,18 +420,50 @@ function onVolumeChange(event) {
 	localStorage.setItem('volume', volume);
 }
 
-function onWindowResize(event) {
+function toggleFullscreen(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	fullScreen = !fullScreen;
+	let docEl = document.documentElement;
+	if(fullScreen) {
+		let requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+		if(requestFullScreen && !document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+			requestFullScreen.call(docEl);
+		}
+	} else {
+		let cancelFullScreen = document.exitFullscreen || document.mozCancelFullScreen || document.webkitExitFullscreen || document.msExitFullscreen;
+		if(cancelFullScreen) {
+			cancelFullScreen.call(document);
+		}
+	}
+}
+
+function onFullScreenChange(event) {
+	if(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+		fullScreen = true;
+		document.getElementById('other-controls-container').style.cssText = "display: none;";
+		document.getElementById('title-container').style.cssText = "display: none;";
+		document.getElementById('fullscreen-button').innerText = "✖️";
+	} else {
+		document.getElementById('other-controls-container').style.cssText = "";
+		document.getElementById('title-container').style.cssText = "";
+		document.getElementById('fullscreen-button').innerText = "➕";
+	}
+	onWindowResize(event, 0);
+}
+
+function onWindowResize(event, delay = 400) {
 	if(screenSizeTimeout) {
 		clearTimeout(screenSizeTimeout);
 		screenSizeTimeout = undefined;
 	}
+	screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+	screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+	let topContainerHeight = document.getElementById('other-controls-container').offsetHeight;
+	topContainerHeight += document.getElementById('title-container').offsetHeight;
+	let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, (topContainerHeight ? topContainerHeight + 6 : topContainerHeight));
 	screenSizeTimeout = setTimeout(() => {
-		screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-		screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-		let topContainerHeight = document.getElementById('other-controls-container').offsetHeight + 6;
-		topContainerHeight += document.getElementById('title-container').offsetHeight;
-		let res = commonFunctions.getNewResolution(baseDimensions, screenw, screenh, topContainerHeight);
 		player.updateResolution(res);
 		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
-	}, 400);
+	}, delay);
 }
