@@ -14,3 +14,4 @@ Added null check for pixi sprite calculateverticies because it sometimes makes a
 DPI is now taken into account when resizing.
 Added credits to mission modal.
 Added ability to go fullscreen.
+Missions JSON moved to translations submodule so missions can be added/enabled without disturbing main project.

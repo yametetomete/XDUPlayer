@@ -127,7 +127,7 @@ function buildMissionSelectList() {
 			opt.innerText = 'Select Mission';
 		} else {
 			let m = utage.missionsList[i];
-			if(!availableMstIds.includes(m.MstId)) {
+			if(!Object.keys(utage.groupedMissions[m.MstId].Missions).some((mis) => { return utage.groupedMissions[m.MstId].Missions[mis].Enabled === true })) {
 				continue;
 			}
 			opt.setAttribute('value', m.MstId);
@@ -189,7 +189,9 @@ function missionDropDownChanged(event) {
 	let chapterSelect = '<div><span>Chapter Select:</span><select id="ChapterSelect">';
 	for(let k of Object.keys(mis.Missions)) {
 		var m = mis.Missions[k];
-		chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
+		if(m.Enabled) {
+			chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
+		}
 	}
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
@@ -250,6 +252,10 @@ function missionChanged(mstId, value) {
 		checkMissionList(mst.Missions, value);
 		currentMission = newMission;
 		currentMissionMst = mstId;
+		if(!currentMission.Enabled) {
+			missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
+			return;
+		}
 		let promises = [
 			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
 			utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
@@ -262,7 +268,7 @@ function missionChanged(mstId, value) {
 			player.playFile()
 			.then((success) => {
 				if(currentMissionIndex !== currentMissionList.length - 1) {
-					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id)
+					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
 				} else {
 					player.resetAll();
 					resetMissions();

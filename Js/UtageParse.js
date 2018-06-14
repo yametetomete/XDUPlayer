@@ -23,7 +23,7 @@ class UtageInfo {
 	loadUtageSettings(resolve, reject) {
 		return new Promise((resolve, reject) => { 
 			let promises = [
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/XduMissions.json`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissions.json`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Character.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Layer.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Localize.tsv`),
@@ -32,7 +32,7 @@ class UtageInfo {
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`),
 				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`),
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/XduMissionsCustom.json`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`),
 			];
 			Promise.all(promises)
 			.then((success) => {
@@ -92,9 +92,9 @@ class UtageInfo {
 					MstId: mis.MstId,
 					Missions: {}
 				}
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
 			} else {
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
 			}
 		}
 		for(let key of Object.keys(customMissions)) {
@@ -106,9 +106,9 @@ class UtageInfo {
 					MstId: mis.MstId,
 					Missions: {}
 				}
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
 			} else {
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
 			}
 		}
 	}
