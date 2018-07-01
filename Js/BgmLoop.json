@@ -324,6 +324,19 @@
 			"seconds": 12.189
 		}
 	},
+	"music_flight_feathers": {
+		"duration": 111.38940625,
+		"loop_end": {
+			"samples_48k": 5346628,
+			"samples_native": 3564419,
+			"seconds": 111.38809375
+		},
+		"loop_start": {
+			"samples_48k": 1221216,
+			"samples_native": 814144,
+			"seconds": 25.442
+		}
+	},
 	"music_fushichou_no_flamme": {
 		"duration": 129.0045,
 		"loop_end": {
@@ -805,6 +818,19 @@
 			"seconds": 0.0
 		}
 	},
+	"music_shippujinrai": {
+		"duration": 104.2053125,
+		"loop_end": {
+			"samples_48k": 5001786,
+			"samples_native": 3334524,
+			"seconds": 104.203875
+		},
+		"loop_start": {
+			"samples_48k": 1210320,
+			"samples_native": 806880,
+			"seconds": 25.215
+		}
+	},
 	"music_sorae": {
 		"duration": 128.56625,
 		"loop_end": {
@@ -829,6 +855,19 @@
 			"samples_48k": 1302960,
 			"samples_native": 868640,
 			"seconds": 27.145
+		}
+	},
+	"music_tegami": {
+		"duration": 79.045,
+		"loop_end": {
+			"samples_48k": 3794065,
+			"samples_native": 2529377,
+			"seconds": 79.04303125
+		},
+		"loop_start": {
+			"samples_48k": 897552,
+			"samples_native": 598368,
+			"seconds": 18.699
 		}
 	},
 	"music_the_moon_is_a_harsh_mistress": {
