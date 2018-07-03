@@ -296,6 +296,7 @@ function languageChanged(event) {
 	utage.setTranslationLanguage(selectedLang, missionPath)
 	.then((success) => {
 		buildMissionSelectList();
+		localStorage.setItem('language', selectedLang);
 	});
 }
 
