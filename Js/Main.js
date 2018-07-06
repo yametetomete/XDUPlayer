@@ -192,12 +192,14 @@ function missionDropDownChanged(event) {
 			chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
 		}
 	}
+	let detailSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png`;
+	let iconSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png`;
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
 		<span class="mission-title">${name || 'none'}</span>
-		<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>
-		<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>
+		<img id="mission-detail" src="${detailSrc}"/>
+		<img id="mission-icon" src="${iconSrc}"/>
 		<div id="mission-summary">Summary: ${summary || 'none'}</div>
 		<div class="flex-grow"></div>
 		<div>Credits (${selectedLang}): ${credits}</div>
@@ -255,10 +257,13 @@ function missionChanged(mstId, value) {
 			missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
 			return;
 		}
-		let promises = [
-			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
-			utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
-		];
+		let promises = [];
+		if(newMission.IsCustom) {
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}CustomData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+		} else {
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+		}
+		promises.push(utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`))
 		closeMissionModal(undefined, true);
 		Promise.all(promises)
 		.then((success) => {

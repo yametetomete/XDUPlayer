@@ -23,20 +23,23 @@ class UtageInfo {
 	loadUtageSettings(resolve, reject) {
 		return new Promise((resolve, reject) => { 
 			let promises = [
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissions.json`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Character.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Layer.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Localize.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Param.tsv`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissions.json`), //0
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Character.tsv`), //1
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Layer.tsv`), //2
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Localize.tsv`), //3
+				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Param.tsv`),
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`),
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`),
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`),
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`), //4
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`), //5
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`), //6
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`), //7
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //8
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //9
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //10
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.groupMissions(success[0], success[8]);
+				this.groupMissions(success[0], success[7]);
 				this.missionsList = Object.keys(this.groupedMissions).map((k) => {
 					return {Name: this.groupedMissions[k].Name, MstId: this.groupedMissions[k].MstId};
 				});
@@ -44,10 +47,13 @@ class UtageInfo {
 				this.parseCharacterInfo(success[1]);
 				this.parseLayerInfo(success[2]);
 				this.parseLocalizeInfo(success[3]);
-				this.parseParamInfo(success[4]);
-				this.parseSoundInfo(success[5]);
-				this.parseTextureInfo(success[6]);
-				this.bgmLoopData = success[7];
+				//this.parseParamInfo(success[4]);
+				this.parseSoundInfo(success[4]);
+				this.parseTextureInfo(success[5]);
+				this.bgmLoopData = success[6];
+				this.parseCharacterInfo(success[8], true);
+				this.parseSoundInfo(success[9], true);
+				this.parseTextureInfo(success[10], true);
 				resolve();
 			}, (failure) => {
 				reject(failure);
@@ -99,16 +105,18 @@ class UtageInfo {
 		}
 		for(let key of Object.keys(customMissions)) {
 			let mis = customMissions[key];
+			mis.IsCustom = true;
 			if(!this.groupedMissions[mis.MstId]) {
 				this.groupedMissions[mis.MstId] = {
+					IsCustom: true,
 					Name: mis.Name,
 					SummaryText: mis.SummaryText,
 					MstId: mis.MstId,
 					Missions: {}
 				}
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled, IsCustom: true };
 			} else {
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
+				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled, IsCustom: true };
 			}
 		}
 	}
@@ -202,7 +210,7 @@ class UtageInfo {
 	}
 	
 	//http://madnesslabo.net/utage/?page_id=4521&lang=en
-	parseCharacterInfo(text) {
+	parseCharacterInfo(text, custom = false) {
 		let lines = text.split("\n");
 		let headers = [];
 		let lastCharName = '';
@@ -227,10 +235,10 @@ class UtageInfo {
 					}
 					if(read.FileName) {
 						if(!read.FileName.startsWith('file://')) {
-							read.FileName = `${this.rootDirectory}XDUData/Sample/Texture/Character/${read.FileName}`;
+							read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/Sample/Texture/Character/${read.FileName}`;
 						} else {
 							read.FileName = read.FileName.replace('file://', '');
-							read.FileName = `${this.rootDirectory}XDUData/${read.FileName}`;
+							read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/${read.FileName}`;
 						}
 					}
 					if(!this.characterInfo[lastCharName]) {
@@ -294,7 +302,7 @@ class UtageInfo {
 	}
 	
 	//http://madnesslabo.net/utage/?page_id=4519&lang=en
-	parseSoundInfo(text) {
+	parseSoundInfo(text, custom = false) {
 		let lines = text.split("\n");
 		let headers = [];
 		for(let i = 0; i < lines.length; ++i) {
@@ -315,10 +323,10 @@ class UtageInfo {
 									let s = read.FileName.split(',');
 									read.FileName = `${s[0].split('_').join('/')}/${s[1]}`;
 								}
-								read.FileName = `${this.rootDirectory}XDUData/Se/${read.FileName}`;
+								read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/Se/${read.FileName}`;
 								break;
 							case 'bgm':
-								read.FileName = `${this.rootDirectory}XDUData/Bgm/${read.FileName}`;
+								read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/Bgm/${read.FileName}`;
 								break;
 						}
 					}
@@ -329,7 +337,7 @@ class UtageInfo {
 	}
 	
 	//http://madnesslabo.net/utage/?page_id=4520&lang=en
-	parseTextureInfo(text) {
+	parseTextureInfo(text, custom = false) {
 		let lines = text.split("\n");
 		let headers = [];
 		for(let i = 0; i < lines.length; ++i) {
@@ -340,10 +348,10 @@ class UtageInfo {
 				let read = commonFunctions.readLine(line, headers);
 				if(read && read.Label) {
 					if(!read.FileName.startsWith("file://")) {
-						read.FileName = `${this.rootDirectory}XDUData/Sample/Texture/BG/${read.FileName}`;
+						read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/Sample/Texture/BG/${read.FileName}`;
 					} else {
 						read.FileName = read.FileName.replace("file://", '');
-						read.FileName = `${this.rootDirectory}XDUData/${read.FileName}`;
+						read.FileName = `${this.rootDirectory}${(custom ? "CustomData" : "XDUData")}/${read.FileName}`;
 					}
 					this.textureInfo[read.Label] = read;
 				}
