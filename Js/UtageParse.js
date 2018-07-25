@@ -20,7 +20,7 @@ class UtageInfo {
 		this.bgmLoopData = {};
 	}
 	
-	loadUtageSettings(resolve, reject) {
+	loadUtageSettings() {
 		return new Promise((resolve, reject) => { 
 			let promises = [
 				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissions.json`), //0
