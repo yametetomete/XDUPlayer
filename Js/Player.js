@@ -58,10 +58,10 @@ class Player {
 					//They use this to set the sprite set for a charater but have an alternate name displayed
 					if(c.Arg2 && c.Arg2.toLowerCase().includes("<character=")) {
 						try {
-							let reg = /<Character=.*?>/;
+							let reg = /<Character=.*?>/i;
 							let match = c.Arg2.match(reg);
 							c.Arg2 = c.Arg2.replace(reg, "");
-							c.Character = match[0].match(/(?<=<Character=)(.*)(?=>)/)[0];
+							c.Character = match[0].match(/<Character=(.*?)>/i)[1];
 						} catch (error) { 
 							console.log(error);
 						}
@@ -1212,6 +1212,10 @@ class Player {
 					if(!this.currentCharacters[c]) { continue; }
 					if(this.currentCharacters[c].charName === cur.Arg1 || this.currentCharacters[c].charName === cur.Character) {
 						let nameToUse = this.currentCharacters[c].character.NameText;
+						//If cur.Character is set that means the line had a <character= included so we want to use the name from arg1 instead.
+						if(cur.Character) {
+							nameToUse = cur.Arg1;
+						}
 						this.text.characterName(true, utage.charTranslations[nameToUse] || nameToUse);
 						this.text.dialogText(true, text);
 						this.currentCharacters[c].sprite.tint = 0xFFFFFF;
