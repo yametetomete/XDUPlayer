@@ -39,6 +39,11 @@
 	src: url(../Fonts/SourceCodePro-Regular.woff2) format('woff');
 }
 
+@font-face {
+	font-family: SourceHanSans-Regular;
+	src: url(../Fonts/SourceHanSans-Regular.woff2) format('woff');
+}
+
 @-webkit-keyframes smallbounce { 
 	from { transform: translate(0, 5px); } 
 	to  { transform: translate(0, -5px); } 
@@ -64,7 +69,7 @@ body { margin: 0; }
 
 #parent-container { display: flex; flex-direction: column; align-items: center; }
 
-#text-container { color: white; position: absolute; margin: auto; height: 750px; width: 1334px; font-family: 'FOT-RodinNTLGPro'; }
+#text-container { color: white; position: absolute; margin: auto; height: 750px; width: 1334px; font-family: 'SourceHanSans-Regular'; }
 
 #text-container #fullscreen-button { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 30px; line-height: 30px; opacity: 0.35; z-index: 11; }
 
