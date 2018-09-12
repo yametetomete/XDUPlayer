@@ -104,6 +104,7 @@ function loadLocalStorage() {
 		if(languages.includes(lang)) {
 			selectedLang = lang;
 		}
+		document.getElementById('text-container').className = selectedLang;
 		utage.setTranslationLanguage(selectedLang, '')
 		.then((success) => {
 			languagesLoaded = true;
@@ -300,6 +301,7 @@ function languageChanged(event) {
 	}
 	utage.setTranslationLanguage(selectedLang, missionPath)
 	.then((success) => {
+		document.getElementById('text-container').className = selectedLang;
 		buildMissionSelectList();
 		localStorage.setItem('language', selectedLang);
 	});
