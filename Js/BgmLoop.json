@@ -12,6 +12,19 @@
 			"seconds": 11.323
 		}
 	},
+	"bgm_adv_battle_02": {
+		"duration": 94.41484375,
+		"loop_end": {
+			"samples_48k": 4531845,
+			"samples_native": 3021230,
+			"seconds": 94.4134375
+		},
+		"loop_start": {
+			"samples_48k": 330432,
+			"samples_native": 220288,
+			"seconds": 6.884
+		}
+	},
 	"bgm_adv_comical_01": {
 		"duration": 57.7235625,
 		"loop_end": {
@@ -25,6 +38,19 @@
 			"seconds": 5.222
 		}
 	},
+	"bgm_adv_comical_02": {
+		"duration": 71.2195,
+		"loop_end": {
+			"samples_48k": 3418456,
+			"samples_native": 2278971,
+			"seconds": 71.21784375
+		},
+		"loop_start": {
+			"samples_48k": 625728,
+			"samples_native": 417152,
+			"seconds": 13.036
+		}
+	},
 	"bgm_adv_emergency_01": {
 		"duration": 98.295,
 		"loop_end": {
@@ -36,6 +62,19 @@
 			"samples_48k": 1304784,
 			"samples_native": 869856,
 			"seconds": 27.183
+		}
+	},
+	"bgm_adv_emergency_02": {
+		"duration": 76.7199375,
+		"loop_end": {
+			"samples_48k": 3682461,
+			"samples_native": 2454974,
+			"seconds": 76.7179375
+		},
+		"loop_start": {
+			"samples_48k": 720144,
+			"samples_native": 480096,
+			"seconds": 15.003
 		}
 	},
 	"bgm_adv_everyday_01": {
@@ -77,6 +116,19 @@
 			"seconds": 9.092
 		}
 	},
+	"bgm_adv_everyday_04": {
+		"duration": 66.528375,
+		"loop_end": {
+			"samples_48k": 3193291,
+			"samples_native": 2128861,
+			"seconds": 66.52690625
+		},
+		"loop_start": {
+			"samples_48k": 313296,
+			"samples_native": 208864,
+			"seconds": 6.527
+		}
+	},
 	"bgm_adv_highlight_01": {
 		"duration": 97.1335,
 		"loop_end": {
@@ -116,6 +168,19 @@
 			"seconds": 30.764
 		}
 	},
+	"bgm_adv_highlight_04": {
+		"duration": 102.86365625,
+		"loop_end": {
+			"samples_48k": 4937361,
+			"samples_native": 3291574,
+			"seconds": 102.8616875
+		},
+		"loop_start": {
+			"samples_48k": 682224,
+			"samples_native": 454816,
+			"seconds": 14.213
+		}
+	},
 	"bgm_adv_peace_01": {
 		"duration": 83.74309375,
 		"loop_end": {
@@ -127,6 +192,19 @@
 			"samples_48k": 541344,
 			"samples_native": 360896,
 			"seconds": 11.278
+		}
+	},
+	"bgm_adv_peace_02": {
+		"duration": 67.32375,
+		"loop_end": {
+			"samples_48k": 3231464,
+			"samples_native": 2154309,
+			"seconds": 67.32215625
+		},
+		"loop_start": {
+			"samples_48k": 386400,
+			"samples_native": 257600,
+			"seconds": 8.05
 		}
 	},
 	"bgm_adv_sorrow_01": {
@@ -142,6 +220,19 @@
 			"seconds": 20.332
 		}
 	},
+	"bgm_adv_sorrow_02": {
+		"duration": 78.8830625,
+		"loop_end": {
+			"samples_48k": 3786321,
+			"samples_native": 2524214,
+			"seconds": 78.8816875
+		},
+		"loop_start": {
+			"samples_48k": 680016,
+			"samples_native": 453344,
+			"seconds": 14.167
+		}
+	},
 	"bgm_adv_tension_01": {
 		"duration": 66.506,
 		"loop_end": {
@@ -153,6 +244,32 @@
 			"samples_48k": 411504,
 			"samples_native": 274336,
 			"seconds": 8.573
+		}
+	},
+	"bgm_adv_tension_02": {
+		"duration": 75.747875,
+		"loop_end": {
+			"samples_48k": 3635811,
+			"samples_native": 2423874,
+			"seconds": 75.7460625
+		},
+		"loop_start": {
+			"samples_48k": 545088,
+			"samples_native": 363392,
+			"seconds": 11.356
+		}
+	},
+	"bgm_adv_tension_03": {
+		"duration": 96.00084375,
+		"loop_end": {
+			"samples_48k": 4607959,
+			"samples_native": 3071973,
+			"seconds": 95.99915625
+		},
+		"loop_start": {
+			"samples_48k": 383952,
+			"samples_native": 255968,
+			"seconds": 7.999
 		}
 	},
 	"bgm_home_01": {
@@ -259,6 +376,19 @@
 			"seconds": 18.59
 		}
 	},
+	"music_daisukisukisugi": {
+		"duration": 93.21253125,
+		"loop_end": {
+			"samples_48k": 4474110,
+			"samples_native": 2982740,
+			"seconds": 93.210625
+		},
+		"loop_start": {
+			"samples_48k": 322416,
+			"samples_native": 214944,
+			"seconds": 6.717
+		}
+	},
 	"music_dangerous_sunshine": {
 		"duration": 99.20853125,
 		"loop_end": {
@@ -309,6 +439,19 @@
 			"samples_48k": 1861680,
 			"samples_native": 1241120,
 			"seconds": 38.785
+		}
+	},
+	"music_endless_summertime": {
+		"duration": 122.51665625,
+		"loop_end": {
+			"samples_48k": 5880708,
+			"samples_native": 3920472,
+			"seconds": 122.51475
+		},
+		"loop_start": {
+			"samples_48k": 2393568,
+			"samples_native": 1595712,
+			"seconds": 49.866
 		}
 	},
 	"music_first_love_song": {
@@ -493,6 +636,19 @@
 			"seconds": 26.267
 		}
 	},
+	"music_gyakkou_no_flugel_ver_souyoku": {
+		"duration": 123.3248125,
+		"loop_end": {
+			"samples_48k": 5919507,
+			"samples_native": 3946338,
+			"seconds": 123.3230625
+		},
+		"loop_start": {
+			"samples_48k": 1687440,
+			"samples_native": 1124960,
+			"seconds": 35.155
+		}
+	},
 	"music_gyakkou_no_resolve": {
 		"duration": 111.3798125,
 		"loop_end": {
@@ -543,6 +699,19 @@
 			"samples_48k": 861504,
 			"samples_native": 574336,
 			"seconds": 17.948
+		}
+	},
+	"music_junpaku_innocent": {
+		"duration": 118.195375,
+		"loop_end": {
+			"samples_48k": 5673310,
+			"samples_native": 3782207,
+			"seconds": 118.19396875
+		},
+		"loop_start": {
+			"samples_48k": 2061216,
+			"samples_native": 1374144,
+			"seconds": 42.942
 		}
 	},
 	"music_kimitoiu_otokanade_tsukirumade": {
@@ -701,6 +870,19 @@
 			"seconds": 27.383
 		}
 	},
+	"music_rainbow_flower": {
+		"duration": 88.8225,
+		"loop_end": {
+			"samples_48k": 4263411,
+			"samples_native": 2842274,
+			"seconds": 88.8210625
+		},
+		"loop_start": {
+			"samples_48k": 1273728,
+			"samples_native": 849152,
+			"seconds": 26.536
+		}
+	},
 	"music_ressou_gungnir": {
 		"duration": 141.42465625,
 		"loop_end": {
@@ -829,6 +1011,19 @@
 			"samples_48k": 1210320,
 			"samples_native": 806880,
 			"seconds": 25.215
+		}
+	},
+	"music_shitou_eibihikaito": {
+		"duration": 151.1798125,
+		"loop_end": {
+			"samples_48k": 7256547,
+			"samples_native": 4837698,
+			"seconds": 151.1780625
+		},
+		"loop_start": {
+			"samples_48k": 2724096,
+			"samples_native": 1816064,
+			"seconds": 56.752
 		}
 	},
 	"music_sorae": {
