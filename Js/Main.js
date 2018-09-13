@@ -28,7 +28,6 @@ let isMuted = false;
 let volume = 0.5;
 let fullScreen = false;
 let prevMission = '{Select}';
-const availableMstIds = [202070, 202071, 202013, 338001, 338002, 338003, 338004]//[202070, 202013, 338001, 338002, 338003, 338004, 338005, 338006, 338007, 338009, 338010, 338011];
 
 function onBodyLoaded() {
 	bodyLoaded = true;
@@ -105,6 +104,7 @@ function loadLocalStorage() {
 		if(languages.includes(lang)) {
 			selectedLang = lang;
 		}
+		document.getElementById('text-container').className = selectedLang;
 		utage.setTranslationLanguage(selectedLang, '')
 		.then((success) => {
 			languagesLoaded = true;
@@ -193,12 +193,14 @@ function missionDropDownChanged(event) {
 			chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
 		}
 	}
+	let detailSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png`;
+	let iconSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png`;
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
 		<span class="mission-title">${name || 'none'}</span>
-		<img id="mission-detail" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png"/>
-		<img id="mission-icon" src="${utage.rootDirectory}XDUData/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png"/>
+		<img id="mission-detail" src="${detailSrc}"/>
+		<img id="mission-icon" src="${iconSrc}"/>
 		<div id="mission-summary">Summary: ${summary || 'none'}</div>
 		<div class="flex-grow"></div>
 		<div>Credits (${selectedLang}): ${credits}</div>
@@ -256,10 +258,13 @@ function missionChanged(mstId, value) {
 			missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
 			return;
 		}
-		let promises = [
-			utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`),
-			utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`)
-		];
+		let promises = [];
+		if(newMission.IsCustom) {
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}CustomData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+		} else {
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+		}
+		promises.push(utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`))
 		closeMissionModal(undefined, true);
 		Promise.all(promises)
 		.then((success) => {
@@ -296,7 +301,9 @@ function languageChanged(event) {
 	}
 	utage.setTranslationLanguage(selectedLang, missionPath)
 	.then((success) => {
+		document.getElementById('text-container').className = selectedLang;
 		buildMissionSelectList();
+		localStorage.setItem('language', selectedLang);
 	});
 }
 

@@ -55,6 +55,17 @@ class Player {
 				try {
 					let c = utage.currentPlayingFile[i];
 					if(c.comment) { continue; }
+					//They use this to set the sprite set for a charater but have an alternate name displayed
+					if(c.Arg2 && c.Arg2.toLowerCase().includes("<character=")) {
+						try {
+							let reg = /<Character=.*?>/i;
+							let match = c.Arg2.match(reg);
+							c.Arg2 = c.Arg2.replace(reg, "");
+							c.Character = match[0].match(/<Character=(.*?)>/i)[1];
+						} catch (error) { 
+							console.log(error);
+						}
+					}
 					let command = c.Command ? c.Command.toLowerCase() : '';
 					switch(command) {
 						//BG images
@@ -75,24 +86,25 @@ class Player {
 							if(Arg2 === '＜Off>') {
 								Arg2 = '<Off>'
 							}
-							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
+							let charToLoad = c.Character || c.Arg1;
+							if(charToLoad && this.utage.characterInfo[charToLoad] && !Arg2) {
 								Arg2 = this.defaultCharPattern;
 							}
 							//I know the nesting here isint pretty
 							//If the character at arg1|arg2 exists and arg2 is not <off>
-							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2] && Arg2 && Arg2 != "<Off>") {
-								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
-									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
+							if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad][Arg2] && Arg2 && Arg2 != "<Off>") {
+								if(!this.loader.resources[`char|${charToLoad}|${Arg2}`]) {
+									this.loader.add(`char|${charToLoad}|${Arg2}`, this.utage.characterInfo[charToLoad][Arg2].FileName);
 								}
 							//If the character at arg1|arg2 isint here check at arg1|none. If not there put error in console.
-							} else if(c.Arg1 && Arg2 && Arg2 != "<Off>" && 
-							(!this.utage.characterInfo[c.Arg1] || !this.utage.characterInfo[c.Arg1][Arg2])) {
-								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1]['none']) {
-									if(!this.loader.resources[`char|${c.Arg1}|none`]) {
-										this.loader.add(`char|${c.Arg1}|none`, this.utage.characterInfo[c.Arg1]['none'].FileName);
+							} else if(charToLoad && Arg2 && Arg2 != "<Off>" && 
+							(!this.utage.characterInfo[charToLoad] || !this.utage.characterInfo[charToLoad][Arg2])) {
+								if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad]['none']) {
+									if(!this.loader.resources[`char|${charToLoad}|none`]) {
+										this.loader.add(`char|${charToLoad}|none`, this.utage.characterInfo[charToLoad]['none'].FileName);
 									}
 								} else {
-									console.log(`Failed to get Character: ${c.Arg1}|${Arg2}`);
+									console.log(`Failed to get Character: ${charToLoad}|${Arg2}`);
 								}
 							}
 							//These voices arent in the Sound.tsv because fuck you
@@ -224,9 +236,25 @@ class Player {
 							//this isint in the texture file.
 							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/bg_title.jpg`);
 							break;
-						case "scenetitle13":
-							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/event0010.png`);
+						case "scenetitlebridal":
+							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}CustomData/Sample/Texture/BG/eventbridal.png`);
 							break;
+						case "scenetitle13":
+							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/event0001.png`);
+							break;
+						case "loopeffect01": {
+							switch(c.Arg1) {
+								case "underwater01": {
+									if(!toLoadSe['se_斬撃音_単体']) {
+										toLoadSe['se_斬撃音_単体'] = this.utage.soundInfo['se_斬撃音_単体'];
+									}
+									if(!this.loader.resources['bg|underwater01']) {
+										this.loader.add('bg|underwater01', `${this.utage.rootDirectory}CustomData/Sample/Texture/BG/bg_underwater01.jpg`);
+									}
+									break;
+								}
+							}
+						}
 						case "attachit02":
 						case "attachit03":
 							if(this.utage.soundInfo['se_打撃音（大）']) {
@@ -306,6 +334,7 @@ class Player {
 		for(let l of Object.keys(this.utage.layerInfo)) {
 			layersToAdd.push(this.utage.layerInfo[l]);
 		}
+		layersToAdd.push({LayerName: "bg|loopeffect", Type: "Bg", X: 0, Y: 0, Order: 1})
 		layersToAdd.sort(compare);
 		let parentContainer = new PIXI.Container();
 		parentContainer.position.set(this.center.x, this.center.y);
@@ -761,6 +790,27 @@ class Player {
 					this.processShake(delta, cur);
 					break;
 				}
+				case "loopeffect01": {
+					let container = this.layers["bg|loopeffect"].container;
+					switch((cur.Arg1 || "").toLowerCase()) {
+						case "underwater01": {
+							this.audio.playSound("se_斬撃音_単体", "Se");
+							let sprite = new PIXI.Sprite(this.loader.resources['bg|underwater01'].texture);
+							sprite.scale.set(1.30273438, 1.30273438);
+							sprite.anchor.set(0.5, 0.5);
+							sprite.alpha = 0;
+							container.addChild(sprite);
+							this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 1000, finalV: 1, initV: 0});
+						}
+					}
+					container.visible = true;
+					break;
+				}
+				case "divaclearloopdecorate": {
+					let container = this.layers["bg|loopeffect"].container;
+					this.lerpTargets.push({type: 'alpha', object: container.children[0], curTime: 0, time: 1000, finalV: 0, initV: 1, post: "destroy"});
+					break;
+				}
 				default:
 					this.processCommandOther(delta);
 					break;
@@ -992,7 +1042,8 @@ class Player {
 	//special is used if the command actually has a command param such as Henshin since normal text commands dont.
 	//ignoreCurrent is used for if you are remvoing a current character yourself and don't want this to add another fade out to it such as somethingnew_appearance01.
 	checkPutCharacterScreen(cur, special = false, ignoreCurrent = false,) {
-		if((!cur.Command || special) && cur.Arg1 && this.utage.characterInfo[cur.Arg1]) {
+		let charToLoad = cur.Character || cur.Arg1;
+		if((!cur.Command || special) && charToLoad && this.utage.characterInfo[charToLoad]) {
 			let lay = undefined;
 			let curChar = undefined; //The character that is currently on screen with the same name as Arg1.
 			let prevChar = undefined; //The character that is already on the layer we are trying to put the new char on.
@@ -1000,7 +1051,7 @@ class Player {
 			if(!ignoreCurrent) {
 				for(let c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
-					if(this.currentCharacters[c].charName === cur.Arg1) {
+					if(this.currentCharacters[c].charName === charToLoad) {
 						curChar = this.currentCharacters[c];
 						lay = this.currentCharacters[c].layer;
 						if(!cur.Arg3) { 
@@ -1016,11 +1067,11 @@ class Player {
 			} else if (!cur.Arg2 && curChar) {
 				cur.Arg2 = curChar.character.Pattern;
 			}
-			let chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
+			let chr = this.utage.characterInfo[charToLoad][cur.Arg2];
 			if(!chr) {
 				//Non character sprites don't have a pattern and just use none as a key so if we don't find a character at arg1|arg2 look for this.
 				cur.Arg2 = 'none';
-				chr = this.utage.characterInfo[cur.Arg1][cur.Arg2];
+				chr = this.utage.characterInfo[charToLoad][cur.Arg2];
 			}
 			//If we didn't find the character at all just abandon.
 			if(!chr) { return; }
@@ -1048,19 +1099,19 @@ class Player {
 				this.currentCharacters[curChar.layer.info.LayerName] = undefined;
 			}
 			//If this character is already here and not changing patterns don't change anything.
-			else if(curChar && curChar.charName === cur.Arg1 && curChar.character.Pattern === cur.Arg2) {
+			else if(curChar && curChar.charName === charToLoad && curChar.character.Pattern === cur.Arg2) {
 				return;
 			}
 			
 			if(!ignoreCurrent) {
 			//If the layer already has a different character on it remove it.
-				if(prevChar && (prevChar.charName !== cur.Arg1 || prevChar.character.Pattern !== chr.Pattern)) {
+				if(prevChar && (prevChar.charName !== charToLoad || prevChar.character.Pattern !== chr.Pattern)) {
 					this.lerpTargets.push({type: 'alpha', object: prevChar.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
 					this.currentCharacters[cur.Arg3] = undefined;
 				}
 			}
 			
-			let sprite = new PIXI.Sprite(this.loader.resources[`char|${cur.Arg1}|${cur.Arg2}`].texture);
+			let sprite = new PIXI.Sprite(this.loader.resources[`char|${charToLoad}|${cur.Arg2}`].texture);
 			sprite.scale.set(Number(chr.Scale), Number(chr.Scale));
 			let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
 			sprite.anchor.set(anchor.x, anchor.y);
@@ -1088,7 +1139,7 @@ class Player {
 				//Im halving this because their fades take too fucking long and looks bad.
 				fadeTime = (Number(cur.Arg6) * 1000) / 2;
 			}
-			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: cur.Arg1, sprite: sprite };
+			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: charToLoad, sprite: sprite };
 			if(fadeTime > 0) {
 				this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
 			} else {
@@ -1159,8 +1210,13 @@ class Player {
 				//future note: This might be better to just look for the character in character info if this start failing.
 				for(let c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
-					if(this.currentCharacters[c].charName === cur.Arg1) {
-						this.text.characterName(true, utage.charTranslations[this.currentCharacters[c].character.NameText] || this.currentCharacters[c].character.NameText);
+					if(this.currentCharacters[c].charName === cur.Arg1 || this.currentCharacters[c].charName === cur.Character) {
+						let nameToUse = this.currentCharacters[c].character.NameText;
+						//If cur.Character is set that means the line had a <character= included so we want to use the name from arg1 instead.
+						if(cur.Character) {
+							nameToUse = cur.Arg1;
+						}
+						this.text.characterName(true, utage.charTranslations[nameToUse] || nameToUse);
 						this.text.dialogText(true, text);
 						this.currentCharacters[c].sprite.tint = 0xFFFFFF;
 						found = true;

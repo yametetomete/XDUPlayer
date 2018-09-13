@@ -53,7 +53,8 @@ gulp.task('dist', gulp.series(
 			buildJson,
 			buildJsonTranslations,
 			copyHtml,
-			copyImages
+			copyImages,
+			copyCustomData
 		),
 	)
 );
@@ -109,6 +110,11 @@ function copyHtml() {
 function copyImages() {
 	return gulp.src('Images/**')
 		.pipe(gulp.dest('Dist/Images'));
+}
+
+function copyCustomData() {
+	return gulp.src('CustomData/**')
+		.pipe(gulp.dest('Dist/CustomData'));
 }
 
 function buildJson() {

@@ -2,3 +2,7 @@
 	path = Js/Translations
 	url = https://git.poweris.moe/xdutranslations.git
 	branch = .
+[submodule "CustomData"]
+	path = CustomData
+	url = https://git.poweris.moe/customdata.git
+	branch = .
