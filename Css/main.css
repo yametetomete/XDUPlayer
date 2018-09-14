@@ -57,7 +57,9 @@
     to  { transform: translate(0, -5px); }
 }
 
-body { margin: 0; }
+html { height: 100%; }
+
+body { margin: 0; height: 100%; }
 
 .flex-grow { flex-grow: 1; }
 
@@ -67,7 +69,7 @@ body { margin: 0; }
 
 #app-container { position: relative; width: 1334px; height: 750px; display: flex; justify-content: center; align-items: center; }
 
-#parent-container { display: flex; flex-direction: column; align-items: center; }
+#parent-container { height: 100%; display: flex; flex-direction: column; align-items: center; }
 
 #text-container { color: white; position: absolute; margin: auto; height: 750px; width: 1334px; font-family: 'FOT-RodinNTLGPro'; }
 
@@ -111,9 +113,9 @@ body { margin: 0; }
 
 #dialog-scroll img { height: 35px; }
 
-#title-container { margin-bottom: 2px; }
+#title-container { padding: 2px 0; }
 
-#other-controls-container { display: flex; width: 550px; justify-content: center; align-items: center; z-index: 10; }
+#other-controls-container { padding-bottom: 4px; display: flex; width: 550px; justify-content: center; align-items: center; z-index: 10; }
 
 #select-mission { min-width: 0; }
 
