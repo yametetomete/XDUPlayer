@@ -1504,8 +1504,8 @@ class Player {
 		//Sizes the canvas/pixi's renderer to the actual render resolution
 		this.pixi.app.renderer.resize(res.width * window.devicePixelRatio, res.height * window.devicePixelRatio);
 		//Css size overwrites the display size of the canvas
-		this.pixi.app.view.style.width = res.width;
-		this.pixi.app.view.style.height = res.height;
+		this.pixi.app.view.style.width = res.width + "px";
+		this.pixi.app.view.style.height = res.height + "px";
 		//Transform the text container to be the right scale, browser handles all dpi stuff for html elements itself
 		document.getElementById('text-container').style.cssText = `transform: scale(${newScale})`;
 	}
