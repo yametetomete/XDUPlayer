@@ -727,6 +727,19 @@
 			"seconds": 17.617
 		}
 	},
+	"music_knock_out": {
+		"duration": 103.6995625,
+		"loop_end": {
+			"samples_48k": 4977483,
+			"samples_native": 3318322,
+			"seconds": 103.6975625
+		},
+		"loop_start": {
+			"samples_48k": 1095744,
+			"samples_native": 730496,
+			"seconds": 22.828
+		}
+	},
 	"music_koi_no_okehazama": {
 		"duration": 76.1594375,
 		"loop_end": {
