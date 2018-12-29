@@ -585,13 +585,13 @@ class Player {
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 300, finalV: 1, initV: 0});
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: -(this.waitTime+500), time: 300, finalV: 0, initV: 1, post: "destroy"});
 					} catch (error) { }
-					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (utage.translations ? (utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
 				}
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
-					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (utage.translations ? (utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 					this.text.divaText(true, text);
 					break;
 				}
@@ -1197,8 +1197,8 @@ class Player {
 			this.audio.stopSound(this.playingVoice);
 		}
 		if(!cur.Command && cur.Arg1 && cur.Text) {
-			//If its chracter off screen text
-			let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+			//If its character off screen text
+			let text = cur.English ? (utage.translations ? (utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 			text = commonFunctions.convertUtageTextTags(text);
 			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
 				this.text.characterName(true, utage.charTranslations[cur.Arg1] || cur.Arg1);
@@ -1236,7 +1236,7 @@ class Player {
 			this.manualNext = true;
 		//Sometimes they don't give a Arg1 for the text.
 		} else if(!cur.Command && cur.Arg2.toLowerCase() === "<off>" && cur.Text) {
-			let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (utage.translations ? (utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 			this.text.characterName(true, "");
 			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			this.manualNext = true;
