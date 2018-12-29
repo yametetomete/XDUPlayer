@@ -77,9 +77,7 @@ function onAllLoaded(success) {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
-		if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
-			document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
-		}
+		checkQueryParameters();
 	}, 0);
 }
 
@@ -154,6 +152,13 @@ function buildLanguageList() {
 		selectBox.appendChild(opt);
 	}
 	selectBox.value = selectedLang;
+}
+
+function checkQueryParameters() {
+	urlParams = commonFunctions.readQueryParameters();
+	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
+		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
+	}
 }
 
 function playFromQuery(event) {
