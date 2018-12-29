@@ -10,8 +10,8 @@ const shaders = new Shaders();
 const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
-const languages = ["eng", "jpn"];
-const version = "YameteTomete XDUPlayer V1.2.0";
+const languages = ["eng", "jpn", "rus"];
+const version = "YameteTomete XDUPlayer V1.2.1";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
@@ -255,7 +255,16 @@ function missionChanged(mstId, value) {
 		currentMission = newMission;
 		currentMissionMst = mstId;
 		if(!currentMission.Enabled) {
-			missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
+			//Check for the next enabled mission. If there are none just reset.
+			for(let i = currentMissionIndex + 1; i < currentMissionList.length; ++i) {
+				const mis = mst.Missions[currentMissionList[i]];
+				if(mis && mis.Enabled) {
+					missionChanged(currentMissionMst, mis.Id);
+					return;
+				}
+			}
+			//If we got through the loop there are no more enabled so just end
+			resetMissions();
 			return;
 		}
 		let promises = [];
@@ -349,7 +358,17 @@ function skipClicked(event) {
 	} else if(player.runEvent && currentMissionIndex !== currentMissionList.length - 1) {
 		event.preventDefault();
 		event.stopPropagation();
-		missionChanged(currentMissionMst, utage.groupedMissions[currentMissionMst].Missions[currentMissionList[currentMissionIndex+1]].Id);
+		//Find the next enabled mission
+		for(let i = currentMissionIndex + 1; i < currentMissionList.length; ++i) {
+			const mis = utage.groupedMissions[currentMissionMst].Missions[currentMissionList[i]];
+			if(mis && mis.Enabled) {
+				//missionChanged(currentMissionMst, utage.groupedMissions[currentMissionMst].Missions[currentMissionList[currentMissionIndex+1]].Id);
+				missionChanged(currentMissionMst, mis.Id);
+				return;
+			}
+		}
+		//If we got through the loop there are no more enabled so just end
+		resetMissions();
 	}
 }
 

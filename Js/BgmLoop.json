@@ -324,6 +324,19 @@
 			"seconds": 0.0
 		}
 	},
+	"music_adam_weishaupt": {
+		"duration": 73.6201875,
+		"loop_end": {
+			"samples_48k": 3533703,
+			"samples_native": 2355802,
+			"seconds": 73.6188125
+		},
+		"loop_start": {
+			"samples_48k": 393648,
+			"samples_native": 262432,
+			"seconds": 8.201
+		}
+	},
 	"music_apple": {
 		"duration": 86.01065625,
 		"loop_end": {
@@ -374,6 +387,19 @@
 			"samples_48k": 892320,
 			"samples_native": 594880,
 			"seconds": 18.59
+		}
+	},
+	"music_change_the_future": {
+		"duration": 119.41009375,
+		"loop_end": {
+			"samples_48k": 5731599,
+			"samples_native": 3821066,
+			"seconds": 119.4083125
+		},
+		"loop_start": {
+			"samples_48k": 1972320,
+			"samples_native": 1314880,
+			"seconds": 41.09
 		}
 	},
 	"music_daisukisukisugi": {
@@ -454,6 +480,19 @@
 			"seconds": 49.866
 		}
 	},
+	"music_ewigarbunt": {
+		"duration": 94.56709375,
+		"loop_end": {
+			"samples_48k": 4539136,
+			"samples_native": 3026091,
+			"seconds": 94.56534375
+		},
+		"loop_start": {
+			"samples_48k": 532224,
+			"samples_native": 354816,
+			"seconds": 11.088
+		}
+	},
 	"music_first_love_song": {
 		"duration": 104.9476875,
 		"loop_end": {
@@ -491,6 +530,19 @@
 			"samples_48k": 2669376,
 			"samples_native": 1779584,
 			"seconds": 55.612
+		}
+	},
+	"music_fuugetsuno_shissou": {
+		"duration": 102.51465625,
+		"loop_end": {
+			"samples_48k": 4920636,
+			"samples_native": 3280424,
+			"seconds": 102.51325
+		},
+		"loop_start": {
+			"samples_48k": 1547376,
+			"samples_native": 1031584,
+			"seconds": 32.237
 		}
 	},
 	"music_gekisou_gungnir": {
@@ -688,6 +740,19 @@
 			"seconds": 29.179
 		}
 	},
+	"music_hanasaku_yuuki": {
+		"duration": 98.078,
+		"loop_end": {
+			"samples_48k": 4707648,
+			"samples_native": 3138432,
+			"seconds": 98.076
+		},
+		"loop_start": {
+			"samples_48k": 1034160,
+			"samples_native": 689440,
+			"seconds": 21.545
+		}
+	},
 	"music_hidamari_memoria": {
 		"duration": 107.5283125,
 		"loop_end": {
@@ -701,6 +766,19 @@
 			"seconds": 17.948
 		}
 	},
+	"music_hitsuai_dyuoshauto": {
+		"duration": 112.36075,
+		"loop_end": {
+			"samples_48k": 5393221,
+			"samples_native": 3595481,
+			"seconds": 112.35878125
+		},
+		"loop_start": {
+			"samples_48k": 1906080,
+			"samples_native": 1270720,
+			"seconds": 39.71
+		}
+	},
 	"music_junpaku_innocent": {
 		"duration": 118.195375,
 		"loop_end": {
@@ -712,6 +790,19 @@
 			"samples_48k": 2061216,
 			"samples_native": 1374144,
 			"seconds": 42.942
+		}
+	},
+	"music_kaban_no_kakushigoto": {
+		"duration": 80.6815,
+		"loop_end": {
+			"samples_48k": 3872619,
+			"samples_native": 2581746,
+			"seconds": 80.6795625
+		},
+		"loop_start": {
+			"samples_48k": 544176,
+			"samples_native": 362784,
+			"seconds": 11.337
 		}
 	},
 	"music_kimitoiu_otokanade_tsukirumade": {
@@ -1052,6 +1143,19 @@
 			"seconds": 50.56
 		}
 	},
+	"music_souyoku_no_wingbeat": {
+		"duration": 150.00028125,
+		"loop_end": {
+			"samples_48k": 7199934,
+			"samples_native": 4799956,
+			"seconds": 149.998625
+		},
+		"loop_start": {
+			"samples_48k": 3152256,
+			"samples_native": 2101504,
+			"seconds": 65.672
+		}
+	},
 	"music_stand_up_ready": {
 		"duration": 111.54221875,
 		"loop_end": {
@@ -1102,6 +1206,19 @@
 			"samples_48k": 1176384,
 			"samples_native": 784256,
 			"seconds": 24.508
+		}
+	},
+	"music_tsunaida_tedakega_tsunagumono": {
+		"duration": 88.55775,
+		"loop_end": {
+			"samples_48k": 4250697,
+			"samples_native": 2833798,
+			"seconds": 88.5561875
+		},
+		"loop_start": {
+			"samples_48k": 731760,
+			"samples_native": 487840,
+			"seconds": 15.245
 		}
 	},
 	"music_waikyou_shenshoujin": {
