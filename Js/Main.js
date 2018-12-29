@@ -54,6 +54,7 @@ function onBodyLoaded() {
 (function checkIsLoaded() {
 	if(bodyLoaded) {
 		document.getElementById('loading-font').style.cssText = "display: none;";
+		loadQueryParameters();
 		loadLocalStorage();
 	}
 	if(utageLoaded && languagesLoaded) {
@@ -77,15 +78,11 @@ function onAllLoaded(success) {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
-		if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
-			document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
-		}
 	}, 0);
 }
 
 function loadLocalStorage() {
 	try {
-		urlParams = commonFunctions.readQueryParameters();
 		//audio
 		volume = localStorage.getItem('volume') || 0.5;
 		volume = Number(volume);
@@ -155,6 +152,14 @@ function buildLanguageList() {
 	}
 	selectBox.value = selectedLang;
 }
+
+function loadQueryParameters() {
+	urlParams = commonFunctions.readQueryParameters();
+	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
+		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
+	}
+}
+
 
 function playFromQuery(event) {
 	missionChanged(urlParams['mstid'], urlParams['id']);
