@@ -10,8 +10,8 @@ const shaders = new Shaders();
 const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
-const languages = ["eng", "jpn"];
-const version = "YameteTomete XDUPlayer V1.2.0";
+const languages = ["eng", "jpn", "rus"];
+const version = "YameteTomete XDUPlayer V1.2.1";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
@@ -33,9 +33,9 @@ function onBodyLoaded() {
 	bodyLoaded = true;
 	document.getElementById("title-tag").innerText = version;
 	document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-    document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-    document.addEventListener('fullscreenchange', onFullScreenChange, false);
-    document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
+	document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+	document.addEventListener('fullscreenchange', onFullScreenChange, false);
+	document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
 }
 
 (function startLoad() {
@@ -83,6 +83,7 @@ function onAllLoaded(success) {
 
 function loadLocalStorage() {
 	try {
+		urlParams = commonFunctions.readQueryParameters();
 		//audio
 		volume = localStorage.getItem('volume') || 0.5;
 		volume = Number(volume);
@@ -100,7 +101,7 @@ function loadLocalStorage() {
 			document.getElementById('mute-button').innerText = "🔊";
 		}
 		//language
-		let lang = localStorage.getItem('language') || "eng";
+		let lang = urlParams['lang'] || localStorage.getItem('language') || "eng";
 		if(languages.includes(lang)) {
 			selectedLang = lang;
 		}
