@@ -33,9 +33,9 @@ function onBodyLoaded() {
 	bodyLoaded = true;
 	document.getElementById("title-tag").innerText = version;
 	document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-    document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-    document.addEventListener('fullscreenchange', onFullScreenChange, false);
-    document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
+	document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+	document.addEventListener('fullscreenchange', onFullScreenChange, false);
+	document.addEventListener('MSFullscreenChange', onFullScreenChange, false);
 }
 
 (function startLoad() {
@@ -77,12 +77,15 @@ function onAllLoaded(success) {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
-		checkQueryParameters();
+		if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
+			document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
+		}
 	}, 0);
 }
 
 function loadLocalStorage() {
 	try {
+		urlParams = commonFunctions.readQueryParameters();
 		//audio
 		volume = localStorage.getItem('volume') || 0.5;
 		volume = Number(volume);
@@ -100,7 +103,7 @@ function loadLocalStorage() {
 			document.getElementById('mute-button').innerText = "🔊";
 		}
 		//language
-		let lang = localStorage.getItem('language') || "eng";
+		let lang = urlParams['lang'] || localStorage.getItem('language') || "eng";
 		if(languages.includes(lang)) {
 			selectedLang = lang;
 		}
@@ -151,13 +154,6 @@ function buildLanguageList() {
 		selectBox.appendChild(opt);
 	}
 	selectBox.value = selectedLang;
-}
-
-function checkQueryParameters() {
-	urlParams = commonFunctions.readQueryParameters();
-	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
-		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
-	}
 }
 
 function playFromQuery(event) {
