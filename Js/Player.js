@@ -921,15 +921,15 @@ class Player {
 				}
 				case "noise_disappearance01": //103500331
 					if(cur.Arg2) {
-						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
 					}
 					break;
 				case "noise_disappearance02": { //103500341
 					if(cur.Arg2) {
-						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
 					}
 					if(cur.Arg3) {
-						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
 					}
 					break;
 				}
