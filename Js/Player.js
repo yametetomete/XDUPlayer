@@ -920,21 +920,18 @@ class Player {
 					break;
 				}
 				case "noise_disappearance01": //103500331
-					if(cur.Arg2) {
-						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
-					}
-					break;
-				case "noise_disappearance02": { //103500341
+				case "noise_disappearance02": //103500341
+				case "noise_disappearance03": { //103500552
 					if(cur.Arg2) {
 						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
 					}
 					if(cur.Arg3) {
-						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000));
+						this.processTryRemoveChar(cur.Arg3, (Number(cur.Arg1) * 1000));
+					}
+					if(cur.Arg4) {
+						this.processTryRemoveChar(cur.Arg4, (Number(cur.Arg1) * 1000));
 					}
 					break;
-				}
-				case "noise_disappearance03": { //103500552
-					this.waitTime = Number(cur.Arg1) * 1000;
 				}
 				case "noise_disappearance11": //103500341
 					this.waitTime = Number(cur.Arg1) * 1000;
