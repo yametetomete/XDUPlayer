@@ -920,39 +920,21 @@ class Player {
 					break;
 				}
 				case "noise_disappearance01": //103500331
-					this.waitTime = Number(cur.Arg1) * 1000;
+					if(cur.Arg2) {
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+					}
 					break;
 				case "noise_disappearance02": { //103500341
-					this.waitTime = Number(cur.Arg1) * 1000;
-					//let c1 = this.currentCharacters['キャラ右'];
-					//if(c1) {
-					//	this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-					//	this.currentCharacters['キャラ右'] = undefined;
-					//}
-					//let c2 = this.currentCharacters['キャラ左'];
-					//if(c2) {
-					//	this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-					//	this.currentCharacters['キャラ左'] = undefined;
-					//}
+					if(cur.Arg2) {
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+					}
+					if(cur.Arg3) {
+						this.processTryRemoveChar(cur.Arg2, (Number(cur.Arg1) * 1000);
+					}
 					break;
 				}
 				case "noise_disappearance03": { //103500552
 					this.waitTime = Number(cur.Arg1) * 1000;
-					let c1 = this.currentCharacters['キャラ右'] || this.currentCharacters['キャラ右02'];
-					if(c1) {
-						this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ右'] = undefined;
-					}
-					let c2 = this.currentCharacters['キャラ左'] || this.currentCharacters['キャラ左02'];
-					if(c2) {
-						this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ左'] = undefined;
-					}
-					let c3 = this.currentCharacters['キャラ中央'];
-					if(c3) {
-						this.lerpTargets.push({type: 'alpha', object: c3.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ中央'] = undefined;
-					}
 				}
 				case "noise_disappearance11": //103500341
 					this.waitTime = Number(cur.Arg1) * 1000;
@@ -1176,7 +1158,7 @@ class Player {
 		}
 	}
 	
-	processTryRemoveChar(character) {
+	processTryRemoveChar(character, fadeTime) {
 		let curChar = undefined;
 		for(let c of Object.keys(this.currentCharacters)) {
 			if(!this.currentCharacters[c]) { continue; }
@@ -1187,7 +1169,10 @@ class Player {
 		if(!curChar) {
 			return;
 		}
-		this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 500, finalV: 0, initV: 1, post: "destroy" });
+		if(fadeTime == undefined) {
+			fadeTime = 500;
+		}
+		this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: fadeTime, finalV: 0, initV: 1, post: "destroy" });
 		this.currentCharacters[curChar.layer.info.LayerName] = undefined;
 	}
 	
