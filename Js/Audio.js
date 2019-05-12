@@ -1,5 +1,4 @@
 //(Math.exp(x)-1)/(Math.E-1)
-//🔊
 
 class bufferLoader {
 	constructor(context, soundMap, callback) {

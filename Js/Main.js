@@ -29,6 +29,12 @@ let volume = 0.5;
 let fullScreen = false;
 let prevMission = '{Select}';
 
+const emoji = {
+	LoudSound: String.fromCodePoint(0x1f50a),
+	Mute: String.fromCodePoint(0x1f507),
+	HeavyPlusSign: String.fromCodePoint(0x2795)
+};
+
 function onBodyLoaded() {
 	bodyLoaded = true;
 	document.getElementById("title-tag").innerText = version;
@@ -95,9 +101,9 @@ function loadLocalStorage() {
 			audio.mute(isMuted);
 		}
 		if(isMuted) {
-			document.getElementById('mute-button').innerText = "🔇";
+			document.getElementById('mute-button').innerText = emoji.Mute;
 		} else {
-			document.getElementById('mute-button').innerText = "🔊";
+			document.getElementById('mute-button').innerText = emoji.LoudSound;
 		}
 		//language
 		let lang = urlParams['lang'] || localStorage.getItem('language') || "eng";
@@ -433,9 +439,9 @@ function toggleMute(event) {
 	}
 	localStorage.setItem('ismuted', isMuted);
 	if(isMuted) {
-		document.getElementById('mute-button').innerText = "🔇";
+		document.getElementById('mute-button').innerText = emoji.Mute;
 	} else {
-		document.getElementById('mute-button').innerText = "🔊";
+		document.getElementById('mute-button').innerText = emoji.LoudSound;
 	}
 }
 
@@ -474,7 +480,7 @@ function onFullScreenChange(event) {
 	} else {
 		document.getElementById('other-controls-container').style.cssText = "";
 		document.getElementById('title-container').style.cssText = "";
-		document.getElementById('fullscreen-button').innerText = "➕";
+		document.getElementById('fullscreen-button').innerText = emoji.HeavyPlusSign;
 	}
 	onWindowResize(event, 0);
 }

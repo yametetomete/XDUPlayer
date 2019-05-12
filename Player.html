@@ -26,7 +26,7 @@
 			<div id="title-container"><span>Now Playing: </span><span id="playing-title">None</span></div>
 			<div id="other-controls-container">
 				<div id="volume-control">
-					<span onclick="toggleMute(event)" id="mute-button">🔊</span>
+					<span onclick="toggleMute(event)" id="mute-button">&#128266;</span> <!-- loud_sound -->
 					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
 				</div>
 				<select id="select-mission" onchange="missionDropDownChanged(event);"></select>
@@ -37,7 +37,7 @@
 			The canvas then resizes as the canvas does and the text-container uses transform scale based off this resolution -->
 			<div id="app-container" onclick="onMainClick(event);">
 				<div id="text-container">
-					<div id="fullscreen-button" onclick="toggleFullscreen(event)">➕</div>
+					<div id="fullscreen-button" onclick="toggleFullscreen(event)">&#10133;</div> <!-- heavy_plus_sign -->
 					<img id="main-ui-img" class="hidden" src="Images/newui_main.png"/>
 					<button id="play-from-query" onclick="playFromQuery(event)" style="display: none;">Play</button>
 					<div id="title" class="hidden">Title Text</div>
