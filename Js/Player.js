@@ -12,6 +12,7 @@ class Player {
 		this.text = text;
 		this.audio = audio;
 		this.shaders = shaderscript;
+		this.lerpTargets = [];
 		//consts
 		this.resolutionScale = 1; //I created this thinking that I would need to handle changing offset when resolution changes. But lucikly I can just scale the parent container and it works without needing this.
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
@@ -19,14 +20,13 @@ class Player {
 		this.defaultCharPattern = 'すまし'; //The mission file doesn't always give a pattern for putting a character on the screen.
 		this.backCharTint = 0x808080;
 		this.titleWaitTime = 5;
-		
+
 		this.currentCharacters = {};
 		this.layers = {};
 		this.currentCommand = undefined;
 		this.runEvent = false;
 		this.secondTicker = 1000;
 		this.waitTime = 0;
-		this.lerpTargets = [];
 		this.manualNext = false;
 		this.hasMoreText = false;
 		this.uiHidden = false;
@@ -34,6 +34,9 @@ class Player {
 		this.assetLoadPercent = 0;
 		this.audioLoadPercent = 0;
 		this.playingVoice = undefined;
+		this.loader.onError.add(function(error, loader, resource) {
+			console.log('Failed to load resource "' + resource.url + '", check your adblocker');
+		});
 	}
 	
 	playFile() {
@@ -49,7 +52,160 @@ class Player {
 		});
 		return runningPromise;
 	}
-	
+
+	loadFilesFromCommand(c, toLoadSe, toLoadBgm) {
+		let command = c.Command ? c.Command.toLowerCase() : '';
+		switch(command) {
+			//BG images
+			case "divaeffectstart": {
+				let file = c.Arg1.split('/').pop();
+				this.loader.add(`bg|${file}`, `${this.utage.rootDirectory}XDUData/${c.Arg1}`.replace(/bg_adv/, "FUCK_EASYLIST"));
+				break;
+			}
+			case "divadecorateneutral":
+			case "divaloopdecorate":
+				this.loadFilesFromEffect(c, toLoadSe, toLoadBgm);
+				break;
+			case "bg":
+				if(this.utage.textureInfo[c.Arg1]) {
+					if(!this.loader.resources[`bg|${c.Arg1}`]) {
+						this.loader.add(`bg|${c.Arg1}`, this.utage.textureInfo[c.Arg1].FileName);
+					}
+				} else if(!this.utage.textureInfo[c.Arg1]) {
+					console.log(`Failed to get BG: ${c.Arg1}`);
+				}
+				break;
+			//Text
+			case "": {
+				//Character Text
+				let Arg2 = c.Arg2;
+				//because fuck me.
+				if(Arg2 === '＜Off>') {
+					Arg2 = '<Off>'
+				}
+				let charToLoad = c.Character || c.Arg1;
+				if(charToLoad && this.utage.characterInfo[charToLoad] && !Arg2) {
+					Arg2 = this.defaultCharPattern;
+				}
+				//I know the nesting here isint pretty
+				//If the character at arg1|arg2 exists and arg2 is not <off>
+				if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad][Arg2] && Arg2 && Arg2 != "<Off>") {
+					if(!this.loader.resources[`char|${charToLoad}|${Arg2}`]) {
+						this.loader.add(`char|${charToLoad}|${Arg2}`, this.utage.characterInfo[charToLoad][Arg2].FileName);
+					}
+				//If the character at arg1|arg2 isint here check at arg1|none. If not there put error in console.
+				} else if(charToLoad && Arg2 && Arg2 != "<Off>" && 
+				(!this.utage.characterInfo[charToLoad] || !this.utage.characterInfo[charToLoad][Arg2])) {
+					if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad]['none']) {
+						if(!this.loader.resources[`char|${charToLoad}|none`]) {
+							this.loader.add(`char|${charToLoad}|none`, this.utage.characterInfo[charToLoad]['none'].FileName);
+						}
+					} else {
+						console.log(`Failed to get Character: ${charToLoad}|${Arg2}`);
+					}
+				}
+				//These voices arent in the Sound.tsv because fuck you
+				if(c.Voice) {
+					let filename = c.Voice;
+					if(filename.includes(',')) {
+						let s = filename.split(',');
+						filename = `${s[0].split('_').join('/')}/${s[1]}`;
+					}
+					filename = `${this.utage.rootDirectory}XDUData/Voice/${filename}.opus`;
+					if(!toLoadSe[c.Voice]) {
+						toLoadSe[c.Voice] = { Label: c.Voice, FileName: filename };
+					}
+				}
+				break;
+			}
+			case "bgm":
+				if(this.utage.soundInfo[c.Arg1]) {
+					if(!toLoadBgm[c.Arg1]) {
+						toLoadBgm[c.Arg1] = this.utage.soundInfo[c.Arg1];
+					}
+				} else {
+					console.log(`Failed to get BGM: ${c.Arg1}`);
+				}
+				break;
+			case "se":
+				if(this.utage.soundInfo[c.Arg1]) {
+					if(!toLoadSe[c.Arg1]) {
+						toLoadSe[c.Arg1] = this.utage.soundInfo[c.Arg1];
+					}
+				} else {
+					console.log(`Failed to get SE: ${c.Arg1}`);
+				}
+				break;
+			case "somethingnew_appearance01":
+			case "unhappyseed_appearance01":
+			case "unhappyseed_appearance02":
+			case "arcanoise_appearance02":
+			case "arcanoise_appearance03":
+			case "darkaura01": {
+				switch(c.Command ? c.Command.toLowerCase() : '') {
+					case "somethingnew_appearance01":
+						if(this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)']) {
+							toLoadSe['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'] = this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'];
+						} else {
+							console.log(`Failed to get somethingnew_appearance01 SE: Se_サムシング・ニューの叫び声(アアア”ア”ア”)`);
+						}
+						break;
+					case "darkaura01":
+					case "unhappyseed_appearance02":
+					case "unhappyseed_appearance01":
+						if(this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)']) {
+							toLoadSe['Se_不幸のオーラ(ヴォォオンン)'] = this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)'];
+						} else {
+							console.log(`Failed to get unhappyseed_appearance SE: Se_不幸のオーラ(ヴォォオンン)`);
+						}
+						break;
+				}
+				let pat = this.defaultCharPattern;
+				if(c.Arg1) {
+					if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][pat]) {
+						if(!this.loader.resources[`char|${c.Arg1}|${pat}`]) {
+							this.loader.add(`char|${c.Arg1}|${pat}`, this.utage.characterInfo[c.Arg1][pat].FileName);
+						}
+					}
+				}
+				if(c.Arg2) {
+					if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][pat]) {
+						if(!this.loader.resources[`char|${c.Arg2}|${pat}`]) {
+							this.loader.add(`char|${c.Arg2}|${pat}`, this.utage.characterInfo[c.Arg2][pat].FileName);
+						}
+					}
+				}
+				if(c.Arg3) {
+					if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][pat]) {
+						if(!this.loader.resources[`char|${c.Arg3}|${pat}`]) {
+							this.loader.add(`char|${c.Arg3}|${pat}`, this.utage.characterInfo[c.Arg3][pat].FileName);
+						}
+					}
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	loadFilesFromEffect(command, toLoadSe) {
+		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
+		switch (effect) {
+		case "underwater01": {
+			if(!toLoadSe['se_斬撃音_単体']) {
+				toLoadSe['se_斬撃音_単体'] = this.utage.soundInfo['se_斬撃音_単体'];
+			}
+			if(!this.loader.resources['bg|underwater01']) {
+				this.loader.add('bg|underwater01', `${this.utage.rootDirectory}CustomData/Sample/Texture/BG/bg_underwater01.jpg`);
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
 	//Runs through the tsv file and loads any files it will need to play.
 	preCheckFilesToGet() {
 		return new Promise((resolve, reject) => {
@@ -70,239 +226,12 @@ class Player {
 							console.log(error);
 						}
 					}
-					let command = c.Command ? c.Command.toLowerCase() : '';
-					switch(command) {
-						//BG images
-						case "bg":
-							if(this.utage.textureInfo[c.Arg1]) {
-								if(!this.loader.resources[`bg|${c.Arg1}`]) {
-									this.loader.add(`bg|${c.Arg1}`, this.utage.textureInfo[c.Arg1].FileName);
-								}
-							} else if(!this.utage.textureInfo[c.Arg1]) {
-								console.log(`Failed to get BG: ${c.Arg1}`);
-							}
-							break;
-						//Text
-						case "": {
-							//Character Text
-							let Arg2 = c.Arg2;
-							//because fuck me.
-							if(Arg2 === '＜Off>') {
-								Arg2 = '<Off>'
-							}
-							let charToLoad = c.Character || c.Arg1;
-							if(charToLoad && this.utage.characterInfo[charToLoad] && !Arg2) {
-								Arg2 = this.defaultCharPattern;
-							}
-							//I know the nesting here isint pretty
-							//If the character at arg1|arg2 exists and arg2 is not <off>
-							if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad][Arg2] && Arg2 && Arg2 != "<Off>") {
-								if(!this.loader.resources[`char|${charToLoad}|${Arg2}`]) {
-									this.loader.add(`char|${charToLoad}|${Arg2}`, this.utage.characterInfo[charToLoad][Arg2].FileName);
-								}
-							//If the character at arg1|arg2 isint here check at arg1|none. If not there put error in console.
-							} else if(charToLoad && Arg2 && Arg2 != "<Off>" && 
-							(!this.utage.characterInfo[charToLoad] || !this.utage.characterInfo[charToLoad][Arg2])) {
-								if(this.utage.characterInfo[charToLoad] && this.utage.characterInfo[charToLoad]['none']) {
-									if(!this.loader.resources[`char|${charToLoad}|none`]) {
-										this.loader.add(`char|${charToLoad}|none`, this.utage.characterInfo[charToLoad]['none'].FileName);
-									}
-								} else {
-									console.log(`Failed to get Character: ${charToLoad}|${Arg2}`);
-								}
-							}
-							//These voices arent in the Sound.tsv because fuck you
-							if(c.Voice) {
-								let filename = c.Voice;
-								if(filename.includes(',')) {
-									let s = filename.split(',');
-									filename = `${s[0].split('_').join('/')}/${s[1]}`;
-								}
-								filename = `${this.utage.rootDirectory}XDUData/Voice/${filename}.opus`;
-								if(!toLoadSe[c.Voice]) {
-									toLoadSe[c.Voice] = { Label: c.Voice, FileName: filename };
-								}
-							}
-							break;
+					if (c.Command in this.utage.macros) {
+						for (let m of this.utage.macros[c.Command]) {
+							this.loadFilesFromCommand(m, toLoadSe, toLoadBgm);
 						}
-						case "bgm":
-							if(this.utage.soundInfo[c.Arg1]) {
-								if(!toLoadBgm[c.Arg1]) {
-									toLoadBgm[c.Arg1] = this.utage.soundInfo[c.Arg1];
-								}
-							} else {
-								console.log(`Failed to get BGM: ${c.Arg1}`);
-							}
-							break;
-						case "se":
-							if(this.utage.soundInfo[c.Arg1]) {
-								if(!toLoadSe[c.Arg1]) {
-									toLoadSe[c.Arg1] = this.utage.soundInfo[c.Arg1];
-								}
-							} else {
-								console.log(`Failed to get SE: ${c.Arg1}`);
-							}
-							break;
-						case "henshin01_bgmoff": {
-							let Arg2 = c.Arg2;
-							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
-								Arg2 = this.defaultCharPattern;
-							}
-							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2]) {
-								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
-									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
-								}
-							}
-							if(this.utage.soundInfo["se_変身演出"]) {
-								if(!toLoadSe["se_変身演出"]) {
-									toLoadSe["se_変身演出"] = this.utage.soundInfo["se_変身演出"];
-								}
-							} else {
-								console.log(`Failed to get Henshin SE: se_変身演出`);
-							}
-							break;
-						}
-						case "henshin01": {
-							let Arg2 = c.Arg2;
-							if(c.Arg1 && this.utage.characterInfo[c.Arg1] && !Arg2) {
-								Arg2 = this.defaultCharPattern;
-							}
-							if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][Arg2]) {
-								if(!this.loader.resources[`char|${c.Arg1}|${Arg2}`]) {
-									this.loader.add(`char|${c.Arg1}|${Arg2}`, this.utage.characterInfo[c.Arg1][Arg2].FileName);
-								}
-							}
-							if(this.utage.soundInfo[c.Arg4]) {
-								if(!toLoadBgm[c.Arg4]) {
-									toLoadBgm[c.Arg4] = this.utage.soundInfo[c.Arg4];
-								}
-							} else {
-								console.log(`Failed to get BGM: ${c.Arg4}`);
-							}
-							if(this.utage.soundInfo["se_変身演出"]) {
-								if(!toLoadSe["se_変身演出"]) {
-									toLoadSe["se_変身演出"] = this.utage.soundInfo["se_変身演出"];
-								}
-							} else {
-								console.log(`Failed to get Henshin SE: se_変身演出`);
-							}
-							break;
-						}
-						case "somethingnew_appearance01":
-						case "unhappyseed_appearance01":
-						case "unhappyseed_appearance02":
-						case "arcanoise_appearance02":
-						case "arcanoise_appearance03":
-						case "darkaura01": {
-							switch(c.Command ? c.Command.toLowerCase() : '') {
-								case "somethingnew_appearance01":
-									if(this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)']) {
-										toLoadSe['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'] = this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'];
-									} else {
-										console.log(`Failed to get somethingnew_appearance01 SE: Se_サムシング・ニューの叫び声(アアア”ア”ア”)`);
-									}
-									break;
-								case "darkaura01":
-								case "unhappyseed_appearance02":
-								case "unhappyseed_appearance01":
-									if(this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)']) {
-										toLoadSe['Se_不幸のオーラ(ヴォォオンン)'] = this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)'];
-									} else {
-										console.log(`Failed to get unhappyseed_appearance SE: Se_不幸のオーラ(ヴォォオンン)`);
-									}
-									break;
-							}
-							let pat = this.defaultCharPattern;
-							if(c.Arg1) {
-								if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][pat]) {
-									if(!this.loader.resources[`char|${c.Arg1}|${pat}`]) {
-										this.loader.add(`char|${c.Arg1}|${pat}`, this.utage.characterInfo[c.Arg1][pat].FileName);
-									}
-								}
-							}
-							if(c.Arg2) {
-								if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][pat]) {
-									if(!this.loader.resources[`char|${c.Arg2}|${pat}`]) {
-										this.loader.add(`char|${c.Arg2}|${pat}`, this.utage.characterInfo[c.Arg2][pat].FileName);
-									}
-								}
-							}
-							if(c.Arg3) {
-								if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][pat]) {
-									if(!this.loader.resources[`char|${c.Arg3}|${pat}`]) {
-										this.loader.add(`char|${c.Arg3}|${pat}`, this.utage.characterInfo[c.Arg3][pat].FileName);
-									}
-								}
-							}
-							break;
-						}
-						case "scenetitle01":
-							//this isint in the texture file.
-							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/bg_title.jpg`);
-							break;
-						case "scenetitlebridal":
-							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}CustomData/Sample/Texture/BG/eventbridal.png`);
-							break;
-						case "scenetitle13":
-							this.loader.add('bg|titlecard', `${this.utage.rootDirectory}XDUData/Sample/Texture/BG/event0001.png`);
-							break;
-						case "loopeffect01": {
-							switch(c.Arg1) {
-								case "underwater01": {
-									if(!toLoadSe['se_斬撃音_単体']) {
-										toLoadSe['se_斬撃音_単体'] = this.utage.soundInfo['se_斬撃音_単体'];
-									}
-									if(!this.loader.resources['bg|underwater01']) {
-										this.loader.add('bg|underwater01', `${this.utage.rootDirectory}CustomData/Sample/Texture/BG/bg_underwater01.jpg`);
-									}
-									break;
-								}
-							}
-							break;
-						}
-						case "attachit02":
-						case "attachit03":
-							if(this.utage.soundInfo['se_打撃音（大）']) {
-								toLoadSe['se_打撃音（大）'] = this.utage.soundInfo['se_打撃音（大）'];
-							} else {
-								console.log(`Failed to get attachit SE: se_打撃音（大）`);
-							}
-							break;
-						case "attacshot02":
-							if(this.utage.soundInfo['se_銃撃（単発）']) {
-								toLoadSe['se_銃撃（単発）'] = this.utage.soundInfo['se_銃撃（単発）'];
-							} else {
-								console.log(`Failed to get attacshot SE: se_ガトリング音`);
-							}
-							break;
-						case "attacshot11": 
-						case "attacshot12": 
-							if(this.utage.soundInfo['se_ガトリング音']) {
-								toLoadSe['se_ガトリング音'] = this.utage.soundInfo['se_ガトリング音'];
-							} else {
-								console.log(`Failed to get attacshot SE: se_ガトリング音`);
-							}
-							break;
-						case "attacslash01":
-						case "attacslash02": 
-						case "attacslash03": 
-						case "attacslash04": 
-						case "attacslash05": 
-							if(this.utage.soundInfo['se_斬撃音']) {
-								toLoadSe['se_斬撃音'] = this.utage.soundInfo['se_斬撃音'];
-							} else {
-								console.log(`Failed to get attacslash SE: se_斬撃音`);
-							}
-							break;
-						case "attaclaser01":
-							if(this.utage.soundInfo['se_レーザーが放たれる音']) {
-								toLoadSe['se_レーザーが放たれる音'] = this.utage.soundInfo['se_レーザーが放たれる音'];
-							} else {
-								console.log(`Failed to get attaclaser SE: se_レーザーが放たれる音`);
-							}
-							break;
-						default:
-							break;
+					} else {
+						this.loadFilesFromCommand(c, toLoadSe, toLoadBgm);
 					}
 				} catch (error) {
 					console.log(error);
@@ -444,7 +373,7 @@ class Player {
 		}
 	}
 	
-	//This loop is run every frame and handles all the animation liek tweens in the mission.
+	//This loop is run every frame and handles all the animation like tweens in the mission.
 	//interpolation is not just linear even if its called HandleLerps
 	loopHandleLerps(deltaTime) {
 		try {
@@ -564,7 +493,51 @@ class Player {
 			} catch(error) { }
 		}
 	}
-	
+
+	processEffect(command) {
+		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
+		/* TODO: adjust these wait times */
+		if (effect.startsWith("hit_")) {
+			this.waitTime = 850;
+		} else if (effect.startsWith("slash_")) {
+			this.waitTime = 870;
+		} else if (effect.startsWith("shot_")) {
+			this.waitTime = 1500;
+		} else if (effect.startsWith("laser_pur_")) {
+			this.waitTime = 2360;
+		} else if (effect.startsWith("noise_crushing")) {
+			this.waitTime = Number(command.Arg1) * 1000;
+		}
+		switch (effect) {
+		case "henshin":
+			this.waitTime = 3850;
+			break;
+		default:
+			break;
+		}
+	}
+
+	processLoopDecorate(command) {
+		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
+		switch (effect) {
+		/* TODO: expand */
+		case "underwater01": {
+			let container = this.layers["bg|loopeffect"].container;
+			this.audio.playSound("se_斬撃音_単体", "Se");
+			let sprite = new PIXI.Sprite(this.loader.resources['bg|underwater01'].texture);
+			sprite.scale.set(1.30273438, 1.30273438);
+			sprite.anchor.set(0.5, 0.5);
+			sprite.alpha = 0;
+			container.addChild(sprite);
+			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 1000, finalV: 1, initV: 0});
+			container.visible = true;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
 	//Processes a line from the mission tsv
 	processCommand(delta) {
 		try {
@@ -573,15 +546,13 @@ class Player {
 			if(cur.Arg2 === '＜Off>') {
 				cur.Arg2 = '<off>';
 			}
-			if ((cur.Command || "").toLowerCase().includes('scenetitle')) {
-				cur.Command = 'scenetitle';
-			}
 			switch((cur.Command || "").toLowerCase()) {
-				case "scenetitle": {
+				case "divaeffectstart": {
 					this.waitTime = this.titleWaitTime * 1000;
 					try {
+						let file = cur.Arg1.split('/').pop();
 						let container = this.layers[this.bgLayerName].container;
-						let sprite = new PIXI.Sprite(this.loader.resources[`bg|titlecard`].texture);
+						let sprite = new PIXI.Sprite(this.loader.resources[`bg|${file}`].texture);
 						container.visible = true;
 						sprite.scale.set(1.30273438, 1.30273438);
 						sprite.anchor.set(0.5, 0.5);
@@ -594,6 +565,9 @@ class Player {
 					this.text.titleText(true, text);
 					break;
 				}
+				case "divaclearstartandcontinue":
+					this.text.titleText(false, '');
+					break;
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
 					let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
@@ -601,9 +575,9 @@ class Player {
 					break;
 				}
 				//FadeTo
-				case "continue01":
+				case "divaeffectcontinue":
 				case "fadeout": {
-					if(cur.Command.toLowerCase() === "continue01") {
+					if(cur.Command.toLowerCase() === "divaeffectcontinue") {
 						cur.Arg1 = 'black';
 						cur.Arg6 = 1;
 					}
@@ -795,20 +769,8 @@ class Player {
 					this.processShake(delta, cur);
 					break;
 				}
-				case "loopeffect01": {
-					let container = this.layers["bg|loopeffect"].container;
-					switch((cur.Arg1 || "").toLowerCase()) {
-						case "underwater01": {
-							this.audio.playSound("se_斬撃音_単体", "Se");
-							let sprite = new PIXI.Sprite(this.loader.resources['bg|underwater01'].texture);
-							sprite.scale.set(1.30273438, 1.30273438);
-							sprite.anchor.set(0.5, 0.5);
-							sprite.alpha = 0;
-							container.addChild(sprite);
-							this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 1000, finalV: 1, initV: 0});
-						}
-					}
-					container.visible = true;
+				case "divaloopdecorate": {
+					this.processLoopDecorate(cur);
 					break;
 				}
 				case "divaclearloopdecorate": {
@@ -820,69 +782,7 @@ class Player {
 					this.processCommandOther(delta);
 					break;
 				//custom effects
-				case "henshin01_bgmoff": //101000111
-					this.waitTime = 3850;
-					this.audio.stopSound('bgm');
-					this.checkPutCharacterScreen(cur, true);
-					this.audio.playSound('se_変身演出', 'Se');
-					break;
-				case "henshin01":
-					this.waitTime = 3850;
-					this.audio.stopSound('bgm');
-					if(this.utage.soundInfo[cur.Arg4]) {
-						this.audio.playSound(cur.Arg4, 'bgm');
-					}
-					this.audio.playSound('se_変身演出', 'Se');
-					cur.Arg4 = 0;
-					this.checkPutCharacterScreen(cur, true);
-					break;
-				case "attachit02": //103500221
-					this.waitTime = 850;
-					this.audio.playSound('se_打撃音（大）', 'Se');
-					break;
-				case "attachit03": //312000112
-					this.waitTime = 850;
-					this.audio.playSound('se_打撃音（大）', 'Se');
-					break;
-				case "attacshot02":
-					this.waitTime = 1500;
-					this.audio.playSound('se_銃撃（単発）', 'Se');
-					break;
-				case "attacshot11": //103500251
-					this.waitTime = 1680;
-					this.audio.playSound('se_ガトリング音', 'Se');
-					break;
-				case "attacshot12": //103500231
-					this.waitTime = 1680;
-					this.audio.playSound('se_ガトリング音', 'Se');
-					break;
-				case "attacslash01": //103500642
-					this.waitTime = 870;
-					this.audio.playSound('se_斬撃音', 'Se');
-					break;
-				case "attacslash02": //103500231
-					this.waitTime = 870;
-					this.audio.playSound('se_斬撃音', 'Se');
-					break;
-				case "attacslash03": //312000112
-					this.waitTime = 870;
-					this.audio.playSound('se_斬撃音', 'Se');
-					break;
-				case "attacslash04": //312000142
-					this.waitTime = 870;
-					this.audio.playSound('se_斬撃音', 'Se');
-					break;
-				case "attacslash05": //103500552
-					this.waitTime = 870;
-					this.audio.playSound('se_斬撃音', 'Se');
-					break;
-				case "attaclaser01": //312000222
-					this.waitTime = 2360;
-					this.audio.playSound('se_レーザーが放たれる音', 'Se');
-					break;
-				case "getitem01": //103400252
-					break;
-				case "skillmovie": //103500341
+				case "divamovie": //103500341
 					break;
 				case "unhappyseed_appearance01": { //312000112
 					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
@@ -892,17 +792,13 @@ class Player {
 					this.checkPutCharacterScreen(customCommand, false);
 					break;
 				}
-				case "unhappyseed_appearance02": //312000111
-				case "arcanoise_appearance02": { //103500341
+
+				case "unhappyseed_appearance02": { //312000111
 					let spawnTime = 0.5;
-					if(cur.Command.toLowerCase().includes("unhappyseed_appearance")) {
-						this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
-						this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
-						this.waitTime = 3000;
-						spawnTime = 2.5;
-					} else {
-						this.waitTime = 1000;
-					}
+					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
+					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
+					this.waitTime = 3000;
+					spawnTime = 2.5;
 					if(cur.Arg1 && cur.Arg2) {
 						
 						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: spawnTime };
@@ -912,68 +808,7 @@ class Player {
 					}
 					break;
 				}
-				case "arcanoise_appearance03": { //103500521
-					if(cur.Arg1 && cur.Arg2 && cur.Arg3) {
-						this.waitTime = 1000;
-						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: .5 };
-						this.checkPutCharacterScreen(customCommand1, false);
-						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: .5 };
-						this.checkPutCharacterScreen(customCommand2, false);
-						let customCommand3 = { Command: "", Arg1: cur.Arg3, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .5 };
-						this.checkPutCharacterScreen(customCommand3, false);
-					}
-					break;
-				}
-				case "noise_disappearance01": //103500331
-					this.waitTime = Number(cur.Arg1) * 1000;
-					break;
-				case "noise_disappearance02": { //103500341
-					this.waitTime = Number(cur.Arg1) * 1000;
-					//let c1 = this.currentCharacters['キャラ右'];
-					//if(c1) {
-					//	this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-					//	this.currentCharacters['キャラ右'] = undefined;
-					//}
-					//let c2 = this.currentCharacters['キャラ左'];
-					//if(c2) {
-					//	this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: 0, time: 200, finalV: 0, initV: 1, post: "destroy" });
-					//	this.currentCharacters['キャラ左'] = undefined;
-					//}
-					break;
-				}
-				case "noise_disappearance03": { //103500552
-					this.waitTime = Number(cur.Arg1) * 1000;
-					let c1 = this.currentCharacters['キャラ右'] || this.currentCharacters['キャラ右02'];
-					if(c1) {
-						this.lerpTargets.push({type: 'alpha', object: c1.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ右'] = undefined;
-					}
-					let c2 = this.currentCharacters['キャラ左'] || this.currentCharacters['キャラ左02'];
-					if(c2) {
-						this.lerpTargets.push({type: 'alpha', object: c2.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ左'] = undefined;
-					}
-					let c3 = this.currentCharacters['キャラ中央'];
-					if(c3) {
-						this.lerpTargets.push({type: 'alpha', object: c3.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
-						this.currentCharacters['キャラ中央'] = undefined;
-					}
-					break;
-				}
-				case "noise_disappearance11": //103500341
-					this.waitTime = Number(cur.Arg1) * 1000;
-					break;
-				case "enemy_disappearance01": //312000112
-				case "enemy_disappearance02": //312000111
-				case "enemy_disappearance03": //312000142
-					this.processTryRemoveChar(cur.Arg1);
-					if(cur.Arg2) {
-						this.processTryRemoveChar(cur.Arg2);
-					}
-					if(cur.Arg3) {
-						this.processTryRemoveChar(cur.Arg3);
-					}
-					break;
+
 				case "darkaura01": //312000111
 					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
 					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
@@ -995,7 +830,7 @@ class Player {
 			console.log(error);
 		}
 	}
-	
+
 	processDivaFadeHor(command, clear, rtl) {
 		this.waitTime = Number(command.Arg6) * 1000;
 		let sprite = this.layers["bg|whiteFade"].sprite;
@@ -1032,7 +867,7 @@ class Player {
 		sprite.filters = [filter];
 		this.lerpTargets.push({type: 'shader', object: sprite, curTime: 0, time: this.waitTime, post: `clearshader|${(clear ? '0' : `${color.alpha}`)}`});
 	}
-	
+
 	//This should mostly be handling things like text
 	processCommandOther(delta) {
 		let cur = this.currentCommand;
@@ -1106,7 +941,7 @@ class Player {
 			else if(curChar && curChar.charName === charToLoad && curChar.character.Pattern === cur.Arg2) {
 				return;
 			}
-			
+
 			if(!ignoreCurrent) {
 			//If the layer already has a different character on it remove it.
 				if(prevChar && (prevChar.charName !== charToLoad || prevChar.character.Pattern !== chr.Pattern)) {
@@ -1114,7 +949,7 @@ class Player {
 					this.currentCharacters[cur.Arg3] = undefined;
 				}
 			}
-			
+
 			let sprite = new PIXI.Sprite(this.loader.resources[`char|${charToLoad}|${cur.Arg2}`].texture);
 			sprite.scale.set(Number(chr.Scale), Number(chr.Scale));
 			let anchor = commonFunctions.getAnchorFromCharPivot(chr.Pivot);
@@ -1446,9 +1281,6 @@ class Player {
 	processEndCommand(delta) {
 		let cur = this.currentCommand;
 		switch((cur.Command || "").toLowerCase()) {
-			case "scenetitle":
-				this.text.titleText(false, '');
-				break;
 			case "divaeffect":
 				this.text.divaText(false, '');
 				break;
@@ -1496,6 +1328,19 @@ class Player {
 			return;
 		}
 		if(!command || command.comment || (!command.Command && !command.Arg1 && !command.Arg2 && !command.Arg3 && !command.Arg4 && !command.Arg5 && !command.Arg6)) {
+			this.getNextCommand();
+			return;
+		}
+		// macro expansion
+		if (command.Command in this.utage.macros) {
+			let macro = this.utage.macros[command.Command].slice(); // copy for arg instantiation
+			for (let c of macro.reverse()) {
+				for (let key of Object.keys(c)) {
+					c[key] = c[key].replace(/%Arg[1-6]/g, (x) => {return command[x.slice(1)];}).replace(/%Text/g, command.Text);
+					c.English = command.English; // we need macro members to inherit english, eg for titlecards
+				}
+				this.utage.currentPlayingFile.push(c);
+			}
 			this.getNextCommand();
 			return;
 		}

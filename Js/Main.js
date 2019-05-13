@@ -529,5 +529,6 @@ export {
 	dialogScrollUp,
 	dialogScrollDown,
 	closeMissionModal,
-	missionChanged
+	missionChanged,
+	closeModal
 };

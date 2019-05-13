@@ -20,6 +20,7 @@ class UtageInfo {
 		this.charTranslationsInner = {};
 		this.missionTranslationsInner = {};
 		this.bgmLoopData = {};
+		this.macros = {};
 	}
 	
 	loadUtageSettings() {
@@ -38,6 +39,7 @@ class UtageInfo {
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //7
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //8
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //9
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Scenario/Macro.tsv`), //10
 			];
 			Promise.all(promises)
 			.then((success) => {
@@ -56,6 +58,7 @@ class UtageInfo {
 				this.parseCharacterInfo(success[7], true);
 				this.parseSoundInfo(success[8], true);
 				this.parseTextureInfo(success[9], true);
+				this.parseMacroFile(success[10]);
 				resolve();
 			}, (failure) => {
 				reject(failure);
@@ -88,8 +91,7 @@ class UtageInfo {
 			});
 		});
 	}
-	
-		
+
 	groupMissions(missions, customMissions) {
 		for(let key of Object.keys(missions)) {
 			let mis = missions[key];
@@ -209,6 +211,34 @@ class UtageInfo {
 				});
 			}
 		});
+	}
+
+	parseMacroFile(file) {
+		let lines = file.split('\n');
+		let header = lines[0].split('\t');
+		let macro = false;
+		let name = "";
+		for (let i = 1; i < lines.length; ++i) {
+			let line = commonFunctions.readLine(lines[i], header);
+			if (line && !line.comment) {
+				if (macro === false) {
+					if (line.Command[0] === '*') {
+						macro = true;
+						name = line.Command.slice(1);
+						this.macros[name] = [];
+					}
+				} else {
+					if (line.Command === "EndMacro") {
+						macro = false;
+						continue;
+					}
+					if (!line.Command && !line.Arg1 && !line.Arg2 && !line.Arg3 && !line.Arg4 && !line.Arg5 && !line.Arg6) {
+						continue;
+					}
+					this.macros[name].push(line);
+				}
+			}
+		}
 	}
 	
 	//http://madnesslabo.net/utage/?page_id=4521&lang=en
