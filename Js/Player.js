@@ -1,9 +1,5 @@
 'use strict';
 
-/* global PIXI */
-import 'Pixi';
-import { baseDimensions, commonFunctions } from './Common.js';
-
 class Player {
 	constructor(pixi, utage, text, audio, shaderscript) {
 		this.pixi = pixi;
@@ -1401,5 +1397,3 @@ class Player {
 		});
 	}
 }
-
-export { Player };

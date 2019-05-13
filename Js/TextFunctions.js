@@ -191,5 +191,3 @@ class TextFunctions {
 		this.lineHeight = -1;
 	}
 }
-
-export { TextFunctions };

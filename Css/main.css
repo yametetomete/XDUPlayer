@@ -39,7 +39,7 @@
 	src: url(../Fonts/Orbitron Medium.woff2) format('woff');
 }
 
-@font-face {
+/*@font-face {
 	font-family: PTSans;
 	src: url(../Fonts/PTSans.woff2) format('woff');
 }

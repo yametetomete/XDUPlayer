@@ -1,17 +1,5 @@
 'use strict';
 
-/* global PIXI */
-import 'Pixi';
-import { Player } from './Player.js';
-import { audioController } from './Audio.js';
-import { baseDimensions, commonFunctions } from './Common.js';
-import { UtageInfo } from './UtageParse.js';
-import { TextFunctions } from './TextFunctions.js';
-import { Shaders } from './Shaders.js';
-
-import '../Css/generic.min.css';
-import '../Css/main.css';
-
 const pixiApp = { 
 	app: new PIXI.Application(baseDimensions),
 	loader: PIXI.loader
@@ -227,9 +215,9 @@ function missionDropDownChanged(event) {
 			${chapterSelect}
 		</div>
 		<div id="modal-buttons">
-			<button onclick="XduPlayer.closeMissionModal(event, false)">Close</button>
+			<button onclick="closeMissionModal(event, false)">Close</button>
 			<span>MstId: ${mis.MstId}</span>
-			<button onclick="XduPlayer.missionChanged(${mis.MstId})">Play</button>
+			<button onclick="missionChanged(${mis.MstId})">Play</button>
 		</div>
 	</div>`;
 	document.getElementById("click-catcher").style.cssText = 'display: flex;';
@@ -436,7 +424,7 @@ function openHelpModal(event) {
 		<a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g">YameteTomete Discord</a>
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
 		<div id="modal-buttons">
-			<button onclick="XduPlayer.closeModal(event)">Close</button>
+			<button onclick="closeModal(event)">Close</button>
 			<a href="https://git.poweris.moe/xduplayer.git/" target="_blank">Source</a>
 		</div>
 	</div>`;
@@ -512,23 +500,3 @@ function onWindowResize(event, delay = 400) {
 		document.getElementById('app-container').style.cssText = `width: ${res.width}px; height: ${res.height}px;`;
 	}, delay);
 }
-
-export {
-	onBodyLoaded,
-	onBodyKey,
-	toggleMute,
-	onVolumeChange,
-	missionDropDownChanged,
-	languageChanged,
-	toggleFullscreen,
-	onMainClick,
-	openHelpModal,
-	playFromQuery,
-	skipClicked,
-	hideUiClicked,
-	dialogScrollUp,
-	dialogScrollDown,
-	closeMissionModal,
-	missionChanged,
-	closeModal
-};
