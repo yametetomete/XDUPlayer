@@ -23,7 +23,7 @@ const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn", "rus"];
-const version = "YameteTomete XDUPlayer V1.2.1";
+const version = "YameteTomete XDUPlayer V1.3.0";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
@@ -72,7 +72,7 @@ function onBodyLoaded() {
 (function checkIsLoaded() {
 	if(bodyLoaded) {
 		document.getElementById('loading-font').style.cssText = "display: none;";
-		loadQueryParameters();
+		checkQueryParameters();
 		loadLocalStorage();
 	}
 	if(utageLoaded && languagesLoaded) {
@@ -96,6 +96,7 @@ function onAllLoaded(success) {
 		document.getElementById('parent-container').style.cssText = "opacity: 1;";
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize);
+		checkQueryParameters();
 	}, 0);
 }
 
@@ -171,13 +172,12 @@ function buildLanguageList() {
 	selectBox.value = selectedLang;
 }
 
-function loadQueryParameters() {
+function checkQueryParameters() {
 	urlParams = commonFunctions.readQueryParameters();
 	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
 		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
 	}
 }
-
 
 function playFromQuery(event) {
 	missionChanged(urlParams['mstid'], urlParams['id']);

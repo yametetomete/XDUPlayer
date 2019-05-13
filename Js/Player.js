@@ -561,7 +561,7 @@ class Player {
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 300, finalV: 1, initV: 0});
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: -(this.waitTime+500), time: 300, finalV: 0, initV: 1, post: "destroy"});
 					} catch (error) { }
-					let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (this.utage.translations ? (this.utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
 				}
@@ -570,7 +570,7 @@ class Player {
 					break;
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
-					let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (this.utage.translations ? (this.utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 					this.text.divaText(true, text);
 					break;
 				}
@@ -808,7 +808,6 @@ class Player {
 					}
 					break;
 				}
-
 				case "darkaura01": //312000111
 					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
 					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
@@ -1015,7 +1014,7 @@ class Player {
 		}
 	}
 	
-	processTryRemoveChar(character) {
+	processTryRemoveChar(character, fadeTime) {
 		let curChar = undefined;
 		for(let c of Object.keys(this.currentCharacters)) {
 			if(!this.currentCharacters[c]) { continue; }
@@ -1026,7 +1025,10 @@ class Player {
 		if(!curChar) {
 			return;
 		}
-		this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: 500, finalV: 0, initV: 1, post: "destroy" });
+		if(fadeTime == undefined) {
+			fadeTime = 500;
+		}
+		this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0, time: fadeTime, finalV: 0, initV: 1, post: "destroy" });
 		this.currentCharacters[curChar.layer.info.LayerName] = undefined;
 	}
 	
@@ -1036,8 +1038,8 @@ class Player {
 			this.audio.stopSound(this.playingVoice);
 		}
 		if(!cur.Command && cur.Arg1 && cur.Text) {
-			//If its chracter off screen text
-			let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
+			//If its character off screen text
+			let text = cur.English ? (this.utage.translations ? (this.utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 			text = commonFunctions.convertUtageTextTags(text);
 			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
 				this.text.characterName(true, this.utage.charTranslations[cur.Arg1] || cur.Arg1);
@@ -1074,7 +1076,7 @@ class Player {
 			this.manualNext = true;
 		//Sometimes they don't give a Arg1 for the text.
 		} else if(!cur.Command && cur.Arg2.toLowerCase() === "<off>" && cur.Text) {
-			let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (this.utage.translations ? (this.utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 			this.text.characterName(true, "");
 			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			this.manualNext = true;

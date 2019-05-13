@@ -363,6 +363,19 @@
 			"seconds": 20.034
 		}
 	},
+	"music_axia_no_kaze": {
+		"duration": 227.14678125,
+		"loop_end": {
+			"samples_48k": 10902963,
+			"samples_native": 7268642,
+			"seconds": 227.1450625
+		},
+		"loop_start": {
+			"samples_48k": 7334256,
+			"samples_native": 4889504,
+			"seconds": 152.797
+		}
+	},
 	"music_beyond_the_blade": {
 		"duration": 107.07978125,
 		"loop_end": {
