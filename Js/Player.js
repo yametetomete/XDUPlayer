@@ -136,6 +136,14 @@ class Player {
 					console.log(`Failed to get SE: ${c.Arg1}`);
 				}
 				break;
+			case "divamovie": {
+				let url = `${this.utage.rootDirectory}XDUData/${c.Arg1}`.replace(/usm$/, 'webm');
+				let filename = url.split('/').pop();
+				if (!this.loader.resources[`movie|${filename}`]) { // you never know
+					this.loader.add(`movie|${filename}`, url);
+				}
+				break;
+			}
 			case "somethingnew_appearance01":
 			case "unhappyseed_appearance01":
 			case "unhappyseed_appearance02":
@@ -227,7 +235,10 @@ class Player {
 						}
 					}
 					if (c.Command in this.utage.macros) {
-						for (let m of this.utage.macros[c.Command]) {
+						for (let m of this.utage.macros[c.Command].slice()) {
+							for (let key of Object.keys(m)) {
+								m[key] = m[key].replace(/%Arg[1-6]/g, (x) => {return c[x.slice(1)];}).replace(/%Text/g, c.Text);
+							}
 							this.loadFilesFromCommand(m, toLoadSe, toLoadBgm);
 						}
 					} else {
@@ -259,7 +270,7 @@ class Player {
 			});
 		});
 	}
-	
+
 	//Creates all the pixi containers for ther layers defined in layers.tsv
 	//also creates containers for fading
 	//note containers render in the order they are added, eg. the last added is always on top
@@ -270,6 +281,7 @@ class Player {
 		}
 		layersToAdd.push({LayerName: "bg|loopeffect", Type: "Bg", X: 0, Y: 0, Order: 1})
 		layersToAdd.sort(compare);
+		layersToAdd.push({LayerName: "movie", Type: "Bg", X: 0, Y: 0})
 		let parentContainer = new PIXI.Container();
 		parentContainer.position.set(this.center.x, this.center.y);
 		parentContainer.pivot.set(this.center.x, this.center.y);
@@ -491,50 +503,6 @@ class Player {
 						return 'break';
 				}
 			} catch(error) { }
-		}
-	}
-
-	processEffect(command) {
-		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
-		/* TODO: adjust these wait times */
-		if (effect.startsWith("hit_")) {
-			this.waitTime = 850;
-		} else if (effect.startsWith("slash_")) {
-			this.waitTime = 870;
-		} else if (effect.startsWith("shot_")) {
-			this.waitTime = 1500;
-		} else if (effect.startsWith("laser_pur_")) {
-			this.waitTime = 2360;
-		} else if (effect.startsWith("noise_crushing")) {
-			this.waitTime = Number(command.Arg1) * 1000;
-		}
-		switch (effect) {
-		case "henshin":
-			this.waitTime = 3850;
-			break;
-		default:
-			break;
-		}
-	}
-
-	processLoopDecorate(command) {
-		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
-		switch (effect) {
-		/* TODO: expand */
-		case "underwater01": {
-			let container = this.layers["bg|loopeffect"].container;
-			this.audio.playSound("se_斬撃音_単体", "Se");
-			let sprite = new PIXI.Sprite(this.loader.resources['bg|underwater01'].texture);
-			sprite.scale.set(1.30273438, 1.30273438);
-			sprite.anchor.set(0.5, 0.5);
-			sprite.alpha = 0;
-			container.addChild(sprite);
-			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 1000, finalV: 1, initV: 0});
-			container.visible = true;
-			break;
-		}
-		default:
-			break;
 		}
 	}
 
@@ -782,8 +750,22 @@ class Player {
 					this.processCommandOther(delta);
 					break;
 				//custom effects
-				case "divamovie": //103500341
+				case "divamovie": { //103500341
+					let filename = cur.Arg1.split('/').pop().replace(/usm$/, 'webm');
+					let texture = PIXI.Texture.fromVideo(this.loader.resources[`movie|${filename}`].data);
+					let container = this.layers["movie"].container;
+					let sprite = new PIXI.Sprite(texture);
+					let scale = baseDimensions.width / texture.baseTexture.source.videoWidth;
+
+					container.visible = true;
+					sprite.scale.set(scale, scale);
+					sprite.anchor.set(0.5, 0.5);
+					container.addChild(sprite);
+					this.manualNext = true;
+
+					texture.baseTexture.source.addEventListener('ended', (event) => { this.manualNext = false; }, false);
 					break;
+				}
 				case "unhappyseed_appearance01": { //312000112
 					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
 					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
@@ -792,7 +774,6 @@ class Player {
 					this.checkPutCharacterScreen(customCommand, false);
 					break;
 				}
-
 				case "unhappyseed_appearance02": { //312000111
 					let spawnTime = 0.5;
 					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
@@ -827,6 +808,50 @@ class Player {
 			}
 		} catch(error) {
 			console.log(error);
+		}
+	}
+
+	processEffect(command) {
+		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
+		/* TODO: adjust these wait times */
+		if (effect.startsWith("hit_")) {
+			this.waitTime = 850;
+		} else if (effect.startsWith("slash_")) {
+			this.waitTime = 870;
+		} else if (effect.startsWith("shot_")) {
+			this.waitTime = 1500;
+		} else if (effect.startsWith("laser_pur_")) {
+			this.waitTime = 2360;
+		} else if (effect.startsWith("noise_crushing")) {
+			this.waitTime = Number(command.Arg1) * 1000;
+		}
+		switch (effect) {
+		case "henshin":
+			this.waitTime = 3850;
+			break;
+		default:
+			break;
+		}
+	}
+
+	processLoopDecorate(command) {
+		let effect = command.FileName.split('/').pop().replace("eff_adv_", "");
+		switch (effect) {
+		/* TODO: expand */
+		case "underwater01": {
+			let container = this.layers["bg|loopeffect"].container;
+			this.audio.playSound("se_斬撃音_単体", "Se");
+			let sprite = new PIXI.Sprite(this.loader.resources['bg|underwater01'].texture);
+			sprite.scale.set(1.30273438, 1.30273438);
+			sprite.anchor.set(0.5, 0.5);
+			sprite.alpha = 0;
+			container.addChild(sprite);
+			this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 1000, finalV: 1, initV: 0});
+			container.visible = true;
+			break;
+		}
+		default:
+			break;
 		}
 	}
 
@@ -1285,6 +1310,17 @@ class Player {
 		switch((cur.Command || "").toLowerCase()) {
 			case "divaeffect":
 				this.text.divaText(false, '');
+				break;
+			case "divamovie": {
+				let container = this.layers['movie'].container;
+				container.visible = false;
+				for(let i = 0; i < container.children.length; ++i) {
+					container.children[i].texture.baseTexture.source.pause();
+					container.children[i].destroy({children: true});
+				}
+				break;
+			}
+			default:
 				break;
 		}
 		this.currentCommand = undefined;
