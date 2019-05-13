@@ -30,6 +30,4 @@ Fix noise\_disappearance commands
 ## V1.3.0 (2019-05-13)
 
 Macro support
-Webpack distribution
-ES6 modules
 DivaMovie

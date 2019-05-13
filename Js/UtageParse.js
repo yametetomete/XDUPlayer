@@ -38,6 +38,7 @@ class UtageInfo {
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //9
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //10
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Scenario/Macro.tsv`), //11
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomMacro.tsv`), //12
 			];
 			Promise.all(promises)
 			.then((success) => {
@@ -57,6 +58,7 @@ class UtageInfo {
 				this.parseSoundInfo(success[9], true);
 				this.parseTextureInfo(success[10], true);
 				this.parseMacroFile(success[11]);
+				this.parseMacroFile(success[12]);
 				resolve();
 			}, (failure) => {
 				reject(failure);
@@ -221,9 +223,11 @@ class UtageInfo {
 			if (line && !line.comment) {
 				if (macro === false) {
 					if (line.Command[0] === '*') {
-						macro = true;
 						name = line.Command.slice(1);
-						this.macros[name] = [];
+						if (!(name in this.macros)) {
+							macro = true;
+							this.macros[name] = [];
+						}
 					}
 				} else {
 					if (line.Command === "EndMacro") {

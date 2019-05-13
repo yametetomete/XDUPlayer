@@ -49,13 +49,17 @@ class Player {
 		return runningPromise;
 	}
 
-	loadFilesFromCommand(c, toLoadSe, toLoadBgm) {
+	loadFilesFromCommand(c, toLoadSe, toLoadBgm, custom = false) {
 		let command = c.Command ? c.Command.toLowerCase() : '';
 		switch(command) {
 			//BG images
 			case "divaeffectstart": {
 				let file = c.Arg1.split('/').pop();
-				this.loader.add(`bg|${file}`, `${this.utage.rootDirectory}XDUData/${c.Arg1}`.replace(/bg_adv/, "FUCK_EASYLIST"));
+				if (!custom) {
+					this.loader.add(`bg|${file}`, `${this.utage.rootDirectory}XDUData/${c.Arg1}`.replace(/bg_adv/, "FUCK_EASYLIST"));
+				} else {
+					this.loader.add(`bg|${file}`, `${this.utage.rootDirectory}CustomData/${c.Arg1}`.replace(/bg_adv/, "FUCK_EASYLIST"));
+				}
 				break;
 			}
 			case "divadecorateneutral":
@@ -140,54 +144,6 @@ class Player {
 				}
 				break;
 			}
-			case "somethingnew_appearance01":
-			case "unhappyseed_appearance01":
-			case "unhappyseed_appearance02":
-			case "arcanoise_appearance02":
-			case "arcanoise_appearance03":
-			case "darkaura01": {
-				switch(c.Command ? c.Command.toLowerCase() : '') {
-					case "somethingnew_appearance01":
-						if(this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)']) {
-							toLoadSe['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'] = this.utage.soundInfo['Se_サムシング・ニューの叫び声(アアア”ア”ア”)'];
-						} else {
-							console.log(`Failed to get somethingnew_appearance01 SE: Se_サムシング・ニューの叫び声(アアア”ア”ア”)`);
-						}
-						break;
-					case "darkaura01":
-					case "unhappyseed_appearance02":
-					case "unhappyseed_appearance01":
-						if(this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)']) {
-							toLoadSe['Se_不幸のオーラ(ヴォォオンン)'] = this.utage.soundInfo['Se_不幸のオーラ(ヴォォオンン)'];
-						} else {
-							console.log(`Failed to get unhappyseed_appearance SE: Se_不幸のオーラ(ヴォォオンン)`);
-						}
-						break;
-				}
-				let pat = this.defaultCharPattern;
-				if(c.Arg1) {
-					if(this.utage.characterInfo[c.Arg1] && this.utage.characterInfo[c.Arg1][pat]) {
-						if(!this.loader.resources[`char|${c.Arg1}|${pat}`]) {
-							this.loader.add(`char|${c.Arg1}|${pat}`, this.utage.characterInfo[c.Arg1][pat].FileName);
-						}
-					}
-				}
-				if(c.Arg2) {
-					if(this.utage.characterInfo[c.Arg2] && this.utage.characterInfo[c.Arg2][pat]) {
-						if(!this.loader.resources[`char|${c.Arg2}|${pat}`]) {
-							this.loader.add(`char|${c.Arg2}|${pat}`, this.utage.characterInfo[c.Arg2][pat].FileName);
-						}
-					}
-				}
-				if(c.Arg3) {
-					if(this.utage.characterInfo[c.Arg3] && this.utage.characterInfo[c.Arg3][pat]) {
-						if(!this.loader.resources[`char|${c.Arg3}|${pat}`]) {
-							this.loader.add(`char|${c.Arg3}|${pat}`, this.utage.characterInfo[c.Arg3][pat].FileName);
-						}
-					}
-				}
-				break;
-			}
 			default:
 				break;
 		}
@@ -235,7 +191,11 @@ class Player {
 							for (let key of Object.keys(m)) {
 								m[key] = m[key].replace(/%Arg[1-6]/g, (x) => {return c[x.slice(1)];}).replace(/%Text/g, c.Text);
 							}
-							this.loadFilesFromCommand(m, toLoadSe, toLoadBgm);
+							if (c.Command === "SceneTitlebridal" && m.Command === "DivaEffectStart") {
+								this.loadFilesFromCommand(m, toLoadSe, toLoadBgm, true);
+							} else {
+								this.loadFilesFromCommand(m, toLoadSe, toLoadBgm);
+							}
 						}
 					} else {
 						this.loadFilesFromCommand(c, toLoadSe, toLoadBgm);
@@ -762,45 +722,6 @@ class Player {
 					texture.baseTexture.source.addEventListener('ended', (event) => { this.manualNext = false; }, false);
 					break;
 				}
-				case "unhappyseed_appearance01": { //312000112
-					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
-					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
-					this.waitTime = 2000;
-					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: .5 };
-					this.checkPutCharacterScreen(customCommand, false);
-					break;
-				}
-				case "unhappyseed_appearance02": { //312000111
-					let spawnTime = 0.5;
-					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
-					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
-					this.waitTime = 3000;
-					spawnTime = 2.5;
-					if(cur.Arg1 && cur.Arg2) {
-						
-						let customCommand1 = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ右', Arg6: spawnTime };
-						this.checkPutCharacterScreen(customCommand1, false);
-						let customCommand2 = { Command: "", Arg1: cur.Arg2, Arg2: this.defaultCharPattern, Arg3: 'キャラ左', Arg6: spawnTime };
-						this.checkPutCharacterScreen(customCommand2, false);
-					}
-					break;
-				}
-				case "darkaura01": //312000111
-					this.audio.stopSound('Se_不幸のオーラ(ヴォォオンン)');
-					this.audio.playSound('Se_不幸のオーラ(ヴォォオンン)', 'Se');
-					this.waitTime = 2500;
-					break;
-				case "somethingnew_appearance01": { //312000111
-					this.audio.playSound('Se_サムシング・ニューの叫び声(アアア”ア”ア”)', 'Se');
-					let c = this.currentCharacters['キャラ中央'];
-					this.waitTime = 4000;
-					if(c) {
-						this.lerpTargets.push({type: 'alpha', object: c.sprite, curTime: 0, time: 3000, finalV: 0, initV: 1, post: "destroy" });
-					}
-					let customCommand = { Command: "", Arg1: cur.Arg1, Arg2: this.defaultCharPattern, Arg3: 'キャラ中央', Arg6: 3 };
-					this.checkPutCharacterScreen(customCommand, false, true);
-					break;
-				}
 			}
 		} catch(error) {
 			console.log(error);
@@ -820,13 +741,12 @@ class Player {
 			this.waitTime = 2360;
 		} else if (effect.startsWith("noise_crushing")) {
 			this.waitTime = Number(command.Arg1) * 1000;
-		}
-		switch (effect) {
-		case "henshin":
+		} else if (effect === "darkaura01") {
+			this.waitTime = 2500;
+		} else if (effect === "darkaura_appear01") {
+			this.waitTime = 4000;
+		} else if (effect === "henshin") {
 			this.waitTime = 3850;
-			break;
-		default:
-			break;
 		}
 	}
 
