@@ -32,3 +32,4 @@ Fix noise\_disappearance commands
 Macro support
 Webpack distribution
 ES6 modules
+DivaMovie
