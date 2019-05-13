@@ -1,4 +1,9 @@
 //http://glslsandbox.com/e#39992.0
+
+/* global PIXI */
+import 'Pixi';
+import { baseDimensions } from './Common.js';
+
 class Shaders {
 	constructor() {
 		this.leftToRightFadeShader = `
@@ -200,3 +205,5 @@ class Shaders {
 		}
 	}
 }
+
+export { Shaders };

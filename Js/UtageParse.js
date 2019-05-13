@@ -1,6 +1,8 @@
 //http://madnesslabo.net/utage/?page_id=4448&lang=en
 'use strict';
 
+import { commonFunctions } from './Common.js';
+
 class UtageInfo {
 	constructor() {
 		this.currentPlayingFile = [];
@@ -31,15 +33,15 @@ class UtageInfo {
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`), //4
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`), //5
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`), //6
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`), //7
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //8
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //9
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //10
+				//commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`),
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`), //6
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //7
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //8
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //9
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.groupMissions(success[0], success[7]);
+				this.groupMissions(success[0], success[6]);
 				this.missionsList = Object.keys(this.groupedMissions).map((k) => {
 					return {Name: this.groupedMissions[k].Name, MstId: this.groupedMissions[k].MstId};
 				});
@@ -50,10 +52,10 @@ class UtageInfo {
 				//this.parseParamInfo(success[4]);
 				this.parseSoundInfo(success[4]);
 				this.parseTextureInfo(success[5]);
-				this.bgmLoopData = success[6];
-				this.parseCharacterInfo(success[8], true);
-				this.parseSoundInfo(success[9], true);
-				this.parseTextureInfo(success[10], true);
+				//this.bgmLoopData = success[6];
+				this.parseCharacterInfo(success[7], true);
+				this.parseSoundInfo(success[8], true);
+				this.parseTextureInfo(success[9], true);
 				resolve();
 			}, (failure) => {
 				reject(failure);
@@ -173,7 +175,7 @@ class UtageInfo {
 			if(this.charTranslationsInner[this.currentTranslation]) {
 				resolve();
 			} else {
-				commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/nametranslations_${this.currentTranslation}.json`)
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/nametranslations_${this.currentTranslation}.json`)
 				.then((success) => {
 					this.charTranslationsInner[this.currentTranslation] = success;
 					resolve();
@@ -191,8 +193,8 @@ class UtageInfo {
 				resolve();
 			} else {
 				var promises = [
-					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`),
-					commonFunctions.getFileJson(`${utage.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`)
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`),
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`)
 				];
 				Promise.all(promises)
 				.then((success) => {
@@ -363,3 +365,5 @@ class UtageInfo {
 		this.translationsInner = {};
 	}
 }
+
+export { UtageInfo };

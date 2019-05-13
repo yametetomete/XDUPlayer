@@ -1,5 +1,7 @@
 //(Math.exp(x)-1)/(Math.E-1)
 
+import bgmLoopData from './BgmLoop.json';
+
 class bufferLoader {
 	constructor(context, soundMap, callback) {
 		this.context = context;
@@ -94,8 +96,8 @@ class audioController {
 		source.buffer = this.loader.bufferList[sound];
 		source.loop = false;
 		if(type === "bgm") {
-			if(this.utage.bgmLoopData[this.utage.soundInfo[sound].origFileName]) {
-				let loop = this.utage.bgmLoopData[this.utage.soundInfo[sound].origFileName];
+			if(bgmLoopData[this.utage.soundInfo[sound].origFileName]) {
+				let loop = bgmLoopData[this.utage.soundInfo[sound].origFileName];
 				source.loopStart = loop["loop_start"]["seconds"];
 				source.loopEnd = loop["loop_end"]["seconds"];
 				source.loop = true;
@@ -182,3 +184,5 @@ class audioController {
 		this.sources = {};
 	}
 }
+
+export { audioController };

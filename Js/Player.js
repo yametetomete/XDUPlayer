@@ -1,5 +1,9 @@
 'use strict';
 
+/* global PIXI */
+import 'Pixi';
+import { baseDimensions, commonFunctions } from './Common.js';
+
 class Player {
 	constructor(pixi, utage, text, audio, shaderscript) {
 		this.pixi = pixi;
@@ -7,7 +11,7 @@ class Player {
 		this.utage = utage;
 		this.text = text;
 		this.audio = audio;
-		this.shaders = shaders;
+		this.shaders = shaderscript;
 		//consts
 		this.resolutionScale = 1; //I created this thinking that I would need to handle changing offset when resolution changes. But lucikly I can just scale the parent container and it works without needing this.
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
@@ -51,9 +55,9 @@ class Player {
 		return new Promise((resolve, reject) => {
 			let toLoadBgm = {};
 			let toLoadSe = {};
-			for(let i = 0; i < utage.currentPlayingFile.length; ++i) {
+			for(let i = 0; i < this.utage.currentPlayingFile.length; ++i) {
 				try {
-					let c = utage.currentPlayingFile[i];
+					let c = this.utage.currentPlayingFile[i];
 					if(c.comment) { continue; }
 					//They use this to set the sprite set for a charater but have an alternate name displayed
 					if(c.Arg2 && c.Arg2.toLowerCase().includes("<character=")) {
@@ -254,6 +258,7 @@ class Player {
 									break;
 								}
 							}
+							break;
 						}
 						case "attachit02":
 						case "attachit03":
@@ -269,6 +274,7 @@ class Player {
 							} else {
 								console.log(`Failed to get attacshot SE: se_ガトリング音`);
 							}
+							break;
 						case "attacshot11": 
 						case "attacshot12": 
 							if(this.utage.soundInfo['se_ガトリング音']) {
@@ -295,8 +301,7 @@ class Player {
 								console.log(`Failed to get attaclaser SE: se_レーザーが放たれる音`);
 							}
 							break;
-						case "":
-							
+						default:
 							break;
 					}
 				} catch (error) {
@@ -497,7 +502,7 @@ class Player {
 								try {
 									l.object.filters[0].uniforms.time = pos;
 									l.object.filters[0].apply();
-								} catch(error) {}
+								} catch(error) { }
 								break;
 							}
 							case "tint": {
@@ -585,13 +590,13 @@ class Player {
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: 300, finalV: 1, initV: 0});
 						this.lerpTargets.push({type: 'alpha', object: sprite, curTime: -(this.waitTime+500), time: 300, finalV: 0, initV: 1, post: "destroy"});
 					} catch (error) { }
-					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
 					this.text.titleText(true, text);
 					break;
 				}
 				case "divaeffect": {
 					this.waitTime = Number(cur.Arg5) * 1000;
-					let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+					let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
 					this.text.divaText(true, text);
 					break;
 				}
@@ -749,7 +754,7 @@ class Player {
 				}
 				case "characteroff": {
 					if(cur.Text) {
-						checkPutText(cur);
+						this.checkPutText(cur);
 					} else {
 						this.text.dialogText(false, "");
 						this.text.characterName(false, "");
@@ -953,6 +958,7 @@ class Player {
 						this.lerpTargets.push({type: 'alpha', object: c3.sprite, curTime: (0 - (this.waitTime/2)), time: 200, finalV: 0, initV: 1, post: "destroy" });
 						this.currentCharacters['キャラ中央'] = undefined;
 					}
+					break;
 				}
 				case "noise_disappearance11": //103500341
 					this.waitTime = Number(cur.Arg1) * 1000;
@@ -984,8 +990,6 @@ class Player {
 					this.checkPutCharacterScreen(customCommand, false, true);
 					break;
 				}
-				case "continue01":
-					break;
 			}
 		} catch(error) {
 			console.log(error);
@@ -1198,13 +1202,12 @@ class Player {
 		}
 		if(!cur.Command && cur.Arg1 && cur.Text) {
 			//If its chracter off screen text
-			let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
 			text = commonFunctions.convertUtageTextTags(text);
 			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
-				this.text.characterName(true, utage.charTranslations[cur.Arg1] || cur.Arg1);
+				this.text.characterName(true, this.utage.charTranslations[cur.Arg1] || cur.Arg1);
 				this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			} else {
-				let charName = "";
 				let found = false;
 				//Look for the character that is saying the text to get their name
 				//future note: This might be better to just look for the character in character info if this start failing.
@@ -1216,7 +1219,7 @@ class Player {
 						if(cur.Character) {
 							nameToUse = cur.Arg1;
 						}
-						this.text.characterName(true, utage.charTranslations[nameToUse] || nameToUse);
+						this.text.characterName(true, this.utage.charTranslations[nameToUse] || nameToUse);
 						this.text.dialogText(true, text);
 						this.currentCharacters[c].sprite.tint = 0xFFFFFF;
 						found = true;
@@ -1229,14 +1232,14 @@ class Player {
 				}
 				//If we didnt find the character just dump the text anyways with Arg1 as the name
 				if(!found) {
-					this.text.characterName(true, utage.charTranslations[cur.Arg1] || cur.Arg1);
+					this.text.characterName(true, this.utage.charTranslations[cur.Arg1] || cur.Arg1);
 					this.text.dialogText(true, text);
 				}
 			}
 			this.manualNext = true;
 		//Sometimes they don't give a Arg1 for the text.
 		} else if(!cur.Command && cur.Arg2.toLowerCase() === "<off>" && cur.Text) {
-			let text = cur.English ? (utage.translations[cur.English] || cur.Text) : cur.Text;
+			let text = cur.English ? (this.utage.translations[cur.English] || cur.Text) : cur.Text;
 			this.text.characterName(true, "");
 			this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			this.manualNext = true;
@@ -1324,6 +1327,7 @@ class Player {
 					this.lerpTargets.push({type: 'scale.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 					finalV: curChar.sprite.scale.y * props.y, initV: curChar.sprite.scale.y });
 				}
+				break;
 			}
 			case "colorto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
@@ -1347,6 +1351,7 @@ class Player {
 						curChar.sprite.tint = color.color;
 					}
 				}
+				break;
 			}
 		}
 	}
@@ -1485,8 +1490,8 @@ class Player {
 	}
 	
 	getNextCommand() {
-		let command = utage.currentPlayingFile.pop();
-		if(!utage.currentPlayingFile || utage.currentPlayingFile.length === 0) {
+		let command = this.utage.currentPlayingFile.pop();
+		if(!this.utage.currentPlayingFile || this.utage.currentPlayingFile.length === 0) {
 			this.onEndFile();
 			return;
 		}
@@ -1514,7 +1519,7 @@ class Player {
 		return new Promise((resolve, reject) => {
 			try {
 				this.pixi.app.ticker.remove(this.onPixiTick, this);
-				utage.currentPlayingFile.length = 0;
+				this.utage.currentPlayingFile.length = 0;
 				this.currentCharacters = {};
 				this.layers = {};
 				this.currentCommand = undefined;
@@ -1549,3 +1554,5 @@ class Player {
 		});
 	}
 }
+
+export { Player };

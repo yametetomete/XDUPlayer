@@ -84,7 +84,6 @@ class TextFunctions {
 		function putText() {
 			// skip over any HTML chars
 			this.dialogToDisplay.curPos = this.typeHtmlChars(this.dialogToDisplay.text, this.dialogToDisplay.curPos);
-			let substr = this.dialogToDisplay.text.substr(this.dialogToDisplay.curPos);
 			if (this.dialogToDisplay.curPos === this.dialogToDisplay.text.length) {
 				this.showNextIndicator(true);
 				this.scrollingText = false;
@@ -192,3 +191,5 @@ class TextFunctions {
 		this.lineHeight = -1;
 	}
 }
+
+export { TextFunctions };

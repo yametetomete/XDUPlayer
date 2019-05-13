@@ -5,19 +5,19 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 		<meta name="theme-color" content="#393939"/>
 		<title id="title-tag"></title>
-		<link rel="stylesheet" type="text/css" href="Css/generic.min.css">
-		<link rel="stylesheet" type="text/css" href="Css/main.min.css">
+		<!-- <link rel="stylesheet" type="text/css" href="Css/generic.min.css">
+		<link rel="stylesheet" type="text/css" href="Css/main.min.css">-->
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script> -->
 		<script src="Js/Pixi.min.js"></script>
 	</head>
-	<body onload="onBodyLoaded()" onkeyup="onBodyKey(event)">
+	<body onload="XduPlayer.onBodyLoaded()" onkeyup="XduPlayer.onBodyKey(event)">
 		<!-- <script src="Js/Common.js"></script>
 		<script src="Js/TextFunctions.js"></script>
 		<script src="Js/UtageParse.js"></script>
 		<script src="Js/Audio.js"></script>
 		<script src="Js/Player.js"></script>
 		<script src="Js/Main.js"></script> -->
-		<script src="Js/XduPlayer.min.js"></script>
+		<!-- <script src="Js/XduPlayer.js"></script> -->
 		<div id="loading-container" class="centered" style="z-index: 20;">
 			<h2 id="loading-utage">Loading Utage Data...</h2>
 			<h2 id="loading-font">Loading Page Data...</h2>
@@ -26,33 +26,33 @@
 			<div id="title-container"><span>Now Playing: </span><span id="playing-title">None</span></div>
 			<div id="other-controls-container">
 				<div id="volume-control">
-					<span onclick="toggleMute(event)" id="mute-button">&#128266;</span> <!-- loud_sound -->
-					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
+					<span onclick="XduPlayer.toggleMute(event)" id="mute-button">&#128266;</span> <!-- loud_sound -->
+					<input onchange="XduPlayer.onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
 				</div>
-				<select id="select-mission" onchange="missionDropDownChanged(event);"></select>
-				<select id="select-language" onchange="languageChanged(event);"></select>
-				<a style="font-size: 20px; margin-left: 5px;" title="info/help" onclick="openHelpModal(event)">?</a>
+				<select id="select-mission" onchange="XduPlayer.missionDropDownChanged(event);"></select>
+				<select id="select-language" onchange="XduPlayer.languageChanged(event);"></select>
+				<a style="font-size: 20px; margin-left: 5px;" title="info/help" onclick="XduPlayer.openHelpModal(event)">?</a>
 			</div>
 			<!-- Im doing weird shit so that text container is always the base resolution of XDU (1334, 750). 
 			The canvas then resizes as the canvas does and the text-container uses transform scale based off this resolution -->
-			<div id="app-container" onclick="onMainClick(event);">
+			<div id="app-container" onclick="XduPlayer.onMainClick(event);">
 				<div id="text-container">
-					<div id="fullscreen-button" onclick="toggleFullscreen(event)">&#10133;</div> <!-- heavy_plus_sign -->
+					<div id="fullscreen-button" onclick="XduPlayer.toggleFullscreen(event)">&#10133;</div> <!-- heavy_plus_sign -->
 					<img id="main-ui-img" class="hidden" src="Images/newui_main.png"/>
-					<button id="play-from-query" onclick="playFromQuery(event)" style="display: none;">Play</button>
+					<button id="play-from-query" onclick="XduPlayer.playFromQuery(event)" style="display: none;">Play</button>
 					<div id="title" class="hidden">Title Text</div>
 					<div id="diva" class="hidden">Diva Text</div>
 					<div id="dialog-box" class="hidden">
 						<div id="ui-buttons">
-							<img class="ui-button" src="Images/skip_button.png" onclick="skipClicked(event)" id="skip-button"/>
-							<img class="ui-button" src="Images/hide_button.png" onclick="hideUiClicked(event)"/>
+							<img class="ui-button" src="Images/skip_button.png" onclick="XduPlayer.skipClicked(event)" id="skip-button"/>
+							<img class="ui-button" src="Images/hide_button.png" onclick="XduPlayer.hideUiClicked(event)"/>
 						</div>
 						<div id="character"></div>
 						<div id="dialog">
 							<div id="dialog-controls">
 								<div id="dialog-scroll" class="hidden">
-									<img id="dialog-scroll-up" src="Images/next_icon.png" onclick="dialogScrollUp(event)"/>
-									<img src="Images/next_icon.png" onclick="dialogScrollDown(event)"/>
+									<img id="dialog-scroll-up" src="Images/next_icon.png" onclick="XduPlayer.dialogScrollUp(event)"/>
+									<img src="Images/next_icon.png" onclick="XduPlayer.dialogScrollDown(event)"/>
 								</div>
 								<div id="dialog-next" class="hidden">
 									<img src="Images/next_icon.png"/>
@@ -64,7 +64,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="click-catcher" style="display: none;" onclick="closeMissionModal(event, false)"></div>
+		<div id="click-catcher" style="display: none;" onclick="XduPlayer.closeMissionModal(event, false)"></div>
 		<div id="modal-container" style="display: none;"></div>
 		<div style="opacity: 0; position: fixed; top: -2000;">
 			<!-- <span style="font-family: 'FOT-RodinNTLGPro-B_0'">test</span>

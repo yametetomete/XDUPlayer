@@ -334,8 +334,10 @@ class commonFunctions {
 				if(props[i] == " ") { break; }
 				retval.color += props[i];
 			}
-			retval.color = retval.color;
+			//retval.color = retval.color;
 		}
 		return retval;
 	}
 }
+
+export { rootUrl, baseDimensions, screenRatio, commonFunctions };
