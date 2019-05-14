@@ -187,14 +187,15 @@ class Player {
 						}
 					}
 					if (c.Command in this.utage.macros) {
-						for (let m of this.utage.macros[c.Command].slice()) {
-							for (let key of Object.keys(m)) {
-								m[key] = m[key].replace(/%Arg[1-6]/g, (x) => {return c[x.slice(1)];}).replace(/%Text/g, c.Text);
+						for (const m of this.utage.macros[c.Command]) {
+							let copy = {}
+							for (const key of Object.keys(m)) {
+								copy[key] = m[key].replace(/%Arg[1-6]/g, (x) => {return c[x.slice(1)];}).replace(/%Text/g, c.Text);
 							}
 							if (c.Command === "SceneTitlebridal" && m.Command === "DivaEffectStart") {
-								this.loadFilesFromCommand(m, toLoadSe, toLoadBgm, true);
+								this.loadFilesFromCommand(copy, toLoadSe, toLoadBgm, true);
 							} else {
-								this.loadFilesFromCommand(m, toLoadSe, toLoadBgm);
+								this.loadFilesFromCommand(copy, toLoadSe, toLoadBgm);
 							}
 						}
 					} else {
@@ -206,10 +207,10 @@ class Player {
 				}
 			}
 			let audioArray = [];
-			for(let s of Object.keys(toLoadBgm)) {
+			for(const s of Object.keys(toLoadBgm)) {
 				audioArray.push(toLoadBgm[s]);
 			}
-			for(let s of Object.keys(toLoadSe)) {
+			for(const s of Object.keys(toLoadSe)) {
 				audioArray.push(toLoadSe[s]);
 			}
 			this.audio.loadSounds(audioArray, (percent) => {
@@ -232,7 +233,7 @@ class Player {
 	//note containers render in the order they are added, eg. the last added is always on top
 	buildLayerContainers() {
 		let layersToAdd = [];
-		for(let l of Object.keys(this.utage.layerInfo)) {
+		for(const l of Object.keys(this.utage.layerInfo)) {
 			layersToAdd.push(this.utage.layerInfo[l]);
 		}
 		layersToAdd.push({LayerName: "bg|loopeffect", Type: "Bg", X: 0, Y: 0, Order: 1})
@@ -243,7 +244,7 @@ class Player {
 		parentContainer.pivot.set(this.center.x, this.center.y);
 		this.pixi.app.stage.addChild(parentContainer);
 		this.layers["bg|mainparent"] = { container: parentContainer };
-		for(let l of layersToAdd) {
+		for(const l of layersToAdd) {
 			this.layers[l.LayerName] = { info: l };
 			let cont = new PIXI.Container();
 			this.layers[l.LayerName].container = cont;
@@ -657,7 +658,7 @@ class Player {
 						this.text.dialogText(false, "");
 						this.text.characterName(false, "");
 					}
-					for(let c of Object.keys(this.currentCharacters)) {
+					for(const c of Object.keys(this.currentCharacters)) {
 						if(!this.currentCharacters[c]) { continue; }
 						let curChar = this.currentCharacters[c];
 						if(curChar.charName === cur.Arg1) {
@@ -828,7 +829,7 @@ class Player {
 			let prevChar = undefined; //The character that is already on the layer we are trying to put the new char on.
 			//First check if the character is already on screen
 			if(!ignoreCurrent) {
-				for(let c of Object.keys(this.currentCharacters)) {
+				for(const c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
 					if(this.currentCharacters[c].charName === charToLoad) {
 						curChar = this.currentCharacters[c];
@@ -901,7 +902,7 @@ class Player {
 				sprite.position.x = curChar.sprite.position.x;
 				sprite.position.y = curChar.sprite.position.y;
 				//if the current character is doing a tween transfer the tween to the new one.
-				for(let l of this.lerpTargets) {
+				for(const l of this.lerpTargets) {
 					if(l.type.includes('position') && l.object === curChar.sprite) {
 						l.object = sprite;
 						break;
@@ -929,7 +930,7 @@ class Player {
 		}
 		
 		function isCharOnLeft() {
-			for(let l of Object.keys(this.layers)) {
+			for(const l of Object.keys(this.layers)) {
 				let lay = this.layers[l].info;
 				if(!lay) { continue; }
 				if(lay.LayerName.includes('キャラ左')) {
@@ -942,7 +943,7 @@ class Player {
 		}
 		
 		function isCharOnRight() {
-			for(let l of Object.keys(this.layers)) {
+			for(const l of Object.keys(this.layers)) {
 				let lay = this.layers[l].info;
 				if(!lay) { continue; }
 				if(lay.LayerName.includes('キャラ右')) {
@@ -957,7 +958,7 @@ class Player {
 	
 	processTryRemoveChar(character, fadeTime) {
 		let curChar = undefined;
-		for(let c of Object.keys(this.currentCharacters)) {
+		for(const c of Object.keys(this.currentCharacters)) {
 			if(!this.currentCharacters[c]) { continue; }
 			if(this.currentCharacters[c].charName === character) {
 				curChar = this.currentCharacters[c];
@@ -989,7 +990,7 @@ class Player {
 				let found = false;
 				//Look for the character that is saying the text to get their name
 				//future note: This might be better to just look for the character in character info if this start failing.
-				for(let c of Object.keys(this.currentCharacters)) {
+				for(const c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
 					if(this.currentCharacters[c].charName === cur.Arg1 || this.currentCharacters[c].charName === cur.Character) {
 						let nameToUse = this.currentCharacters[c].character.NameText;
@@ -1034,7 +1035,7 @@ class Player {
 		this.text.characterName(false, "");
 		let curChar = undefined;
 		//Find the character for the tween.
-		for(let c of Object.keys(this.currentCharacters)) {
+		for(const c of Object.keys(this.currentCharacters)) {
 			if(!this.currentCharacters[c]) { continue; }
 			if(this.currentCharacters[c].charName === cur.Arg1) {
 				curChar = this.currentCharacters[c];
@@ -1153,7 +1154,7 @@ class Player {
 				//If the screen is currently shaking the second shake will offset it so get the init 
 				// position from that shake not the current position
 				let currentShake = undefined;
-				for(let l of this.lerpTargets) {
+				for(const l of this.lerpTargets) {
 					if(l.type.includes('shake') && l.object === this.pixi.app.stage) {
 						currentShake = l;
 						l.cancel = true;
@@ -1198,7 +1199,7 @@ class Player {
 				if(!props.time) { props.time = 1000; }
 				let curChar = undefined;
 				//Find the character.
-				for(let c of Object.keys(this.currentCharacters)) {
+				for(const c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
 					if(this.currentCharacters[c].charName === cur.Arg1) {
 						curChar = this.currentCharacters[c];
@@ -1214,7 +1215,7 @@ class Player {
 	}
 	
 	cancelLerpOfType(type, object) {
-		for(let l of this.lerpTargets) {
+		for(const l of this.lerpTargets) {
 			if(l.type.includes(type) && l.object === object) {
 				l.cancel = true;
 			}
@@ -1287,13 +1288,14 @@ class Player {
 		}
 		// macro expansion
 		if (command.Command in this.utage.macros) {
-			let macro = this.utage.macros[command.Command].slice(); // copy for arg instantiation
-			for (let c of macro.reverse()) {
-				for (let key of Object.keys(c)) {
-					c[key] = c[key].replace(/%Arg[1-6]/g, (x) => {return command[x.slice(1)];}).replace(/%Text/g, command.Text);
-					c.English = command.English; // we need macro members to inherit english, eg for titlecards
+			let macro = this.utage.macros[command.Command].slice();
+			for (const c of macro.reverse()) {
+				let copy = {};
+				for (const key of Object.keys(c)) {
+					copy[key] = c[key].replace(/%Arg[1-6]/g, (x) => {return command[x.slice(1)];}).replace(/%Text/g, command.Text);
+					copy.English = command.English; // we need macro members to inherit english, eg for titlecards
 				}
-				this.utage.currentPlayingFile.push(c);
+				this.utage.currentPlayingFile.push(copy);
 			}
 			this.getNextCommand();
 			return;
@@ -1335,12 +1337,12 @@ class Player {
 				this.audio.resetAll();
 				this.utage.resetTranslations();
 				this.pixi.app.stage.children.forEach(function(child) { child.destroy({children: true, texture: true, baseTexture: true}); });
-				for(let tex of Object.keys(PIXI.utils.TextureCache)) {
+				for(const tex of Object.keys(PIXI.utils.TextureCache)) {
 					if(PIXI.utils.TextureCache[tex]) {
 						PIXI.utils.TextureCache[tex].destroy(true); 
 					}
 				}
-				for(let tex of Object.keys(PIXI.utils.BaseTextureCache)) {
+				for(const tex of Object.keys(PIXI.utils.BaseTextureCache)) {
 					if(PIXI.utils.BaseTextureCache[tex]) {
 						PIXI.utils.BaseTextureCache[tex].destroy(true); 
 					}
