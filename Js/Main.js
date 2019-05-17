@@ -263,8 +263,13 @@ function sceneDropDownChanged(event) {
 		let scene = utage.quests[cust][questMstId].Scenes;
 		resetPlaylist();
 		for (const s of scene) {
-			utage.scenes[cust][s]['QuestSceneMstId'] = s;
-			scenePlaylist.push(utage.scenes[cust][s]);
+			let tl_key = utage.sceneTranslations[cust][s];
+			if (tl_key) {
+				if (utage.sceneTranslations[cust][s].Enabled) {
+					utage.scenes[cust][s]['QuestSceneMstId'] = s;
+					scenePlaylist.push(utage.scenes[cust][s]);
+				}
+			}
 		}
 		playNext();
 		return;
