@@ -4,6 +4,11 @@ let rootUrl = `${window.location.protocol}//${window.location.host}/`;
 const baseDimensions = {width: 1334, height: 750};
 const screenRatio = 9/16;
 
+const CUSTOM = {
+    custom: 'Custom',
+    stock: 'Stock'
+}
+
 class commonFunctions {	
 	static getFileText(file) {
 		return new Promise((resolve, reject) => {

@@ -47,18 +47,18 @@ class UtageInfo {
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.quests['Stock'] = success[0];
-				this.questList = Object.keys(this.quests['Stock']).map((k) => {
-					return {QuestMstId: k, Name: this.quests['Stock'][k].Name, IsCustom: false};
+				this.quests[CUSTOM.stock] = success[0];
+				this.questList = Object.keys(this.quests[CUSTOM.stock]).map((k) => {
+					return {QuestMstId: k, Name: this.quests[CUSTOM.stock][k].Name, IsCustom: false};
 				});
-				this.quests['Custom'] = success[8];
-				for (const k of Object.keys(this.quests['Custom'])) {
-					this.questList.push({QuestMstId: k, Name: this.quests['Custom'][k].Name, IsCustom: true});
+				this.quests[CUSTOM.custom] = success[8];
+				for (const k of Object.keys(this.quests[CUSTOM.custom])) {
+					this.questList.push({QuestMstId: k, Name: this.quests[CUSTOM.custom][k].Name, IsCustom: true});
 				}
 				this.questList.sort((a, b) => { return a.QuestMstId - b.QuestMstId });
-				this.scenes['Stock'] = success[1];
-				for (const k of Object.keys(this.scenes['Stock'])) {
-					this.scenes['Stock'][k]['IsCustom'] = false;
+				this.scenes[CUSTOM.stock] = success[1];
+				for (const k of Object.keys(this.scenes[CUSTOM.stock])) {
+					this.scenes[CUSTOM.stock][k]['IsCustom'] = false;
 				}
 				this.parseCharacterInfo(success[2]);
 				this.parseLayerInfo(success[3]);
@@ -67,9 +67,9 @@ class UtageInfo {
 				this.parseSoundInfo(success[5]);
 				this.parseTextureInfo(success[6]);
 				this.bgmLoopData = success[7];
-				this.scenes['Custom'] = success[9];
-				for (const k of Object.keys(this.scenes['Custom'])) {
-					this.scenes['Custom'][k]['IsCustom'] = true;
+				this.scenes[CUSTOM.custom] = success[9];
+				for (const k of Object.keys(this.scenes[CUSTOM.custom])) {
+					this.scenes[CUSTOM.custom][k]['IsCustom'] = true;
 				}
 				this.parseCharacterInfo(success[10], true);
 				this.parseSoundInfo(success[11], true);
@@ -137,7 +137,7 @@ class UtageInfo {
 			Promise.all(promises)
 			.then((success) => {
 				// propagate language-based enables downwards from quests to scenes
-				for (const c of ['Custom', 'Stock']) {
+				for (const c of [CUSTOM.custom, CUSTOM.stock]) {
 					for (const k of Object.keys(this.questTranslationsInner[this.currentTranslation][c])) {
 						if (this.questTranslationsInner[this.currentTranslation][c][k].Enabled) {
 							for (const s of this.quests[c][k].Scenes) {
@@ -200,8 +200,8 @@ class UtageInfo {
 				Promise.all(promises)
 				.then((success) => {
 					this.questTranslationsInner[this.currentTranslation] = {};
-					this.questTranslationsInner[this.currentTranslation]['Stock'] = success[0];
-					this.questTranslationsInner[this.currentTranslation]['Custom'] = success[1];
+					this.questTranslationsInner[this.currentTranslation][CUSTOM.stock] = success[0];
+					this.questTranslationsInner[this.currentTranslation][CUSTOM.custom] = success[1];
 					resolve();
 				}, (failure) => {
 					console.log(failure);
@@ -223,8 +223,8 @@ class UtageInfo {
 				Promise.all(promises)
 				.then((success) => {
 					this.sceneTranslationsInner[this.currentTranslation] = {};
-					this.sceneTranslationsInner[this.currentTranslation]['Stock'] = success[0];
-					this.sceneTranslationsInner[this.currentTranslation]['Custom'] = success[1];
+					this.sceneTranslationsInner[this.currentTranslation][CUSTOM.stock] = success[0];
+					this.sceneTranslationsInner[this.currentTranslation][CUSTOM.custom] = success[1];
 					resolve();
 				}, (failure) => {
 					console.log(failure);

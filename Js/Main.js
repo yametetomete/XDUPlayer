@@ -525,13 +525,13 @@ function openHelpModal(event) {
 			iOS: 11+, no audio<br/>
 			</div>
 		</div>
-		<table style="text-align: center; width: 100%; table-layout: fixed; margin-top: auto">
-			<tr><th colspan="2">Follow YameteTomete</th></tr>
-			<tr>
-				<td><a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g" target="_blank" >Discord</a></td>
-				<td><a style="margin-top: auto; text-align: center; "href="https://twitter.com/YameteTomete" target="_blank">Twitter</a></td>
-			</tr>
-		</table>
+		<div class="follow-links">
+			<div class="follow-links-header">Follow YameteTomete</div>
+			<div class="follow-links-links">
+				<a "href="https://discord.gg/fpQZQ8g" target="_blank" >Discord</a>
+				<a "href="https://twitter.com/YameteTomete" target="_blank">Twitter</a>
+			</div>
+		</div>
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
 		<div id="modal-buttons">
 			<button onclick="closeModal(event)">Close</button>
