@@ -137,7 +137,7 @@ function buildQuestSelectList() {
 			opt.innerText = 'Select Event';
 		} else {
 			let q = utage.questList[i];
-			let cust = q.IsCustom ? 'Custom' : 'Stock';
+			let cust = q.IsCustom ? CUSTOM.custom : CUSTOM.stock;
 			let name = q.Name;
 			let tl_key = utage.questTranslations[cust][q.QuestMstId];
 			if (!tl_key) {
@@ -219,9 +219,9 @@ function checkQueryParameters() {
 	urlParams = commonFunctions.readQueryParameters();
 	let cust;
 	if (urlParams['custom'] && urlParams['custom'] === "1") {
-		cust = 'Custom';
+		cust = CUSTOM.custom;
 	} else {
-		cust = 'Stock';
+		cust = CUSTOM.stock;
 	}
 	let playable = (urlParams['questSceneMstId'] &&
 	                utage.scenes[cust][urlParams['questSceneMstId']] &&
@@ -235,9 +235,9 @@ function checkQueryParameters() {
 function playFromQuery(event) {
 	let cust;
 	if (urlParams['custom'] && urlParams['custom'] === "1") {
-		cust = 'Custom';
+		cust = CUSTOM.custom;
 	} else {
-		cust = 'Stock';
+		cust = CUSTOM.stock;
 	}
 	sceneSet(urlParams['questSceneMstId'], cust);
 	document.getElementById('play-from-query').style.cssText = "display: none;";
@@ -380,7 +380,7 @@ function playNext() {
 
 function partChanged(part) {
 
-	let cust = currentScene.IsCustom ? 'Custom' : 'Stock';
+	let cust = currentScene.IsCustom ? CUSTOM.custom : CUSTOM.stock;
 	let name = currentScene.Name;
 	let tl_key = utage.sceneTranslations[cust][currentScene.QuestSceneMstId];
 
