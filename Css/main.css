@@ -122,9 +122,11 @@ body { margin: 0; height: 100%; }
 
 #title-container { padding: 2px 0; }
 
-#other-controls-container { padding-bottom: 4px; display: flex; width: 550px; justify-content: center; align-items: center; z-index: 10; }
+#other-controls-container { padding-bottom: 4px; display: flex; width: 100%; justify-content: center; align-items: center; z-index: 10; }
 
-#select-mission { min-width: 0; }
+#select-quest { min-width: 0; width: 25% }
+
+#select-scene { min-width: 0; width: 25% }
 
 #select-language { margin-left: 10px; }
 

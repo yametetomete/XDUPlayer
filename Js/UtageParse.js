@@ -6,7 +6,9 @@ class UtageInfo {
 		this.currentPlayingFile = [];
 		this.rootDirectory = ``;
 		this.groupedMissions = {};
-		this.missionsList = [];
+		this.quests = {};
+		this.questList = [];
+		this.scenes = {};
 		this.characterInfo = {};
 		this.layerInfo = {};
 		this.localizeInfo = {};
@@ -16,7 +18,8 @@ class UtageInfo {
 		this.currentTranslation = 'eng';
 		this.translationsInner = {};
 		this.charTranslationsInner = {};
-		this.missionTranslationsInner = {};
+		this.questTranslationsInner = {};
+		this.sceneTranslationsInner = {};
 		this.bgmLoopData = {};
 		this.macros = {};
 	}
@@ -24,48 +27,62 @@ class UtageInfo {
 	loadUtageSettings() {
 		return new Promise((resolve, reject) => { 
 			let promises = [
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissions.json`), //0
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Character.tsv`), //1
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Layer.tsv`), //2
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Localize.tsv`), //3
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduQuest.json`), //0
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduScene.json`), //1
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Character.tsv`), //2
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Layer.tsv`), //3
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Localize.tsv`), //4
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Param.tsv`),
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`), //4
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`), //5
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`), //6
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsCustom.json`), //7
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //8
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //9
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //10
-				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Scenario/Macro.tsv`), //11
-				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomMacro.tsv`), //12
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`), //5
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`), //6
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`), //7
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduQuestCustom.json`), //8
+				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduSceneCustom.json`), //9
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //10
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomSound.tsv`), //11
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomTexture.tsv`), //12
+				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Scenario/Macro.tsv`), //13
+				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomMacro.tsv`), //14
 			];
 			Promise.all(promises)
 			.then((success) => {
-				this.groupMissions(success[0], success[7]);
-				this.missionsList = Object.keys(this.groupedMissions).map((k) => {
-					return {Name: this.groupedMissions[k].Name, MstId: this.groupedMissions[k].MstId};
+				this.quests['Stock'] = success[0];
+				this.questList = Object.keys(this.quests['Stock']).map((k) => {
+					return {QuestMstId: k, Name: this.quests['Stock'][k].Name, IsCustom: false};
 				});
-				this.missionsList.sort();
-				this.parseCharacterInfo(success[1]);
-				this.parseLayerInfo(success[2]);
-				this.parseLocalizeInfo(success[3]);
+				this.quests['Custom'] = success[8];
+				for (const k of Object.keys(this.quests['Custom'])) {
+					this.questList.push({QuestMstId: k, Name: this.quests['Custom'][k].Name, IsCustom: true});
+				}
+				this.questList.sort((a, b) => { return a.QuestMstId - b.QuestMstId });
+				this.scenes['Stock'] = success[1];
+				for (const k of Object.keys(this.scenes['Stock'])) {
+					this.scenes['Stock'][k]['IsCustom'] = false;
+				}
+				this.parseCharacterInfo(success[2]);
+				this.parseLayerInfo(success[3]);
+				this.parseLocalizeInfo(success[4]);
 				//this.parseParamInfo(success[4]);
-				this.parseSoundInfo(success[4]);
-				this.parseTextureInfo(success[5]);
-				this.bgmLoopData = success[6];
-				this.parseCharacterInfo(success[8], true);
-				this.parseSoundInfo(success[9], true);
-				this.parseTextureInfo(success[10], true);
-				this.parseMacroFile(success[11]);
-				this.parseMacroFile(success[12]);
+				this.parseSoundInfo(success[5]);
+				this.parseTextureInfo(success[6]);
+				this.bgmLoopData = success[7];
+				this.scenes['Custom'] = success[9];
+				for (const k of Object.keys(this.scenes['Custom'])) {
+					this.scenes['Custom'][k]['IsCustom'] = true;
+				}
+				this.parseCharacterInfo(success[10], true);
+				this.parseSoundInfo(success[11], true);
+				this.parseTextureInfo(success[12], true);
+				this.parseMacroFile(success[13]);
+				this.parseMacroFile(success[14]);
 				resolve();
 			}, (failure) => {
 				reject(failure);
 			});
 		});
 	}
-	
+
 	parseMissionFile(file) {
 		return new Promise((resolve, reject) => {
 			commonFunctions.getFileText(file)
@@ -92,39 +109,6 @@ class UtageInfo {
 		});
 	}
 
-	groupMissions(missions, customMissions) {
-		for(let key of Object.keys(missions)) {
-			let mis = missions[key];
-			if(!this.groupedMissions[mis.MstId]) {
-				this.groupedMissions[mis.MstId] = {
-					Name: mis.Name,
-					SummaryText: mis.SummaryText,
-					MstId: mis.MstId,
-					Missions: {}
-				}
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
-			} else {
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled };
-			}
-		}
-		for(let key of Object.keys(customMissions)) {
-			let mis = customMissions[key];
-			mis.IsCustom = true;
-			if(!this.groupedMissions[mis.MstId]) {
-				this.groupedMissions[mis.MstId] = {
-					IsCustom: true,
-					Name: mis.Name,
-					SummaryText: mis.SummaryText,
-					MstId: mis.MstId,
-					Missions: {}
-				}
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled, IsCustom: true };
-			} else {
-				this.groupedMissions[mis.MstId].Missions[mis.Id] = { Id: mis.Id, Path: mis.Path, Enabled: mis.Enabled, IsCustom: true };
-			}
-		}
-	}
-	
 	get translations() {
 		return this.translationsInner[this.currentTranslation];
 	}
@@ -133,20 +117,35 @@ class UtageInfo {
 		return this.charTranslationsInner[this.currentTranslation];
 	}
 	
-	get missionTranslations() {
-		return this.missionTranslationsInner[this.currentTranslation];
+	get questTranslations() {
+		return this.questTranslationsInner[this.currentTranslation];
+	}
+
+	get sceneTranslations() {
+		return this.sceneTranslationsInner[this.currentTranslation];
 	}
 	
 	setTranslationLanguage(key, missionPath) {
 		return new Promise((resolve, reject) => {
 			this.currentTranslation = key;
 			let promises = [this.loadCharacterTranslations(key),
-			this.loadMissionNamesTranslations(key)];
+			this.loadQuestNamesTranslations(key),
+			this.loadSceneNamesTranslations(key)];
 			if(missionPath) {
 				promises.push(this.loadMissionTranslation(missionPath, key));
 			}
 			Promise.all(promises)
 			.then((success) => {
+				// propagate language-based enables downwards from quests to scenes
+				for (const c of ['Custom', 'Stock']) {
+					for (const k of Object.keys(this.questTranslationsInner[this.currentTranslation][c])) {
+						if (this.questTranslationsInner[this.currentTranslation][c][k].Enabled) {
+							for (const s of this.quests[c][k].Scenes) {
+								this.sceneTranslationsInner[this.currentTranslation][c][s].Enabled = true;
+							}
+						}
+					}
+				}
 				resolve();
 			}, (failure) => {
 				console.log(failure);
@@ -189,21 +188,43 @@ class UtageInfo {
 		});
 	}
 	
-	loadMissionNamesTranslations() {
+	loadQuestNamesTranslations() {
 		return new Promise((resolve, reject) => {
-			if(this.missionTranslationsInner[this.currentTranslation]) {
+			if(this.questTranslationsInner[this.currentTranslation]) {
 				resolve();
 			} else {
 				var promises = [
-					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsNames_${this.currentTranslation}.json`),
-					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduMissionsNamesCustom_${this.currentTranslation}.json`)
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduQuestNames_${this.currentTranslation}.json`),
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduQuestNamesCustom_${this.currentTranslation}.json`)
 				];
 				Promise.all(promises)
 				.then((success) => {
-					for(let m of Object.keys(success[1])) {
-						success[0][m] = success[1][m];
-					}
-					this.missionTranslationsInner[this.currentTranslation] = success[0];
+					this.questTranslationsInner[this.currentTranslation] = {};
+					this.questTranslationsInner[this.currentTranslation]['Stock'] = success[0];
+					this.questTranslationsInner[this.currentTranslation]['Custom'] = success[1];
+					resolve();
+				}, (failure) => {
+					console.log(failure);
+					resolve();
+				});
+			}
+		});
+	}
+
+	loadSceneNamesTranslations() {
+		return new Promise((resolve, reject) => {
+			if(this.sceneTranslationsInner[this.currentTranslation]) {
+				resolve();
+			} else {
+				var promises = [
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduSceneNames_${this.currentTranslation}.json`),
+					commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduSceneNamesCustom_${this.currentTranslation}.json`)
+				];
+				Promise.all(promises)
+				.then((success) => {
+					this.sceneTranslationsInner[this.currentTranslation] = {};
+					this.sceneTranslationsInner[this.currentTranslation]['Stock'] = success[0];
+					this.sceneTranslationsInner[this.currentTranslation]['Custom'] = success[1];
 					resolve();
 				}, (failure) => {
 					console.log(failure);

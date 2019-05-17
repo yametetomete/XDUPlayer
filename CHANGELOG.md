@@ -31,3 +31,6 @@ Fix noise\_disappearance commands
 
 Macro support
 DivaMovie
+Changed metadata to include quests
+Per-language quest enabling
+Sort scenes into quests to reduce clutter

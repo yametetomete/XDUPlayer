@@ -28,7 +28,8 @@
 					<span onclick="toggleMute(event)" id="mute-button">&#128266;</span> <!-- loud_sound -->
 					<input onchange="onVolumeChange(event)" id="volume-range" value="50" type="range" min="0" max="100" step="1"/>
 				</div>
-				<select id="select-mission" onchange="missionDropDownChanged(event);"></select>
+				<select id="select-quest" onchange="questDropDownChanged(event);"></select>
+				<select id="select-scene" disabled="true" onchange="sceneDropDownChanged(event);"></select>
 				<select id="select-language" onchange="languageChanged(event);"></select>
 				<a style="font-size: 20px; margin-left: 5px;" title="info/help" onclick="openHelpModal(event)">?</a>
 			</div>

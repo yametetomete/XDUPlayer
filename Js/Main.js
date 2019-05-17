@@ -16,10 +16,11 @@ let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;
 let selectedLang = "eng";
-let currentMission = undefined;
-let currentMissionMst = 0;
-let currentMissionIndex = 0;
-let currentMissionList = [];
+let currentScene = {};
+let currentSceneId = "";
+let scenePlaylist = [];
+let currentPart = "";
+let partPlaylist = [];
 let urlParams = {};
 let screenw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 let screenh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -27,7 +28,8 @@ let screenSizeTimeout = undefined;
 let isMuted = false;
 let volume = 0.5;
 let fullScreen = false;
-let prevMission = '{Select}';
+let prevScene = '{Select}';
+let prevQuest = '{Select}';
 
 const emoji = {
 	LoudSound: String.fromCodePoint(0x1f50a),
@@ -76,7 +78,8 @@ function onBodyLoaded() {
 
 function onAllLoaded(success) {
 	textFunc.findTextElements();
-	buildMissionSelectList();
+	buildQuestSelectList();
+	buildSceneSelectList();
 	buildLanguageList();
 	let appContainer = document.getElementById('app-container');
 	appContainer.appendChild(pixiApp.app.view);
@@ -124,27 +127,79 @@ function loadLocalStorage() {
 	}
 }
 
-function buildMissionSelectList() {
-	let selectBox = document.getElementById('select-mission');
-	selectBox.innerHTML = '';
-	for(let i = -1; i < utage.missionsList.length; ++i) {
-		let opt = document.createElement('option');
-		if(i === -1) {
+function buildQuestSelectList() {
+	let questBox = document.getElementById('select-quest');
+	questBox.innerHTML = '';
+	for (let i = -1; i < utage.questList.length; ++i) {
+		let opt = document.createElement('option')
+		if (i === -1) {
 			opt.setAttribute('value', '{Select}');
-			opt.innerText = 'Select Mission';
+			opt.innerText = 'Select Event';
 		} else {
-			let m = utage.missionsList[i];
-			if(!Object.keys(utage.groupedMissions[m.MstId].Missions).some((mis) => { return utage.groupedMissions[m.MstId].Missions[mis].Enabled === true })) {
+			let q = utage.questList[i];
+			let cust = q.IsCustom ? 'Custom' : 'Stock';
+			let name = q.Name;
+			let tl_key = utage.questTranslations[cust][q.QuestMstId];
+			if (!tl_key) {
+				console.log("Failed to build quest list: missing translations");
+				return;
+			}
+			if (!tl_key.Enabled && !utage.quests[cust][q.QuestMstId].Scenes.some((s) => { return utage.sceneTranslations[cust][s].Enabled === true })) {
 				continue;
 			}
-			opt.setAttribute('value', m.MstId);
-			let name = m.Name;
-			if(utage.missionTranslations[m.MstId]) {
-				name = utage.missionTranslations[m.MstId].Name || name;
-			}
+			name = tl_key.Name || name;
+			opt.setAttribute('value', `${cust}|${q.QuestMstId}`);
 			opt.innerText = name;
 		}
-		selectBox.appendChild(opt);
+		questBox.appendChild(opt);
+	}
+}
+
+function buildSceneSelectList() {
+	let sceneBox = document.getElementById('select-scene');
+	let questBox = document.getElementById('select-quest');
+	sceneBox.innerHTML = '';
+
+	let opt = document.createElement('option');
+	opt.setAttribute('value', '{Select}');
+	opt.innerText = "Select Scene";
+
+	if (questBox.value === '{Select}') {
+		sceneBox.appendChild(opt);
+		sceneBox.setAttribute("disabled", "true");
+		return;
+	} else {
+		sceneBox.removeAttribute("disabled");
+	}
+
+	let cust = questBox.value.split("|")[0];
+	let questMstId = questBox.value.split("|")[1];
+
+	for (let i = -2; i < utage.quests[cust][questMstId].Scenes.length; ++i) {
+		let opt = document.createElement('option');
+		if (i === -2) {
+			opt.setAttribute('value', '{Select}');
+			opt.innerText = 'Select Scene';
+		} else if (i === -1) {
+			opt.setAttribute('value', '{All}');
+			opt.innerText = 'Play All';
+		} else {
+			let questSceneMstId = utage.quests[cust][questMstId].Scenes[i];
+			let s = utage.scenes[cust][questSceneMstId];
+			opt.setAttribute('value', `${cust}|${questSceneMstId}`);
+			let name = s.Name;
+			let tl_key = utage.sceneTranslations[cust][questSceneMstId];
+			if (!tl_key) {
+				console.log("Failed to build scene list: missing translations");
+				return;
+			}
+			if (!tl_key.Enabled) {
+				continue;
+			}
+			name = tl_key.Name || name;
+			opt.innerText = name;
+		}
+		sceneBox.appendChild(opt);
 	}
 }
 
@@ -162,29 +217,71 @@ function buildLanguageList() {
 
 function checkQueryParameters() {
 	urlParams = commonFunctions.readQueryParameters();
-	if(urlParams['mstid'] && urlParams['id'] && utage.groupedMissions[urlParams['mstid']] && utage.groupedMissions[urlParams['mstid']].Missions[urlParams['id']]) {
+	let cust;
+	if (urlParams['custom'] && urlParams['custom'] === "1") {
+		cust = 'Custom';
+	} else {
+		cust = 'Stock';
+	}
+	let playable = (urlParams['questSceneMstId'] &&
+	                utage.scenes[cust][urlParams['questSceneMstId']] &&
+	                utage.sceneTranslations[cust][urlParams['questSceneMstId']] &&
+	                utage.sceneTranslations[cust][urlParams['questSceneMstId']].Enabled);
+	if(playable) {
 		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
 	}
 }
 
 function playFromQuery(event) {
-	missionChanged(urlParams['mstid'], urlParams['id']);
+	let cust;
+	if (urlParams['custom'] && urlParams['custom'] === "1") {
+		cust = 'Custom';
+	} else {
+		cust = 'Stock';
+	}
+	sceneSet(urlParams['questSceneMstId'], cust);
 	document.getElementById('play-from-query').style.cssText = "display: none;";
 }
 
-function missionDropDownChanged(event) {
+function questDropDownChanged(event) {
+	if(!event || !event.currentTarget || !event.currentTarget.value) { return; }
+	buildSceneSelectList();
+}
+
+function sceneDropDownChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}') { return; }
+
+	if (event.currentTarget.value === '{All}') {
+		let quest = document.getElementById("select-quest");
+		let cust = quest.value.split("|")[0];
+		let questMstId = quest.value.split("|")[1];
+		let scene = utage.quests[cust][questMstId].Scenes;
+		resetPlaylist();
+		for (const s of scene) {
+			utage.scenes[cust][s]['QuestSceneMstId'] = s;
+			scenePlaylist.push(utage.scenes[cust][s]);
+		}
+		playNext();
+		return;
+	}
+
 	let cont = document.getElementById("modal-container");
-	let misId = event.currentTarget.value;
-	let mis = utage.groupedMissions[misId];
-	if(!mis) { console.log(`Mission ${misId} not found`); return; }
-	let name = mis.Name;
-	let summary = mis.SummaryText;
+
+	let cust = event.currentTarget.value.split("|")[0];
+	let questSceneMstId = event.currentTarget.value.split("|")[1];
+
+	let scene = utage.scenes[cust][questSceneMstId];
+	if(!scene) { console.log(`Scene ${questSceneMstId} not found`); return; }
+
+	let name = scene.Name;
+	let summary = scene.SummaryText;
 	let credits = "";
-	if(utage.missionTranslations[mis.MstId]) {
-		name = utage.missionTranslations[mis.MstId].Name || name;
-		summary = utage.missionTranslations[mis.MstId].SummaryText || summary;
-		credits = utage.missionTranslations[mis.MstId].Credits || credits;
+	let tl_key = utage.sceneTranslations[cust][questSceneMstId];
+
+	if(tl_key) {
+		name = tl_key.Name || name;
+		summary = tl_key.SummaryText || summary;
+		credits = tl_key.Credits || credits;
 	}
 	if(!credits) {
 		if(selectedLang === "eng") {
@@ -193,15 +290,15 @@ function missionDropDownChanged(event) {
 			credits = "None";
 		}
 	}
+
 	let chapterSelect = '<div><span>Chapter Select:</span><select id="ChapterSelect">';
-	for(let k of Object.keys(mis.Missions)) {
-		var m = mis.Missions[k];
-		if(m.Enabled) {
-			chapterSelect += `<option value="${m.Id}">${m.Id}</option>`
-		}
+	chapterSelect += `<option value="{All}">Play All</option>`
+	for (const p of scene.Parts) {
+			chapterSelect += `<option value="${cust}|${p}">${p}</option>`
 	}
-	let detailSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${mis.MstId}.png`;
-	let iconSrc = `${utage.rootDirectory}${(mis.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${mis.MstId}.png`;
+
+	let detailSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${questSceneMstId}.png`;
+	let iconSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${questSceneMstId}.png`;
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
@@ -216,8 +313,8 @@ function missionDropDownChanged(event) {
 		</div>
 		<div id="modal-buttons">
 			<button onclick="closeMissionModal(event, false)">Close</button>
-			<span>MstId: ${mis.MstId}</span>
-			<button onclick="missionChanged(${mis.MstId})">Play</button>
+			<span>MstId: ${questSceneMstId}</span>
+			<button onclick="sceneSet('${questSceneMstId}', '${cust}')">Play</button>
 		</div>
 	</div>`;
 	document.getElementById("click-catcher").style.cssText = 'display: flex;';
@@ -226,10 +323,18 @@ function missionDropDownChanged(event) {
 
 function closeMissionModal(event, wasStarted) {
 	if(!wasStarted) {
-		document.getElementById('select-mission').value = prevMission;
+		document.getElementById('select-scene').value = prevScene;
+		document.getElementById('select-quest').value = prevQuest;
 	} else {
-		prevMission = document.getElementById('select-mission').value;
+		prevScene = document.getElementById('select-scene').value;
+		prevQuest = document.getElementById('select-quest').value;
 	}
+	if (prevScene === '{Select}') {
+		document.getElementById('select-scene').setAttribute("disabled", "true");
+	} else {
+		document.getElementById('select-scene').removeAttribute("disabled");
+	}
+
 	closeModal(event);
 }
 
@@ -240,67 +345,82 @@ function closeModal(event) {
 	cont.innerHTML = '';
 }
 
-function missionChanged(mstId, value) {
-	let mst = utage.groupedMissions[mstId];
-	let name = mst.Name;
-	if(utage.missionTranslations[mstId]) {
-		name = utage.missionTranslations[mstId].Name || name;
+function sceneSet(questSceneMstId, cust) {
+	resetPlaylist();
+	let part = document.getElementById('ChapterSelect').value;
+	utage.scenes[cust][questSceneMstId]['QuestSceneMstId'] = questSceneMstId;
+	if (part === '{All}') {
+		scenePlaylist.push(utage.scenes[cust][questSceneMstId]);
+	} else {
+		partPlaylist.push(part);
+		currentScene = utage.scenes[cust][questSceneMstId];
 	}
-	if(!value) {
-		value = document.getElementById("ChapterSelect").value;
+
+	playNext();
+}
+
+function playNext() {
+
+	if (!partPlaylist.length) {
+		if (!scenePlaylist.length) {
+			resetPlaylist();
+			return; // we're probably done
+		}
+		currentScene = scenePlaylist.shift();
+		partPlaylist = currentScene.Parts.slice();
 	}
+
+	partChanged(partPlaylist.shift());
+}
+
+function partChanged(part) {
+
+	let cust = currentScene.IsCustom ? 'Custom' : 'Stock';
+	let name = currentScene.Name;
+	let tl_key = utage.sceneTranslations[cust][currentScene.QuestSceneMstId];
+
+	if(tl_key) {
+		name = tl_key.Name || name;
+	}
+
 	if(!audio) {
 		audio = new audioController(utage);
 		audio.changeVolume(volume);
 		audio.mute(isMuted);
 		player.audio = audio;
 	}
+
 	player.resetAll()
 	.then((success) => {
-		let newMission = mst.Missions[value];
-		checkMissionList(mst.Missions, value);
-		currentMission = newMission;
-		currentMissionMst = mstId;
-		if(!currentMission.Enabled) {
-			//Check for the next enabled mission. If there are none just reset.
-			for(let i = currentMissionIndex + 1; i < currentMissionList.length; ++i) {
-				const mis = mst.Missions[currentMissionList[i]];
-				if(mis && mis.Enabled) {
-					missionChanged(currentMissionMst, mis.Id);
-					return;
-				}
-			}
-			//If we got through the loop there are no more enabled so just end
-			resetMissions();
-			return;
+		if (scenePlaylist.length || partPlaylist.length) {
+			document.getElementById("skip-button").style.cssText = "display: inline-block;";
+		} else {
+			document.getElementById("skip-button").style.cssText = "display: none;";
 		}
 		let promises = [];
-		if(newMission.IsCustom) {
-			promises.push(utage.parseMissionFile(`${utage.rootDirectory}CustomData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+		if(currentScene.IsCustom) {
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}CustomData/Utage/${currentScene.Folder}/Scenario/${part}_t.tsv`));
+			promises.push(utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/MissionsCustom/${currentScene.Folder}/${part}_translations_${selectedLang}.json`));
 		} else {
-			promises.push(utage.parseMissionFile(`${utage.rootDirectory}XDUData/${newMission.Path.replace('Asset/', '').replace('.utage', '').replace('.tsv', '_t.tsv')}`));
+			promises.push(utage.parseMissionFile(`${utage.rootDirectory}XDUData/Utage/${currentScene.Folder}/Scenario/${part}_t.tsv`));
+			promises.push(utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentScene.Folder}/${part}_translations_${selectedLang}.json`));
 		}
-		promises.push(utage.loadMissionTranslation(`${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`))
 		closeMissionModal(undefined, true);
 		Promise.all(promises)
 		.then((success) => {
-			document.getElementById("playing-title").innerText = `${name} (${value})`;
+			document.getElementById("playing-title").innerText = `${name} (${part})`;
 			document.getElementById("title-tag").innerText = name;
+			currentPart = part;
 			player.playFile()
 			.then((success) => {
-				if(currentMissionIndex !== currentMissionList.length - 1) {
-					missionChanged(currentMissionMst, mst.Missions[currentMissionList[currentMissionIndex+1]].Id);
-				} else {
-					player.resetAll();
-					resetMissions();
-				}
+				playNext();
 			}, (failure) => {
 				player.resetAll();
-				resetMissions();
+				resetPlaylist();
 				console.log(failure);
 			});
 		}, (failure) => {
-			resetMissions();
+			resetPlaylist();
 			console.log(failure);
 		});
 	}, (failure) => {
@@ -312,43 +432,32 @@ function languageChanged(event) {
 	if(!event || !event.currentTarget || !event.currentTarget.value || event.currentTarget.value === '{Select}' || !languages.includes(event.currentTarget.value)) { return; }
 	selectedLang = event.currentTarget.value;
 	let missionPath = '';
-	if(currentMission) {
-		missionPath = `${utage.rootDirectory}Js/Translations/Missions/${currentMission.Path.replace('Asset/Utage/', '').replace('Scenario/', '').replace('.utage', '').replace('.tsv', `_translations_${selectedLang}.json`)}`;
+	if(currentPart) {
+		if (currentScene.IsCustom) {
+			missionPath = `${utage.rootDirectory}Js/Translations/CustomMissions/${currentScene.Folder}/${currentPart}_translations_${selectedLang}.json`;
+		} else {
+			missionPath = `${utage.rootDirectory}Js/Translations/Missions/${currentScene.Folder}/${currentPart}_translations_${selectedLang}.json`;
+		}
 	}
 	utage.setTranslationLanguage(selectedLang, missionPath)
 	.then((success) => {
 		document.getElementById('text-container').className = selectedLang;
-		buildMissionSelectList();
+		buildQuestSelectList();
+		buildSceneSelectList();
 		localStorage.setItem('language', selectedLang);
 	});
 }
 
-function checkMissionList(missions, currentvalue) {
-	currentMissionList = [];
-	let i = 0;
-	for(var m of Object.keys(missions)) {
-		currentMissionList.push(m);
-		if(m === currentvalue) {
-			currentMissionIndex = i;
-		}
-		++i;
-	}
-	if(currentMissionIndex + 1 === currentMissionList.length) {
-		document.getElementById("skip-button").style.cssText = "display: none;";
-	} else {
-		document.getElementById("skip-button").style.cssText = "display: inline-block;";
-	}
-}
-
-function resetMissions() {
-	currentMissionIndex = 0;
-	currentMissionList = [];
-	currentMission = undefined;
-	currentMissionMst = 0;
+function resetPlaylist() {
+	currentScene = {};
+	scenePlaylist = [];
+	currentPart = "";
+	partPlaylist = [];
 	document.getElementById("skip-button").style.cssText = "display: inline-block;";
 	document.getElementById("playing-title").innerText = 'None';
 	document.getElementById("title-tag").innerText = version;
-	document.getElementById('select-mission').value = '{Select}';
+	document.getElementById("select-quest").value = '{Select}';
+	buildSceneSelectList();
 }
 
 function onMainClick(event) {
@@ -362,20 +471,10 @@ function hideUiClicked(event) {
 function skipClicked(event) {
 	if(player.uiHidden) {
 		player.hideUiClicked(event);
-	} else if(player.runEvent && currentMissionIndex !== currentMissionList.length - 1) {
+	} else if(player.runEvent) {
 		event.preventDefault();
 		event.stopPropagation();
-		//Find the next enabled mission
-		for(let i = currentMissionIndex + 1; i < currentMissionList.length; ++i) {
-			const mis = utage.groupedMissions[currentMissionMst].Missions[currentMissionList[i]];
-			if(mis && mis.Enabled) {
-				//missionChanged(currentMissionMst, utage.groupedMissions[currentMissionMst].Missions[currentMissionList[currentMissionIndex+1]].Id);
-				missionChanged(currentMissionMst, mis.Id);
-				return;
-			}
-		}
-		//If we got through the loop there are no more enabled so just end
-		resetMissions();
+		playNext();
 	}
 }
 
@@ -421,7 +520,13 @@ function openHelpModal(event) {
 			iOS: 11+, no audio<br/>
 			</div>
 		</div>
-		<a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g">YameteTomete Discord</a>
+		<table style="text-align: center; width: 100%; table-layout: fixed; margin-top: auto">
+			<tr><th colspan="2">Follow YameteTomete</th></tr>
+			<tr>
+				<td><a style="margin-top: auto; text-align: center; "href="https://discord.gg/fpQZQ8g" target="_blank" >Discord</a></td>
+				<td><a style="margin-top: auto; text-align: center; "href="https://twitter.com/YameteTomete" target="_blank">Twitter</a></td>
+			</tr>
+		</table>
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
 		<div id="modal-buttons">
 			<button onclick="closeModal(event)">Close</button>

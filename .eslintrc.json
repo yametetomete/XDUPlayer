@@ -6,7 +6,15 @@
     "extends": "eslint:recommended",
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+	"PIXI": "readonly",
+	"UtageInfo": "readonly",
+	"TextFunctions": "readonly",
+	"Player": "readonly",
+	"Shaders": "readonly",
+	"baseDimensions": "readonly",
+	"commonFunctions": "readonly",
+	"audioController": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018,
@@ -14,7 +22,8 @@
     },
     "rules": {
         "no-console": "off",
-        "no-unused-vars": [2, { "argsIgnorePattern": "^(success|event|resource|delta|reject)$"}],
-        "no-empty": ["error", { "allowEmptyCatch": true }]
+        "no-unused-vars": [2, { "vars": "local", "argsIgnorePattern": "^(success|event|resource|delta|reject)$"}],
+        "no-empty": ["error", { "allowEmptyCatch": true }],
+	"no-mixed-spaces-and-tabs": "off"
     }
 }
