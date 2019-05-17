@@ -352,8 +352,13 @@ function sceneSet(questSceneMstId, cust) {
 	if (part === '{All}') {
 		scenePlaylist.push(utage.scenes[cust][questSceneMstId]);
 	} else {
-		partPlaylist.push(part);
 		currentScene = utage.scenes[cust][questSceneMstId];
+		try {
+			partPlaylist.push.apply(partPlaylist, currentScene.Parts.slice(currentScene.Parts.indexOf(part)));
+		} catch (error) {
+			console.log(error);
+			return;
+		}
 	}
 
 	playNext();
