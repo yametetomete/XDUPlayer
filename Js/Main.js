@@ -217,18 +217,23 @@ function buildLanguageList() {
 
 function checkQueryParameters() {
 	urlParams = commonFunctions.readQueryParameters();
-	let cust;
-	if (urlParams['custom'] && urlParams['custom'] === "1") {
-		cust = CUSTOM.custom;
-	} else {
-		cust = CUSTOM.stock;
-	}
-	let playable = (urlParams['questSceneMstId'] &&
-	                utage.scenes[cust][urlParams['questSceneMstId']] &&
-	                utage.sceneTranslations[cust][urlParams['questSceneMstId']] &&
-	                utage.sceneTranslations[cust][urlParams['questSceneMstId']].Enabled);
-	if(playable) {
-		document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
+	if (languagesLoaded) {
+		let cust;
+
+		if (urlParams['custom'] && urlParams['custom'] === "1") {
+			cust = CUSTOM.custom;
+		} else {
+			cust = CUSTOM.stock;
+		}
+
+		let playable = (urlParams['questscenemstid'] &&
+				utage.scenes[cust][urlParams['questscenemstid']] &&
+				utage.sceneTranslations[cust][urlParams['questscenemstid']] &&
+				utage.sceneTranslations[cust][urlParams['questscenemstid']].Enabled);
+
+		if(playable) {
+			document.getElementById('play-from-query').style.cssText = "position: fixed; z-index: 15; text-align: center; top: 50%; left: 50%; display: block;";
+		}
 	}
 }
 
@@ -239,7 +244,7 @@ function playFromQuery(event) {
 	} else {
 		cust = CUSTOM.stock;
 	}
-	sceneSet(urlParams['questSceneMstId'], cust);
+	sceneSet(urlParams['questscenemstid'], cust);
 	document.getElementById('play-from-query').style.cssText = "display: none;";
 }
 
@@ -347,14 +352,14 @@ function closeModal(event) {
 
 function sceneSet(questSceneMstId, cust) {
 	resetPlaylist();
-	let part = document.getElementById('ChapterSelect').value;
+	let part = document.getElementById('ChapterSelect');
 	utage.scenes[cust][questSceneMstId]['QuestSceneMstId'] = questSceneMstId;
-	if (part === '{All}') {
+	if (!part || part.value === '{All}') {
 		scenePlaylist.push(utage.scenes[cust][questSceneMstId]);
 	} else {
 		currentScene = utage.scenes[cust][questSceneMstId];
 		try {
-			partPlaylist.push.apply(partPlaylist, currentScene.Parts.slice(currentScene.Parts.indexOf(part)));
+			partPlaylist.push.apply(partPlaylist, currentScene.Parts.slice(currentScene.Parts.indexOf(part.value)));
 		} catch (error) {
 			console.log(error);
 			return;
