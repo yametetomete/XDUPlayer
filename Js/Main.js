@@ -294,7 +294,7 @@ function sceneDropDownChanged(event) {
 	let chapterSelect = '<div><span>Chapter Select:</span><select id="ChapterSelect">';
 	chapterSelect += `<option value="{All}">Play All</option>`
 	for (const p of scene.Parts) {
-			chapterSelect += `<option value="${cust}|${p}">${p}</option>`
+			chapterSelect += `<option value="${p}">${p}</option>`
 	}
 
 	let detailSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${questSceneMstId}.png`;
