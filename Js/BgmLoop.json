@@ -337,6 +337,19 @@
 			"seconds": 8.201
 		}
 	},
+	"music_akatuki_no_sora": {
+		"duration": 100.88696875,
+		"loop_end": {
+			"samples_48k": 4842487,
+			"samples_native": 3228325,
+			"seconds": 100.88515625
+		},
+		"loop_start": {
+			"samples_48k": 1297872,
+			"samples_native": 865248,
+			"seconds": 27.039
+		}
+	},
 	"music_apple": {
 		"duration": 86.01065625,
 		"loop_end": {
@@ -883,6 +896,19 @@
 			"seconds": 10.191
 		}
 	},
+	"music_luminous_gate": {
+		"duration": 105.43403125,
+		"loop_end": {
+			"samples_48k": 5060763,
+			"samples_native": 3373842,
+			"seconds": 105.4325625
+		},
+		"loop_start": {
+			"samples_48k": 1741440,
+			"samples_native": 1160960,
+			"seconds": 36.28
+		}
+	},
 	"music_makenaiai_ga_kokoniaru": {
 		"duration": 93.74815625,
 		"loop_end": {
@@ -933,6 +959,19 @@
 			"samples_48k": 1157088,
 			"samples_native": 771392,
 			"seconds": 24.106
+		}
+	},
+	"music_okitegami": {
+		"duration": 100.10028125,
+		"loop_end": {
+			"samples_48k": 4804740,
+			"samples_native": 3203160,
+			"seconds": 100.09875
+		},
+		"loop_start": {
+			"samples_48k": 1280976,
+			"samples_native": 853984,
+			"seconds": 26.687
 		}
 	},
 	"music_orbital_beat": {
@@ -1104,6 +1143,19 @@
 			"seconds": 71.14
 		}
 	},
+	"music_sense_of_distance": {
+		"duration": 115.3528125,
+		"loop_end": {
+			"samples_48k": 5536843,
+			"samples_native": 3691229,
+			"seconds": 115.35090625
+		},
+		"loop_start": {
+			"samples_48k": 2001648,
+			"samples_native": 1334432,
+			"seconds": 41.701
+		}
+	},
 	"music_shinwasekai_karano_kyousyuu": {
 		"duration": 70.55734375,
 		"loop_end": {
@@ -1143,6 +1195,19 @@
 			"seconds": 56.752
 		}
 	},
+	"music_song_for_the_world": {
+		"duration": 99.87034375,
+		"loop_end": {
+			"samples_48k": 4793701,
+			"samples_native": 3195801,
+			"seconds": 99.86878125
+		},
+		"loop_start": {
+			"samples_48k": 1034544,
+			"samples_native": 689696,
+			"seconds": 21.553
+		}
+	},
 	"music_sorae": {
 		"duration": 128.56625,
 		"loop_end": {
@@ -1180,6 +1245,19 @@
 			"samples_48k": 1302960,
 			"samples_native": 868640,
 			"seconds": 27.145
+		}
+	},
+	"music_synchrogazer": {
+		"duration": 106.25409375,
+		"loop_end": {
+			"samples_48k": 5100102,
+			"samples_native": 3400068,
+			"seconds": 106.252125
+		},
+		"loop_start": {
+			"samples_48k": 1187760,
+			"samples_native": 791840,
+			"seconds": 24.745
 		}
 	},
 	"music_tegami": {
