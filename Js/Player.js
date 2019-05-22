@@ -716,6 +716,8 @@ class Player {
 					let sprite = new PIXI.Sprite(texture);
 					let scale = baseDimensions.width / texture.baseTexture.source.videoWidth;
 
+					texture.baseTexture.source.volume = audio.volume;
+					texture.baseTexture.source.muted = audio.muted;
 					container.visible = true;
 					sprite.scale.set(scale, scale);
 					sprite.anchor.set(0.5, 0.5);
