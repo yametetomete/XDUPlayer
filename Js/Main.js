@@ -375,7 +375,6 @@ function sceneSet(questSceneMstId, cust) {
 }
 
 function playNext() {
-
 	if (!partPlaylist.length) {
 		if (!scenePlaylist.length) {
 			resetPlaylist();
@@ -389,7 +388,6 @@ function playNext() {
 }
 
 function partChanged(part) {
-
 	let cust = currentScene.IsCustom ? CUSTOM.custom : CUSTOM.stock;
 	let name = currentScene.Name;
 	let tl_key = utage.sceneTranslations[cust][currentScene.QuestSceneMstId];

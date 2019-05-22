@@ -14,7 +14,9 @@ class Player {
 		this.baseFps = 60; //I am assuming that PIXI is going to stay as keeping 60fps = delta1.
 		this.bgLayerName = "背景"; //The label for the BG layer.
 		this.defaultCharPattern = 'すまし'; //The mission file doesn't always give a pattern for putting a character on the screen.
+		this.speakCharTint = 0xFFFFFF;
 		this.backCharTint = 0x808080;
+		this.backCharTintPercent = 0.5020; //0x808080 / 0xFFFFFF
 		this.titleWaitTime = 5;
 
 		this.currentCharacters = {};
@@ -920,11 +922,23 @@ class Player {
 				fadeTime = (Number(cur.Arg6) * 1000) / 2;
 			}
 			this.currentCharacters[cur.Arg3] = { layer: lay, character: chr, charName: charToLoad, sprite: sprite };
-			if(fadeTime > 0) {
-				this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
+			//If we are just changing pattern keep the tint from the previous character
+			if(prevChar && prevChar.charName === charToLoad && prevChar.character.Pattern !== chr.Pattern && prevChar.restoreTint) {
+				this.currentCharacters[cur.Arg3].restoreTint = prevChar.restoreTint;
+				this.currentCharacters[cur.Arg3].sprite.color = prevChar.sprite.color;
+				if(fadeTime > 0) {
+					this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: prevChar.sprite.alpha, initV: 0 });
+				} else {
+					sprite.alpha = prevChar.sprite.alpha;
+				}
 			} else {
-				sprite.alpha = 1;
+				if(fadeTime > 0) {
+					this.lerpTargets.push({type: 'alpha', object: sprite, curTime: 0, time: fadeTime, finalV: 1, initV: 0 });
+				} else {
+					sprite.alpha = 1;
+				}
 			}
+
 			lay.container.addChild(sprite);
 			lay.container.visible = true;
 		}
@@ -992,7 +1006,8 @@ class Player {
 				//future note: This might be better to just look for the character in character info if this start failing.
 				for(const c of Object.keys(this.currentCharacters)) {
 					if(!this.currentCharacters[c]) { continue; }
-					if(this.currentCharacters[c].charName === cur.Arg1 || this.currentCharacters[c].charName === cur.Character) {
+					const curChar = this.currentCharacters[c];
+					if(curChar.charName === cur.Arg1 || curChar.charName === cur.Character) {
 						let nameToUse = this.currentCharacters[c].character.NameText;
 						//If cur.Character is set that means the line had a <character= included so we want to use the name from arg1 instead.
 						if(cur.Character) {
@@ -1000,13 +1015,38 @@ class Player {
 						}
 						this.text.characterName(true, this.utage.charTranslations[nameToUse] || nameToUse);
 						this.text.dialogText(true, text);
-						this.currentCharacters[c].sprite.tint = 0xFFFFFF;
+						//restoreTint is set from a colorTo command.
+						//We want to maintain the tint change from colorTo during speaking still.
+						if(curChar.restoreTint) {
+							if(curChar.restoreTint.alpha != undefined) {
+								this.cancelLerpOfType('alpha', curChar.sprite);
+								curChar.sprite.alpha = curChar.restoreTint.alpha;
+							}
+							if(curChar.restoreTint.color != undefined) {
+								this.cancelLerpOfType('tint', curChar.sprite);
+								curChar.sprite.tint = curChar.restoreTint.color;
+							}
+						} else {
+							curChar.sprite.tint = this.speakCharTint;
+						}
 						found = true;
 						continue;
 					}
 					//while were here set other characters tint to background shade
-					if(this.currentCharacters[c].sprite) {
-						this.currentCharacters[c].sprite.tint = this.backCharTint;
+					if(curChar.sprite) {
+						if(curChar.restoreTint) {
+							if(curChar.restoreTint.alpha != undefined) {
+								this.cancelLerpOfType('alpha', curChar.sprite);
+								curChar.sprite.alpha = curChar.restoreTint.alpha;
+							}
+							if(curChar.restoreTint.color != undefined) {
+								this.cancelLerpOfType('tint', curChar.sprite);
+								//darken the color 
+								curChar.sprite.tint = curChar.restoreTint.color * this.backCharTintPercent;
+							}
+						} else {
+							curChar.sprite.tint = this.backCharTint;
+						}
 					}
 				}
 				//If we didnt find the character just dump the text anyways with Arg1 as the name
@@ -1110,23 +1150,31 @@ class Player {
 			}
 			case "colorto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				curChar.restoreTint = {};
 				if(props.alpha != undefined) {
 					this.cancelLerpOfType('alpha', curChar.sprite);
 					if(props.time) {
+						//Save this value on the character so it can be restored during speaking.
+						curChar.restoreTint['alpha'] = props.alpha;
 						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 						finalV: props.alpha, initV: curChar.sprite.alpha });
 					} else {
+						//Save this value on the character so it can be restored during speaking.
+						curChar.restoreTint['alpha'] = props.alpha;
 						curChar.sprite.alpha = props.alpha;
 					}
-					
 				}
 				if(props.color != undefined) {
 					this.cancelLerpOfType('tint', curChar.sprite);
 					let color = commonFunctions.getColorFromName(props.color);
 					if(props.time) {
+						//Save this value on the character so it can be restored during speaking.
+						curChar.restoreTint['color'] = color.color;
 						this.lerpTargets.push({type: 'tint', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
 						finalV: color.color, initV: curChar.sprite.tint });
 					} else {
+						//Save this value on the character so it can be restored during speaking.
+						curChar.restoreTint['color'] = color.color;
 						curChar.sprite.tint = color.color;
 					}
 				}
