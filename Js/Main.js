@@ -536,8 +536,8 @@ function openHelpModal(event) {
 		<div class="follow-links">
 			<div class="follow-links-header">Follow YameteTomete</div>
 			<div class="follow-links-links">
-				<a "href="https://discord.gg/fpQZQ8g" target="_blank" >Discord</a>
-				<a "href="https://twitter.com/YameteTomete" target="_blank">Twitter</a>
+				<a href="https://discord.gg/fpQZQ8g" target="_blank" >Discord</a>
+				<a href="https://twitter.com/YameteTomete" target="_blank">Twitter</a>
 			</div>
 		</div>
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
