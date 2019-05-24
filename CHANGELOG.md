@@ -34,3 +34,5 @@ DivaMovie
 Changed metadata to include quests
 Per-language quest enabling
 Sort scenes into quests to reduce clutter
+Preserve ColorTo tinting properly
+urlparam: questSceneMstId
