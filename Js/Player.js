@@ -609,50 +609,6 @@ class Player {
 					}
 					break;
 				}
-				case "movecamera": {
-					let time = Number(cur.Arg4);
-					let scale = 1 + (1 - Number(cur.Arg3));
-					let cont = this.layers["bg|mainparent"].container;
-					let x = this.center.x + -(Number(cur.Arg1));
-					//y in xdu is flipped
-					let y = this.center.y - -(Number(cur.Arg2));
-					if(time) {
-						this.waitTime = time * 1000;
-						if(cont.scale.x !== scale) {
-							this.cancelLerpOfType('scale.x', cont);
-							this.lerpTargets.push({type: 'scale.x', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: scale, initV: cont.scale.x, inter: 'quadout' });
-						}
-						if(cont.scale.y !== scale) {
-							this.cancelLerpOfType('scale.y', cont);
-							this.lerpTargets.push({type: 'scale.y', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: scale, initV: cont.scale.y, inter: 'quadout' });
-						}
-						
-						if(cont.position.x !== x) {
-							this.cancelLerpOfType('position.x', cont);
-							this.lerpTargets.push({type: 'position.x', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: x, initV: cont.position.x, inter: 'quadout' });
-						}
-						if(cont.position.y !== y) {
-							this.cancelLerpOfType('position.y', cont);
-							this.lerpTargets.push({type: 'position.y', object: cont, curTime: 0, 
-							time: this.waitTime, finalV: y, initV: cont.position.y, inter: 'quadout' });
-						}
-						
-						if(cur.Arg6 && cur.Arg6.toLowerCase() === "nowait") {
-							this.waitTime = 0;
-						}
-					} else {
-						this.cancelLerpOfType('scale.x', cont);
-						this.cancelLerpOfType('scale.y', cont);
-						this.cancelLerpOfType('position.x', cont);
-						this.cancelLerpOfType('position.y', cont);
-						cont.scale.set(scale, scale);
-						cont.position.set(x, y);
-					}
-					break;
-				}
 				case "characteroff": {
 					if(cur.Text) {
 						this.checkPutText(cur);
@@ -1076,42 +1032,62 @@ class Player {
 		this.text.dialogText(false, "");
 		this.text.characterName(false, "");
 		let curChar = undefined;
-		//Find the character for the tween.
-		for(const c of Object.keys(this.currentCharacters)) {
-			if(!this.currentCharacters[c]) { continue; }
-			if(this.currentCharacters[c].charName === cur.Arg1) {
-				curChar = this.currentCharacters[c];
-				this.currentCharacters[c].sprite.tint = 0xFFFFFF;
-				continue;
-			}
-			//while were here set other characters tint to background shade
-			if(this.currentCharacters[c].sprite) {
-				this.currentCharacters[c].sprite.tint = this.backCharTint;
+		let targetObj = undefined;
+		//If the target is SpriteCamera tween the main parent instead.
+		if(cur.Arg1.toLowerCase() === "spritecamera"){ 
+			curChar = this.layers["bg|mainparent"].container;
+			targetObj = curChar;
+		} else {
+			//Find the character for the tween.
+			for(const c of Object.keys(this.currentCharacters)) {
+				if(!this.currentCharacters[c]) { continue; }
+				if(this.currentCharacters[c].charName === cur.Arg1) {
+					curChar = this.currentCharacters[c];
+					this.currentCharacters[c].sprite.tint = 0xFFFFFF;
+					continue;
+				}
+				//while were here set other characters tint to background shade
+				if(this.currentCharacters[c].sprite) {
+					this.currentCharacters[c].sprite.tint = this.backCharTint;
+				}
 			}
 		}
 		if(!curChar) { return; }
+		if(!targetObj) { targetObj = curChar.sprite; }
 		switch(cur.Arg2.toLowerCase()) {
 			case "moveto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
+				//If we are moving spritecamera it is centered differntly 
+				if(cur.Arg1.toLowerCase() === "spritecamera") {
+					if(props.x != undefined) {
+						props.x = this.center.x + -(Number(props.x));
+					}
+					if(props.y != undefined) {
+						props.y = this.center.y + -(Number(props.y));
+					}
+				}
 				//moveto has a islocal value that im just assuming is true until I run into a case it actually isint.
 				//note that islocal is local to the layer's position not the characters current position so the final pos will be 0 + what the command says
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
 				if(props.x != undefined) {
+					this.cancelLerpOfType('position.x', targetObj);
 					if(props.time) {
-						this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.x, initV: curChar.sprite.position.x, inter: 'quadout' });
+						this.lerpTargets.push({type: 'position.x', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: props.x, initV: targetObj.position.x, inter: 'quadout' });
 					} else {
-						curChar.sprite.position.x = props.x;
+						this.cancelLerpOfType()
+						targetObj.position.x = props.x;
 					}
 				}
 				if(props.y != undefined) {
+					this.cancelLerpOfType('position.y', targetObj);
 					if(props.time) {
-						this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.y, initV: curChar.sprite.position.y, inter: 'quadout' });
+						this.lerpTargets.push({type: 'position.y', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: props.y, initV: targetObj.position.y, inter: 'quadout' });
 					} else {
-						curChar.sprite.position.y = props.y;
+						targetObj.position.y = props.y;
 					}
 				}
 				break;
@@ -1123,30 +1099,52 @@ class Player {
 					this.waitTime = props.time + (props.delay || 0);
 				}
 				if(props.x != undefined) {					
-					this.lerpTargets.push({type: 'position.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.x + props.x, initV: curChar.sprite.position.x, inter: 'punch' });
+					this.lerpTargets.push({type: 'position.x', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: targetObj.position.x + props.x, initV: targetObj.position.x, inter: 'punch' });
 				}
 				if(props.y != undefined) {
-					this.lerpTargets.push({type: 'position.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.position.y + props.y, initV: curChar.sprite.position.y, inter: 'punch' });
+					this.lerpTargets.push({type: 'position.y', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+					finalV: targetObj.position.y + props.y, initV: targetObj.position.y, inter: 'punch' });
 				}
 				break;
 			}
 			case "scaleto": {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3, false);
+				let finalx = props.x != undefined ? targetObj.scale.x * props.x : undefined;
+				let finaly = props.y != undefined ? targetObj.scale.y * props.y : undefined;
+				//If we are moving spritecamera it scales differntly than sprites 
+				if(cur.Arg1.toLowerCase() === "spritecamera") {
+					//For some reason they only set y to scale for this but it scales both.
+					if(props.y != undefined) {
+						props.y = 1 / Number(props.y);//1 + (1 - Number(props.y));
+						finaly = props.y;
+						finalx = props.y;
+					}
+				}
+				
 				if(props.time == undefined) { props.time = 500; }
 				//cuz I don't care about their values that make no sense when everything else uses time.
 				if(props.speed) { props.time = props.speed * 1000; }
 				if(!cur.Arg6 || cur.Arg6 !== "NoWait") {
 					this.waitTime = props.time + (props.delay || 0);
 				}
-				if(props.x != undefined) {
-					this.lerpTargets.push({type: 'scale.x', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.scale.x * props.x, initV: curChar.sprite.scale.x });
+				if(finalx != undefined) {
+					this.cancelLerpOfType('scale.x', targetObj);
+					if(props.time) {
+						this.lerpTargets.push({type: 'scale.x', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: finalx, initV: targetObj.scale.x });
+					} else {
+						targetObj.scale.x = finalx;
+					}
 				}
-				if(props.y != undefined) {
-					this.lerpTargets.push({type: 'scale.y', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-					finalV: curChar.sprite.scale.y * props.y, initV: curChar.sprite.scale.y });
+				if(finaly != undefined) {
+					this.cancelLerpOfType('scale.y', targetObj);
+					if(props.time) {
+						this.lerpTargets.push({type: 'scale.y', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: finaly, initV: targetObj.scale.y });
+					} else {
+						targetObj.scale.y = finaly;
+					}
 				}
 				break;
 			}
@@ -1154,30 +1152,30 @@ class Player {
 				let props = commonFunctions.getPropertiesFromTweenCommand(cur.Arg3);
 				curChar.restoreTint = {};
 				if(props.alpha != undefined) {
-					this.cancelLerpOfType('alpha', curChar.sprite);
+					this.cancelLerpOfType('alpha', targetObj);
 					if(props.time) {
 						//Save this value on the character so it can be restored during speaking.
 						curChar.restoreTint['alpha'] = props.alpha;
-						this.lerpTargets.push({type: 'alpha', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: props.alpha, initV: curChar.sprite.alpha });
+						this.lerpTargets.push({type: 'alpha', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: props.alpha, initV: targetObj.alpha });
 					} else {
 						//Save this value on the character so it can be restored during speaking.
 						curChar.restoreTint['alpha'] = props.alpha;
-						curChar.sprite.alpha = props.alpha;
+						targetObj.alpha = props.alpha;
 					}
 				}
 				if(props.color != undefined) {
-					this.cancelLerpOfType('tint', curChar.sprite);
+					this.cancelLerpOfType('tint', targetObj);
 					let color = commonFunctions.getColorFromName(props.color);
 					if(props.time) {
 						//Save this value on the character so it can be restored during speaking.
 						curChar.restoreTint['color'] = color.color;
-						this.lerpTargets.push({type: 'tint', object: curChar.sprite, curTime: 0 - (props.delay || 0), time: props.time, 
-						finalV: color.color, initV: curChar.sprite.tint });
+						this.lerpTargets.push({type: 'tint', object: targetObj, curTime: 0 - (props.delay || 0), time: props.time, 
+						finalV: color.color, initV: targetObj.tint });
 					} else {
 						//Save this value on the character so it can be restored during speaking.
 						curChar.restoreTint['color'] = color.color;
-						curChar.sprite.tint = color.color;
+						targetObj.tint = color.color;
 					}
 				}
 				break;
