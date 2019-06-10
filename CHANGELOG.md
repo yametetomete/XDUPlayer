@@ -36,3 +36,7 @@ Per-language quest enabling
 Sort scenes into quests to reduce clutter
 Preserve ColorTo tinting properly
 urlparam: questSceneMstId
+
+## V1.3.1 (2019-06-09)
+
+Fix MoveCamera macro
