@@ -3,6 +3,8 @@
 web.config
 /Js/Typed
 /Js/[Pp]ixi.js
+/Js/[Pp]ixi.js.map
+/Js/[Pp]ixi.min.js.map
 /node_modules
 /Js/XduPlayer.js
 /Js/XduPlayer.min.js.map
