@@ -2,7 +2,7 @@
 
 const pixiApp = { 
 	app: new PIXI.Application(baseDimensions),
-	loader: PIXI.loader
+	loader: PIXI.Loader.shared
 };
 
 const utage = new UtageInfo();
@@ -11,7 +11,7 @@ const textFunc = new TextFunctions();
 let audio = undefined; //Cant create a audio context without user input.
 const player = new Player(pixiApp, utage, textFunc, audio, shaders);
 const languages = ["eng", "jpn", "rus"];
-const version = "YameteTomete XDUPlayer V1.3.1";
+const version = "YameteTomete XDUPlayer V1.4.0";
 let bodyLoaded = false;
 let utageLoaded = false;
 let languagesLoaded = false;

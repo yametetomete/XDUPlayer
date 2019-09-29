@@ -5,22 +5,16 @@ class Shaders {
 		this.leftToRightFadeShader = `
 		precision mediump float;
 		varying vec2 vTextureCoord;
-		uniform vec2 dimensions;
-		uniform vec4 filterArea;
+		uniform vec4 inputPixel;
+		uniform highp vec4 outputFrame;
 		
 		uniform float time;
 		uniform vec4 fadeincolor;
 		uniform vec4 fadeoutcolor;
 		
-		vec2 mapCoord( vec2 coord ) {
-			coord *= filterArea.xy;
-			coord += filterArea.zw;
-			return coord;
-		}
-		
 		void main( void ) {
-			vec2 uv = vTextureCoord;
-			vec2 mappedCoord = mapCoord(uv) / dimensions;
+			vec2 uv = vTextureCoord * inputPixel.xy / outputFrame.zw;
+			vec2 mappedCoord = uv;
 			
 			float step2 = time;
 			float step3 = time + 0.2;
@@ -36,21 +30,16 @@ class Shaders {
 		this.rightToLeftFadeShader = `
 		precision mediump float;
 		varying vec2 vTextureCoord;
-		uniform vec2 dimensions;
-		uniform vec4 filterArea;
+		uniform vec4 inputPixel;
+		uniform highp vec4 outputFrame;
 		
 		uniform float time;
 		uniform vec4 fadeincolor;
 		uniform vec4 fadeoutcolor;
 		
-		vec2 mapCoord( vec2 coord ) {
-			coord *= filterArea.xy;
-			return coord;
-		}
-		
 		void main( void ) {
-			vec2 uv = vTextureCoord;
-			vec2 mappedCoord = mapCoord(uv) / dimensions;
+			vec2 uv = vTextureCoord * inputPixel.xy / outputFrame.zw;
+			vec2 mappedCoord = uv;
 			
 			float step2 = (1.0 - time);
 			float step3 = (1.0 - time) - 0.2;
@@ -66,22 +55,16 @@ class Shaders {
 		this.downToUpFadeShader = `
 		precision mediump float;
 		varying vec2 vTextureCoord;
-		uniform vec2 dimensions;
-		uniform vec4 filterArea;
+		uniform vec4 inputPixel;
+		uniform highp vec4 outputFrame;
 		
 		uniform float time;
 		uniform vec4 fadeincolor;
 		uniform vec4 fadeoutcolor;
 		
-		vec2 mapCoord( vec2 coord ) {
-			coord *= filterArea.xy;
-			coord += filterArea.zw;
-			return coord;
-		}
-		
 		void main( void ) {
-			vec2 uv = vTextureCoord;
-			vec2 mappedCoord = mapCoord(uv) / dimensions;
+			vec2 uv = vTextureCoord * inputPixel.xy / outputFrame.zw;
+			vec2 mappedCoord = uv;
 			
 			float step2 = (1.0 - time);
 			float step3 = (1.0 - time) - 0.2;
@@ -97,22 +80,16 @@ class Shaders {
 		this.uptoDownFadeShader = `
 		precision mediump float;
 		varying vec2 vTextureCoord;
-		uniform vec2 dimensions;
-		uniform vec4 filterArea;
+		uniform vec4 inputPixel;
+		uniform highp vec4 outputFrame;
 		
 		uniform float time;
 		uniform vec4 fadeincolor;
 		uniform vec4 fadeoutcolor;
 		
-		vec2 mapCoord( vec2 coord ) {
-			coord *= filterArea.xy;
-			coord += filterArea.zw;
-			return coord;
-		}
-		
 		void main( void ) {
-			vec2 uv = vTextureCoord;
-			vec2 mappedCoord = mapCoord(uv) / dimensions;
+			vec2 uv = vTextureCoord * inputPixel.xy / outputFrame.zw;
+			vec2 mappedCoord = uv;
 			
 			float step2 = time;
 			float step3 = time + 0.2;
@@ -129,7 +106,6 @@ class Shaders {
 		precision mediump float;
 		varying vec2 vTextureCoord;
 		uniform sampler2D uSampler;
-		uniform vec2 dimensions;
 		uniform float factor;
 		
 		vec4 Sepia( in vec4 color )
@@ -150,10 +126,11 @@ class Shaders {
 	}
 	
 	//https://jsfiddle.net/60e5pp8d/1/
+	//v5 changes to shaders, https://github.com/pixijs/pixi.js/wiki/v5-Creating-filters
+	// https://www.html5gamedevs.com/topic/42235-how-to-get-correct-fragment-shader-uv-in-pixi-50-rc0/
 	buildShaders() {
 		let divalefttorightfade = new PIXI.Filter(null, this.leftToRightFadeShader, { 
 			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
 			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
 			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
 		});
@@ -162,7 +139,6 @@ class Shaders {
 		
 		let divarighttoleftfade = new PIXI.Filter(null, this.rightToLeftFadeShader, { 
 			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
 			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
 			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
 		});
@@ -171,7 +147,6 @@ class Shaders {
 		
 		let divauptodownfade = new PIXI.Filter(null, this.uptoDownFadeShader, {
 			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
 			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
 			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
 		});
@@ -180,7 +155,6 @@ class Shaders {
 		
 		let divadowntoupfade = new PIXI.Filter(null, this.downToUpFadeShader, {
 			time: { type: 'f', value: 0 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] },
 			fadeincolor: { type: 'v4', value: [0.0,0.0,0.0,1.0] },
 			fadeoutcolor: { type: 'v4', value: [0.0,0.0,0.0,0.0] }
 		});
@@ -188,15 +162,12 @@ class Shaders {
 		this.shaders['divadowntoupfade'] = divadowntoupfade;
 		
 		let sepia = new PIXI.Filter(null, this.sepiaShader, {
-			factor: { type: 'f', value: 0.5 },
-			dimensions: { type: 'v2', value: [baseDimensions.width, baseDimensions.height] }
+			factor: { type: 'f', value: 0.5 }
 		});
 		sepia.apply = baseShaderApply;
 		this.shaders['sepia'] = sepia;
 		
 		function baseShaderApply(filterManager, input, output) {
-			this.uniforms.dimensions[0] = input.sourceFrame.width;
-			this.uniforms.dimensions[1] = input.sourceFrame.height;
 			filterManager.applyFilter(this, input, output);
 		}
 	}

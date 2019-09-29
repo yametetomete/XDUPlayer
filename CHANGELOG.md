@@ -40,3 +40,7 @@ urlparam: questSceneMstId
 ## V1.3.1 (2019-06-09)
 
 Fix MoveCamera macro
+
+## V1.4.0 (2019-09-29)
+
+Updated Pixi.js to v5
