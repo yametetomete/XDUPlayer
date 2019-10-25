@@ -350,6 +350,19 @@
 			"seconds": 27.039
 		}
 	},
+	"music_angelic_remnant": {
+		"duration": 142.8000625,
+		"loop_end": {
+			"samples_48k": 6854332,
+			"samples_native": 4569555,
+			"seconds": 142.79859375
+		},
+		"loop_start": {
+			"samples_48k": 1594848,
+			"samples_native": 1063232,
+			"seconds": 33.226
+		}
+	},
 	"music_apple": {
 		"duration": 86.01065625,
 		"loop_end": {
@@ -662,6 +675,19 @@
 			"seconds": 21.988
 		}
 	},
+	"music_glorious_break": {
+		"duration": 165.69746875,
+		"loop_end": {
+			"samples_48k": 7953392,
+			"samples_native": 5302261,
+			"seconds": 165.69565625
+		},
+		"loop_start": {
+			"samples_48k": 4357968,
+			"samples_native": 2905312,
+			"seconds": 90.791
+		}
+	},
 	"music_gohoushi_maidmode": {
 		"duration": 95.612125,
 		"loop_end": {
@@ -686,6 +712,19 @@
 			"samples_48k": 476784,
 			"samples_native": 317856,
 			"seconds": 9.933
+		}
+	},
+	"music_gosenhu_no_sanctuary": {
+		"duration": 92.97546875,
+		"loop_end": {
+			"samples_48k": 4462731,
+			"samples_native": 2975154,
+			"seconds": 92.9735625
+		},
+		"loop_start": {
+			"samples_48k": 1220064,
+			"samples_native": 813376,
+			"seconds": 25.418
 		}
 	},
 	"music_gun_bullet_xxx": {
@@ -777,6 +816,19 @@
 			"samples_48k": 1034160,
 			"samples_native": 689440,
 			"seconds": 21.545
+		}
+	},
+	"music_hanasaku_yuuki2": {
+		"duration": 100.22209375,
+		"loop_end": {
+			"samples_48k": 4810585,
+			"samples_native": 3207057,
+			"seconds": 100.22053125
+		},
+		"loop_start": {
+			"samples_48k": 1139376,
+			"samples_native": 759584,
+			"seconds": 23.737
 		}
 	},
 	"music_hidamari_memoria": {
@@ -883,6 +935,19 @@
 			"seconds": 19.579
 		}
 	},
+	"music_kousou_gungnir": {
+		"duration": 108.73359375,
+		"loop_end": {
+			"samples_48k": 5219131,
+			"samples_native": 3479421,
+			"seconds": 108.73190625
+		},
+		"loop_start": {
+			"samples_48k": 1184208,
+			"samples_native": 789472,
+			"seconds": 24.671
+		}
+	},
 	"music_kyoushitsu_monochrome": {
 		"duration": 79.831625,
 		"loop_end": {
@@ -894,6 +959,19 @@
 			"samples_48k": 489168,
 			"samples_native": 326112,
 			"seconds": 10.191
+		}
+	},
+	"music_little_miracle_grip_it_tight": {
+		"duration": 96.00890625,
+		"loop_end": {
+			"samples_48k": 4608354,
+			"samples_native": 3072236,
+			"seconds": 96.007375
+		},
+		"loop_start": {
+			"samples_48k": 1199376,
+			"samples_native": 799584,
+			"seconds": 24.987
 		}
 	},
 	"music_luminous_gate": {
@@ -1050,6 +1128,32 @@
 			"samples_48k": 3042432,
 			"samples_native": 2028288,
 			"seconds": 63.384
+		}
+	},
+	"music_sakamaku_keppu": {
+		"duration": 96.219625,
+		"loop_end": {
+			"samples_48k": 4618468,
+			"samples_native": 3078979,
+			"seconds": 96.21809375
+		},
+		"loop_start": {
+			"samples_48k": 1680480,
+			"samples_native": 1120320,
+			"seconds": 35.01
+		}
+	},
+	"music_sakimori_no_uta": {
+		"duration": 100.8615625,
+		"loop_end": {
+			"samples_48k": 4841271,
+			"samples_native": 3227514,
+			"seconds": 100.8598125
+		},
+		"loop_start": {
+			"samples_48k": 1095504,
+			"samples_native": 730336,
+			"seconds": 22.823
 		}
 	},
 	"music_sakura_blizzard": {
@@ -1235,16 +1339,16 @@
 		}
 	},
 	"music_stand_up_ready": {
-		"duration": 111.54221875,
+		"duration": 108.51640625,
 		"loop_end": {
-			"samples_48k": 5353941,
-			"samples_native": 3569294,
-			"seconds": 111.5404375
+			"samples_48k": 5208702,
+			"samples_native": 3472468,
+			"seconds": 108.514625
 		},
 		"loop_start": {
-			"samples_48k": 1302960,
-			"samples_native": 868640,
-			"seconds": 27.145
+			"samples_48k": 1157712,
+			"samples_native": 771808,
+			"seconds": 24.119
 		}
 	},
 	"music_synchrogazer": {
@@ -1286,6 +1390,19 @@
 			"seconds": 27.127
 		}
 	},
+	"music_the_wild_bunch": {
+		"duration": 75.24625,
+		"loop_end": {
+			"samples_48k": 3611754,
+			"samples_native": 2407836,
+			"seconds": 75.244875
+		},
+		"loop_start": {
+			"samples_48k": 1120944,
+			"samples_native": 747296,
+			"seconds": 23.353
+		}
+	},
 	"music_trust_heart": {
 		"duration": 90.5468125,
 		"loop_end": {
@@ -1310,6 +1427,32 @@
 			"samples_48k": 731760,
 			"samples_native": 487840,
 			"seconds": 15.245
+		}
+	},
+	"music_union": {
+		"duration": 84.9683125,
+		"loop_end": {
+			"samples_48k": 4078393,
+			"samples_native": 2718929,
+			"seconds": 84.96653125
+		},
+		"loop_start": {
+			"samples_48k": 841344,
+			"samples_native": 560896,
+			"seconds": 17.528
+		}
+	},
+	"music_vitalization": {
+		"duration": 96.31796875,
+		"loop_end": {
+			"samples_48k": 4623187,
+			"samples_native": 3082125,
+			"seconds": 96.31640625
+		},
+		"loop_start": {
+			"samples_48k": 1773504,
+			"samples_native": 1182336,
+			"seconds": 36.948
 		}
 	},
 	"music_waikyou_shenshoujin": {
