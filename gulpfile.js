@@ -26,9 +26,6 @@ const cssToCopy = [
 "Css/main.min.css",
 "Css/generic.min.css"
 ];
-const jsonFiles = [
-"Js/BgmLoop.json",
-];
 const translations = [
 "Js/Translations/**"
 ];
@@ -50,7 +47,6 @@ gulp.task('dist', gulp.series(
 				buildCss,
 				copyCss
 			),
-			buildJson,
 			buildJsonTranslations,
 			copyHtml,
 			copyImages,
@@ -115,12 +111,6 @@ function copyImages() {
 function copyCustomData() {
 	return gulp.src('CustomData/**')
 		.pipe(gulp.dest('Dist/CustomData'));
-}
-
-function buildJson() {
-	return gulp.src(jsonFiles)
-        .pipe(jsonmin())
-        .pipe(gulp.dest('Dist/Js'));
 }
 
 function buildJsonTranslations() {
