@@ -543,7 +543,7 @@ function openHelpModal(event) {
 		<div style="margin-top: auto; text-align: center;">All Symphogear content belongs to its respective owners</div>
 		<div id="modal-buttons">
 			<button onclick="closeModal(event)">Close</button>
-			<a href="https://git.poweris.moe/xduplayer.git/" target="_blank">Source</a>
+			<a href="https://git.poweris.moe/yttt-xdu/XDUPlayer" target="_blank">Source</a>
 		</div>
 	</div>`;
 	document.getElementById("click-catcher").style.cssText = 'display: flex;';
