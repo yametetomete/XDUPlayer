@@ -36,7 +36,7 @@ class UtageInfo {
 				//commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Scenario.tsv`),
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Sound.tsv`), //5
 				commonFunctions.getFileText(`${this.rootDirectory}XDUData/Utage/Diva/Settings/Texture.tsv`), //6
-				commonFunctions.getFileJson(`${this.rootDirectory}Js/BgmLoop.json`), //7
+				commonFunctions.getFileJson(`${this.rootDirectory}XDUData/Bgm/BgmLoop.json`), //7
 				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduQuestCustom.json`), //8
 				commonFunctions.getFileJson(`${this.rootDirectory}Js/Translations/XduSceneCustom.json`), //9
 				commonFunctions.getFileText(`${this.rootDirectory}CustomData/Utage/Diva/Settings/CustomCharacter.tsv`), //10
