@@ -27,6 +27,7 @@ class Player {
 		this.waitTime = 0;
 		this.manualNext = false;
 		this.hasMoreText = false;
+		this.hasFadedOut = false;
 		this.uiHidden = false;
 		this.center = {x: ((baseDimensions.width / 2) * this.resolutionScale), y: ((baseDimensions.height / 2) * this.resolutionScale) };
 		this.assetLoadPercent = 0;
@@ -504,6 +505,8 @@ class Player {
 				//FadeTo
 				case "divaeffectcontinue":
 				case "fadeout": {
+					if(this.hasFadedOut) { break; }
+					this.hasFadedOut = true;
 					if(cur.Command.toLowerCase() === "divaeffectcontinue") {
 						cur.Arg1 = 'black';
 						cur.Arg6 = 1;
@@ -520,6 +523,7 @@ class Player {
 				}
 				//FadeFrom
 				case "fadein": {
+					this.hasFadedOut = false;
 					this.waitTime = Number(cur.Arg6) * 1000;
 					if(!cur.Arg1)
 						cur.Arg1 = 'white';
@@ -1378,6 +1382,7 @@ class Player {
 				this.lerpTargets = [];
 				this.manualNext = false;
 				this.hasMoreText = false;
+				this.hasFadedOut = false;
 				this.audioLoadPercent = 0;
 				this.assetLoadPercent = 0;
 				this.playingVoice = undefined;
