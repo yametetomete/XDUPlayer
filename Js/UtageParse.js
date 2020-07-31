@@ -141,7 +141,10 @@ class UtageInfo {
 					for (const k of Object.keys(this.questTranslationsInner[this.currentTranslation][c])) {
 						if (this.questTranslationsInner[this.currentTranslation][c][k].Enabled) {
 							for (const s of this.quests[c][k].Scenes) {
-								if (c in this.sceneTranslationsInner[this.currentTranslation] && s in this.sceneTranslationsInner[this.currentTranslation][c]) {
+								// only propagate if exists in translation file (THANKS GLOBAL) and translated name is supplied
+								if (c in this.sceneTranslationsInner[this.currentTranslation]
+								    && s in this.sceneTranslationsInner[this.currentTranslation][c]
+								    && this.sceneTranslationsInner[this.currentTranslation][c][s].Name != "") {
 									this.sceneTranslationsInner[this.currentTranslation][c][s].Enabled = true;
 								}
 							}
