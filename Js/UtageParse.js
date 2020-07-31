@@ -141,7 +141,9 @@ class UtageInfo {
 					for (const k of Object.keys(this.questTranslationsInner[this.currentTranslation][c])) {
 						if (this.questTranslationsInner[this.currentTranslation][c][k].Enabled) {
 							for (const s of this.quests[c][k].Scenes) {
-								this.sceneTranslationsInner[this.currentTranslation][c][s].Enabled = true;
+								if (c in this.sceneTranslationsInner[this.currentTranslation] && s in this.sceneTranslationsInner[this.currentTranslation][c]) {
+									this.sceneTranslationsInner[this.currentTranslation][c][s].Enabled = true;
+								}
 							}
 						}
 					}

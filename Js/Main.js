@@ -142,7 +142,7 @@ function buildQuestSelectList() {
 			let tl_key = utage.questTranslations[cust][q.QuestMstId];
 			if (!tl_key) {
 				console.log("Failed to build quest list: missing translations");
-				return;
+				continue;
 			}
 			if (!tl_key.Enabled && !utage.quests[cust][q.QuestMstId].Scenes.some((s) => { return utage.sceneTranslations[cust][s].Enabled === true })) {
 				continue;
@@ -191,7 +191,7 @@ function buildSceneSelectList() {
 			let tl_key = utage.sceneTranslations[cust][questSceneMstId];
 			if (!tl_key) {
 				console.log("Failed to build scene list: missing translations");
-				return;
+				continue;
 			}
 			if (!tl_key.Enabled) {
 				continue;
