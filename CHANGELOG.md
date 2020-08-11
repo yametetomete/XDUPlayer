@@ -44,3 +44,7 @@ Fix MoveCamera macro
 ## V1.4.0 (2019-09-29)
 
 Updated Pixi.js to v5
+
+## V1.5.0 (2020-07-31)
+
+XDU Global support

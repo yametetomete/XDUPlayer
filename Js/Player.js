@@ -960,7 +960,12 @@ class Player {
 			let text = cur.English ? (this.utage.translations ? (this.utage.translations[cur.English] || cur.Text) : cur.Text) : cur.Text;
 			text = commonFunctions.convertUtageTextTags(text);
 			if(cur.Arg2 && cur.Arg2.toLowerCase() === "<off>") {
-				this.text.characterName(true, this.utage.charTranslations[cur.Arg1] || cur.Arg1);
+				let nameFullWidth = cur.Arg1.replace(/[A-Za-z0-9]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);});
+				let nameHalfWidth = cur.Arg1.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) - 0xFEE0)});
+				this.text.characterName(true, this.utage.charTranslations[cur.Arg1]
+					|| this.utage.charTranslations[nameFullWidth]
+					|| this.utage.charTranslations[nameHalfWidth]
+					|| cur.Arg1);
 				this.text.dialogText(true, commonFunctions.convertUtageTextTags(text));
 			} else {
 				let found = false;
@@ -975,7 +980,12 @@ class Player {
 						if(cur.Character) {
 							nameToUse = cur.Arg1;
 						}
-						this.text.characterName(true, this.utage.charTranslations[nameToUse] || nameToUse);
+						let nameFullWidth = nameToUse.replace(/[A-Za-z0-9]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);});
+						let nameHalfWidth = nameToUse.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) - 0xFEE0)});
+						this.text.characterName(true, this.utage.charTranslations[nameToUse]
+							|| this.utage.charTranslations[nameFullWidth]
+							|| this.utage.charTranslations[nameHalfWidth]
+							|| nameToUse);
 						this.text.dialogText(true, text);
 						//restoreTint is set from a colorTo command.
 						//We want to maintain the tint change from colorTo during speaking still.
@@ -1013,7 +1023,12 @@ class Player {
 				}
 				//If we didnt find the character just dump the text anyways with Arg1 as the name
 				if(!found) {
-					this.text.characterName(true, this.utage.charTranslations[cur.Arg1] || cur.Arg1);
+					let nameFullWidth = cur.Arg1.replace(/[A-Za-z0-9]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);});
+					let nameHalfWidth = cur.Arg1.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {return String.fromCharCode(s.charCodeAt(0) - 0xFEE0)});
+					this.text.characterName(true, this.utage.charTranslations[cur.Arg1]
+						|| this.utage.charTranslations[nameFullWidth]
+						|| this.utage.charTranslations[nameHalfWidth]
+						|| cur.Arg1);
 					this.text.dialogText(true, text);
 				}
 			}
