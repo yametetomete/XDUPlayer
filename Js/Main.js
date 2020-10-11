@@ -377,6 +377,7 @@ function sceneSet(questSceneMstId, cust) {
 function playNext() {
 	if (!partPlaylist.length) {
 		if (!scenePlaylist.length) {
+			player.resetAll();
 			resetPlaylist();
 			return; // we're probably done
 		}
