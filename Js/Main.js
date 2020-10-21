@@ -285,6 +285,10 @@ function sceneDropDownChanged(event) {
 
 	let name = scene.Name;
 	let summary = scene.SummaryText;
+	let image = questSceneMstId;
+	if ("Image" in scene) {
+		image = scene.Image;
+	}
 	let credits = "";
 	let tl_key = utage.sceneTranslations[cust][questSceneMstId];
 
@@ -307,8 +311,8 @@ function sceneDropDownChanged(event) {
 			chapterSelect += `<option value="${p}">${p}</option>`
 	}
 
-	let detailSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${questSceneMstId}.png`;
-	let iconSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${questSceneMstId}.png`;
+	let detailSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Detail/${image}.png`;
+	let iconSrc = `${utage.rootDirectory}${(scene.IsCustom ? "CustomData" : "XDUData")}/Asset/Image/Quest/Snap/Icon/${image}.png`;
 	chapterSelect += '</select></div>';
 	cont.innerHTML = `
 	<div id="mission-modal" class="modal">
