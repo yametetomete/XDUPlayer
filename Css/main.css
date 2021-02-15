@@ -84,6 +84,8 @@ body { margin: 0; height: 100%; }
 
 #text-container.rus { font-family: 'PTSans'; }
 
+#text-container.cze { font-family: 'PTSans'; }
+
 #text-container #fullscreen-button { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 30px; line-height: 30px; opacity: 0.35; z-index: 11; }
 
 #text-container #title { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 20px; transition: opacity 0.3s; cursor: default; user-select: none; }
